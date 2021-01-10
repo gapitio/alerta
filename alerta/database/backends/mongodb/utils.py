@@ -6,7 +6,6 @@ import pytz
 from pyparsing import ParseException
 from werkzeug.datastructures import MultiDict
 
-from alerta.database.base import QueryBuilder
 from alerta.exceptions import ApiError
 from alerta.utils.format import DateTime
 
@@ -16,12 +15,120 @@ Query = namedtuple('Query', ['where', 'sort', 'group'])
 Query.__new__.__defaults__ = ({}, {}, 'lastReceiveTime', 'status')  # type: ignore
 
 
-class QueryBuilderImpl(QueryBuilder):
+EXCLUDE_FROM_QUERY = [
+    '_', 'callback', 'token', 'api-key', 'q', 'q.df', 'id', 'from-date', 'to-date',
+    'sort-by', 'group-by', 'page', 'page-size', 'limit', 'show-raw-data', 'show-history'
+]
+
+
+class QueryBuilder:
+
+    @staticmethod
+    def sort_by_columns(params, valid_params):
+
+        sort = list()
+        direction = 1
+        if params.get('sort-by', None):
+            for sort_by in params.getlist('sort-by'):
+                reverse = 1
+                if sort_by.startswith('-'):
+                    reverse = -1
+                    sort_by = sort_by[1:]
+                if sort_by not in valid_params:
+                    raise ApiError("Invalid 'sort-by' field: {}".format(sort_by), 400)
+                _, column, direction = valid_params[sort_by]
+                if not column:
+                    raise ApiError("Sorting by '{}' field not supported.".format(sort_by), 400)
+                sort.append((column, direction * reverse))
+        else:
+            sort.append(('lastReceiveTime', direction))
+        return sort
+
+    @staticmethod
+    def filter_query(params, valid_params, query):
+
+        for field in params.keys():
+            if field.replace('!', '').split('.')[0] in EXCLUDE_FROM_QUERY:
+                continue
+            if field.replace('!', '').split('.')[0] not in valid_params:
+                raise ApiError('Invalid filter parameter: {}'.format(field), 400)
+            if field.startswith('attributes.'):
+                column = field
+            else:
+                column, _, _ = valid_params[field.replace('!', '').split('.')[0]]
+            value = params.getlist(field)
+            if len(value) == 1:
+                value = value[0]
+                if field.endswith('!'):
+                    if value.startswith('~'):
+                        query[column] = dict()
+                        query[column]['$not'] = re.compile(value[1:], re.IGNORECASE)
+                    else:
+                        query[column] = dict()
+                        query[column]['$ne'] = value
+                else:
+                    if value.startswith('~'):
+                        query[column] = dict()
+                        query[column]['$regex'] = re.compile(value[1:], re.IGNORECASE)
+                    else:
+                        query[column] = value
+            else:
+                if field.endswith('!'):
+                    if '~' in [v[0] for v in value]:
+                        value = '|'.join([v.lstrip('~') for v in value])
+                        query[column] = dict()
+                        query[column]['$not'] = re.compile(value, re.IGNORECASE)
+                    else:
+                        query[column] = dict()
+                        query[column]['$nin'] = value
+                else:
+                    if '~' in [v[0] for v in value]:
+                        value = '|'.join([v.lstrip('~') for v in value])
+                        query[column] = dict()
+                        query[column]['$regex'] = re.compile(value, re.IGNORECASE)
+                    else:
+                        query[column] = dict()
+                        query[column]['$in'] = value
+        return query
+
+
+class Alerts(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'resource': ('resource', 'resource', 1),
+        'event': ('event', 'event', 1),
+        'environment': ('environment', 'environment', 1),
+        'severity': ('severity', 'code', 1),
+        'correlate': ('correlate', 'correlate', 1),
+        'status': ('status', 'state', 1),
+        'service': ('service', 'service', 1),
+        'group': ('group', 'group', 1),
+        'value': ('value', 'value', 1),
+        'text': ('text', 'text', 1),
+        'tags': ('tags', 'tags', 1),
+        'attributes': ('', '', 1),
+        'origin': ('origin', 'origin', 1),
+        'type': ('event_type', 'event_type', 1),
+        'createTime': ('create_time', 'create_time', -1),
+        'timeout': ('timeout', 'timeout', 1),
+        'rawData': ('raw_data', 'raw_data', 1),
+        'customer': ('customer', 'customer', 1),
+        'duplicateCount': ('duplicate_count', 'duplicate_count', 1),
+        'repeat': ('repeat', 'repeat', 1),
+        'previousSeverity': ('previous_severity', 'previous_severity', 1),
+        'trendIndication': ('trend_indication', 'trend_indication', 1),
+        'receiveTime': ('receive_time', 'receive_time', -1),
+        'lastReceiveId': ('last_receive_id', 'last_receive_id', 1),
+        'lastReceiveTime': ('last_receive_time', 'last_receive_time', -1),
+        'updateTime': ('update_time', 'update_time', -1),
+    }
 
     @staticmethod
     def from_params(params: MultiDict, customers=None, query_time=None):
 
-        # q
+        # ?q=
         if params.get('q', None):
             try:
                 parser = QueryParser()
@@ -35,7 +142,7 @@ class QueryBuilderImpl(QueryBuilder):
         else:
             query = dict()
 
-        # customers
+        # customer
         if customers:
             customer_query = {'customer': {'$in': customers}}
         else:
@@ -57,31 +164,6 @@ class QueryBuilderImpl(QueryBuilder):
         if params.get('repeat', None):
             query['repeat'] = params.get('repeat', default=True, type=lambda x: x == 'true')
 
-        # sort-by
-        sort = list()
-        direction = 1
-        if params.get('reverse', None):  # deprecated. use '-' instead.
-            direction = -1
-        if params.get('sort-by', None):
-            for sort_by in params.getlist('sort-by'):
-                direction = 1
-                if sort_by.startswith('-'):
-                    sort_by = sort_by[1:]
-                    direction = -1
-                if sort_by == 'severity':
-                    sort.append(('code', direction))
-                elif sort_by == 'status':
-                    sort.append(('state', direction))
-                elif sort_by in ['createTime', 'receiveTime', 'lastReceiveTime']:
-                    sort.append((sort_by, -direction))  # reverse chronological
-                else:
-                    sort.append((sort_by, direction))
-        else:
-            sort.append(('lastReceiveTime', -direction))
-
-        # group-by
-        group = params.getlist('group-by')
-
         # id
         ids = params.getlist('id')
         if len(ids) == 1:
@@ -90,52 +172,235 @@ class QueryBuilderImpl(QueryBuilder):
             query['$or'] = [{'_id': {'$regex': re.compile('|'.join(['^' + i for i in ids]))}},
                             {'lastReceiveId': {'$regex': re.compile('|'.join(['^' + i for i in ids]))}}]
 
-        EXCLUDE_QUERY = ['_', 'callback', 'token', 'api-key', 'q', 'q.df', 'q.op', 'id', 'from-date', 'to-date',
-                         'duplicateCount', 'repeat', 'sort-by', 'reverse', 'group-by', 'page', 'page-size', 'limit',
-                         'show-raw-data', 'show-history']
-        # fields
-        for field in params:
-            if field in EXCLUDE_QUERY:
-                continue
-            value = params.getlist(field)
-            if len(value) == 1:
-                value = value[0]
-                if field.endswith('!'):
-                    if value.startswith('~'):
-                        query[field[:-1]] = dict()
-                        query[field[:-1]]['$not'] = re.compile(value[1:], re.IGNORECASE)
-                    else:
-                        query[field[:-1]] = dict()
-                        query[field[:-1]]['$ne'] = value
-                else:
-                    if value.startswith('~'):
-                        query[field] = dict()
-                        query[field]['$regex'] = re.compile(value[1:], re.IGNORECASE)
-                    else:
-                        query[field] = value
-            else:
-                if field.endswith('!'):
-                    if '~' in [v[0] for v in value]:
-                        value = '|'.join([v.lstrip('~') for v in value])
-                        query[field[:-1]] = dict()
-                        query[field[:-1]]['$not'] = re.compile(value, re.IGNORECASE)
-                    else:
-                        query[field[:-1]] = dict()
-                        query[field[:-1]]['$nin'] = value
-                else:
-                    if '~' in [v[0] for v in value]:
-                        value = '|'.join([v.lstrip('~') for v in value])
-                        query[field] = dict()
-                        query[field]['$regex'] = re.compile(value, re.IGNORECASE)
-                    else:
-                        query[field] = dict()
-                        query[field]['$in'] = value
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Alerts.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Alerts.VALID_PARAMS)
+        group = params.getlist('group-by')
 
         if customer_query:
             query = {'$and': [customer_query, query]}
 
         return Query(where=query, sort=sort, group=group)
 
+
+class Blackouts(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'priority': ('priority', 'priority', 1),
+        'environment': ('environment', 'environment', 1),
+        'service': ('service', 'service', 1),
+        'resource': ('resource', 'resource', 1),
+        'event': ('event', 'event', 1),
+        'group': ('"group"', '"group"', 1),
+        'tags': ('tags', 'tags', 1),
+        'customer': ('customer', 'customer', 1),
+        'startTime': ('start_time', 'start_time', -1),
+        'endTime': ('end_time', 'end_time', -1),
+        'duration': ('duration', 'duration', 1),
+        'status': ('status', 'status', 1),
+        'remaining': ('remaining', 'remaining', -1),
+        'user': ('user', 'user', 1),
+        'createTime': ('create_time', 'create_time', -1),
+        'text': ('text', 'text', 1),
+    }
+
     @staticmethod
-    def from_dict(d, query_time=None):
-        return QueryBuilderImpl.from_params(MultiDict(d), query_time)
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # customer
+        if customers:
+            customer_query = {'customer': {'$in': customers}}
+        else:
+            customer_query = None  # type: ignore
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Blackouts.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Blackouts.VALID_PARAMS)
+
+        if customer_query:
+            query = {'$and': [customer_query, query]}
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class Heartbeats(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'origin': ('origin', 'origin', 1),
+        'tags': ('tags', 'tags', 1),
+        # 'attributes': ('attributes', 'attributes', 1),
+        'type': ('event_type', 'event_type', 1),
+        'createTime': ('create_time', 'create_time', -1),
+        'timeout': ('timeout', 'timeout', 1),
+        'maxLatency': ('max_latency', 'max_latency', 1),
+        'receiveTime': ('receive_time', 'receive_time', -1),
+        'customer': ('customer', 'customer', 1),
+        'latency': ('latency', 'latency', 1),
+        'since': ('since', 'since', -1),
+        'status': ('status', 'status', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # customer
+        if customers:
+            customer_query = {'customer': {'$in': customers}}
+        else:
+            customer_query = None  # type: ignore
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Heartbeats.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Heartbeats.VALID_PARAMS)
+
+        if customer_query:
+            query = {'$and': [customer_query, query]}
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class ApiKeys(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'key': ('key', 'key', 1),
+        'status': ('status', 'status', 1),
+        'user': ('user', 'user', 1),
+        'scopes': ('scopes', 'scopes', 1),
+        'type': ('type', 'type', 1),
+        'text': ('text', 'text', 1),
+        'expireTime': ('expire_time', 'expire_time', -1),
+        'count': ('count', 'count', 1),
+        'lastUsedTime': ('last_used_time', 'last_used_time', -1),
+        'customer': ('customer', 'customer', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # customer
+        if customers:
+            customer_query = {'customer': {'$in': customers}}
+        else:
+            customer_query = None  # type: ignore
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, ApiKeys.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, ApiKeys.VALID_PARAMS)
+
+        if customer_query:
+            query = {'$and': [customer_query, query]}
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class Users(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'name': ('name', 'name', 1),
+        'login': ('login', 'login', 1),
+        'email': ('email', 'email', 1),
+        'domain': ('domain', 'domain', 1),
+        'status': ('status', 'status', 1),
+        'roles': ('roles', 'roles', 1),
+        # 'attributes': ('attributes', '', 1),
+        'createTime': ('create_time', 'create_time', -1),
+        'lastLogin': ('last_login', 'last_login', -1),
+        'text': ('text', 'text', 1),
+        'updateTime': ('update_time', 'update_time', -1),
+        'email_verified': ('email_verified', 'email_verified', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Users.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Users.VALID_PARAMS)
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class Groups(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'name': ('name', 'name', 1),
+        'text': ('text', 'text', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Groups.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Groups.VALID_PARAMS)
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class Permissions(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'match': ('match', 'match', 1),
+        'scopes': ('scopes', 'scopes', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Permissions.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Permissions.VALID_PARAMS)
+
+        return Query(where=query, sort=sort, group=None)
+
+
+class Customers(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'match': ('match', 'match', 1),
+        'customer': ('customer', 'customer', 1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        # defaults
+        query = dict()
+
+        # filter, sort-by, group-by
+        query = QueryBuilder.filter_query(params, Customers.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, Customers.VALID_PARAMS)
+
+        return Query(where=query, sort=sort, group=None)

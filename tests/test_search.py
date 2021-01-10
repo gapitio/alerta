@@ -15,32 +15,41 @@ class SearchTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app()
 
-    def test_equal_to(self):
+    def test_query(self):
 
-        search_params = MultiDict([('status', 'open'), ('environment', 'Production')])
+        self.maxDiff = None
+
+        search_params = MultiDict([
+            ('status', 'open'),
+            ('status', 'ack'),
+            ('environment', '~DEV'),
+            ('group!', 'Network'),
+            ('sort-by', '-severity'),
+        ])
 
         with self.app.test_request_context():
-            query = qb.from_params(search_params)  # noqa # FIXME
+            query = qb.alerts.from_params(search_params)  # noqa
 
-        # self.assertEqual(query.where, 'foo')
-        # self.assertEqual(query.sort, 'foo')
-        # self.assertEqual(query.group, 'foo')
+        if self.app.config['DATABASE_URL'].startswith('postgres'):
+            self.assertEqual(query.where, '1=1\nAND "status"=ANY(%(status)s)\nAND "environment" ILIKE %(environment)s\nAND "group"!=%(not_group)s')
+            self.assertEqual(query.vars, {'status': ['open', 'ack'], 'environment': '%DEV%', 'not_group': 'Network'})
+            self.assertEqual(query.sort, 's.code DESC')
+        else:
+            import re
+            self.assertEqual(query.where, {'status': {'$in': ['open', 'ack']}, 'environment': {'$regex': re.compile('DEV', re.IGNORECASE)}, 'group': {'$ne': 'Network'}}, query.where)
+            self.assertEqual(query.sort, [('code', -1)], query.sort)
 
     def test_attributes(self):
 
         search_params = MultiDict([('attributes.country_code', 'US')])
         with self.app.test_request_context():
-            query = qb.from_params(search_params)
+            query = qb.alerts.from_params(search_params)
 
         if self.app.config['DATABASE_URL'].startswith('postgres'):
             self.assertIn('AND attributes @> %(attr_country_code)s', query.where)
             self.assertEqual(query.vars, {'attr_country_code': {'country_code': 'US'}})
         else:
             self.assertEqual(query.where, {'attributes.country_code': 'US'})
-
-    # def test_from_dict(self):
-    #
-    #     self.qb.from_dict()
 
 
 class QueryParserTestCase(unittest.TestCase):
