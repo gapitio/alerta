@@ -46,22 +46,39 @@ class HistoryAdapter:
             quoted(self.history.change_type),
             quoted(self.history.update_time),
             quoted(self.history.user),
-            quoted(self.history.timeout)
+            quoted(self.history.timeout),
         )
 
     def __str__(self):
         return str(self.getquoted())
 
 
-Record = namedtuple('Record', [
-    'id', 'resource', 'event', 'environment', 'severity', 'status', 'service',
-    'group', 'value', 'text', 'tags', 'attributes', 'origin', 'update_time',
-    'user', 'timeout', 'type', 'customer'
-])
+Record = namedtuple(
+    'Record',
+    [
+        'id',
+        'resource',
+        'event',
+        'environment',
+        'severity',
+        'status',
+        'service',
+        'group',
+        'value',
+        'text',
+        'tags',
+        'attributes',
+        'origin',
+        'update_time',
+        'user',
+        'timeout',
+        'type',
+        'customer',
+    ],
+)
 
 
 class Backend(Database):
-
     def create_engine(self, app, uri, dbname=None):
         self.uri = uri
         self.dbname = dbname
@@ -75,23 +92,16 @@ class Backend(Database):
 
         register_adapter(dict, Json)
         register_adapter(datetime, self._adapt_datetime)
-        register_composite(
-            'history',
-            conn,
-            globally=True
-        )
+        register_composite('history', conn, globally=True)
         from alerta.models.alert import History
+
         register_adapter(History, HistoryAdapter)
 
     def connect(self):
         retry = 0
         while True:
             try:
-                conn = psycopg2.connect(
-                    dsn=self.uri,
-                    dbname=self.dbname,
-                    cursor_factory=NamedTupleCursor
-                )
+                conn = psycopg2.connect(dsn=self.uri, dbname=self.dbname, cursor_factory=NamedTupleCursor)
                 conn.set_client_encoding('UTF8')
                 break
             except Exception as e:
@@ -152,7 +162,9 @@ class Backend(Database):
                AND ((event=%(event)s AND severity!=%(severity)s)
                 OR (event!=%(event)s AND %(event)s=ANY(correlate)))
                AND {customer}
-            """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
+            """.format(
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+        )
         return self._fetchone(select, vars(alert)).severity
 
     def get_status(self, alert):
@@ -161,7 +173,9 @@ class Backend(Database):
              WHERE environment=%(environment)s AND resource=%(resource)s
               AND (event=%(event)s OR %(event)s=ANY(correlate))
               AND {customer}
-            """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
+            """.format(
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+        )
         return self._fetchone(select, vars(alert)).status
 
     def is_duplicate(self, alert):
@@ -172,7 +186,9 @@ class Backend(Database):
                AND event=%(event)s
                AND severity=%(severity)s
                AND {customer}
-            """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
+            """.format(
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+        )
         return self._fetchone(select, vars(alert))
 
     def is_correlated(self, alert):
@@ -182,7 +198,9 @@ class Backend(Database):
                AND ((event=%(event)s AND severity!=%(severity)s)
                 OR (event!=%(event)s AND %(event)s=ANY(correlate)))
                AND {customer}
-        """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
+        """.format(
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+        )
         return self._fetchone(select, vars(alert))
 
     def is_flapping(self, alert, window=1800, count=2):
@@ -198,7 +216,9 @@ class Backend(Database):
                AND h.update_time > (NOW() at time zone 'utc' - INTERVAL '{window} seconds')
                AND h.type='severity'
                AND {customer}
-        """.format(window=window, customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
+        """.format(
+            window=window, customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+        )
         return self._fetchone(select, vars(alert)).count > count
 
     def dedup_alert(self, alert, history):
@@ -223,7 +243,7 @@ class Backend(Database):
         """.format(
             limit=current_app.config['HISTORY_LIMIT'],
             update_time='update_time=%(update_time)s' if alert.update_time else 'update_time=update_time',
-            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL',
         )
         return self._updateone(update, vars(alert), returning=True)
 
@@ -245,7 +265,7 @@ class Backend(Database):
         """.format(
             limit=current_app.config['HISTORY_LIMIT'],
             update_time='update_time=%(update_time)s' if alert.update_time else 'update_time=update_time',
-            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL'
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL',
         )
         return self._updateone(update, vars(alert), returning=True)
 
@@ -272,18 +292,34 @@ class Backend(Database):
                    update_time=%(update_time)s, history=(%(change)s || history)[1:{limit}]
              WHERE id=%(id)s OR id LIKE %(like_id)s
          RETURNING *
-        """.format(limit=current_app.config['HISTORY_LIMIT'])
-        return self._updateone(update, {'id': id, 'like_id': id + '%', 'severity': severity, 'status': status,
-                                        'tags': tags, 'attributes': attributes, 'timeout': timeout,
-                                        'previous_severity': previous_severity, 'update_time': update_time,
-                                        'change': history}, returning=True)
+        """.format(
+            limit=current_app.config['HISTORY_LIMIT']
+        )
+        return self._updateone(
+            update,
+            {
+                'id': id,
+                'like_id': id + '%',
+                'severity': severity,
+                'status': status,
+                'tags': tags,
+                'attributes': attributes,
+                'timeout': timeout,
+                'previous_severity': previous_severity,
+                'update_time': update_time,
+                'change': history,
+            },
+            returning=True,
+        )
 
     def get_alert(self, id, customers=None):
         select = """
             SELECT * FROM alerts
              WHERE (id ~* (%(id)s) OR last_receive_id ~* (%(id)s))
                AND {customer}
-        """.format(customer='customer=ANY(%(customers)s)' if customers else '1=1')
+        """.format(
+            customer='customer=ANY(%(customers)s)' if customers else '1=1'
+        )
         return self._fetchone(select, {'id': '^' + id, 'customers': customers})
 
     # STATUS, TAGS, ATTRIBUTES
@@ -294,8 +330,14 @@ class Backend(Database):
             SET status=%(status)s, timeout=%(timeout)s, update_time=%(update_time)s, history=(%(change)s || history)[1:{limit}]
             WHERE id=%(id)s OR id LIKE %(like_id)s
             RETURNING *
-        """.format(limit=current_app.config['HISTORY_LIMIT'])
-        return self._updateone(update, {'id': id, 'like_id': id + '%', 'status': status, 'timeout': timeout, 'update_time': update_time, 'change': history}, returning=True)
+        """.format(
+            limit=current_app.config['HISTORY_LIMIT']
+        )
+        return self._updateone(
+            update,
+            {'id': id, 'like_id': id + '%', 'status': status, 'timeout': timeout, 'update_time': update_time, 'change': history},
+            returning=True,
+        )
 
     def tag_alert(self, id, tags):
         update = """
@@ -353,7 +395,9 @@ class Backend(Database):
             SET tags=ARRAY(SELECT DISTINCT UNNEST(tags || %(_tags)s))
             WHERE {where}
             RETURNING id
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return [row[0] for row in self._updateall(update, {**query.vars, **{'_tags': tags}}, returning=True)]
 
     def untag_alerts(self, query=None, tags=None):
@@ -363,7 +407,9 @@ class Backend(Database):
             SET tags=(select array_agg(t) FROM unnest(tags) AS t WHERE NOT t=ANY(%(_tags)s) )
             WHERE {where}
             RETURNING id
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return [row[0] for row in self._updateall(update, {**query.vars, **{'_tags': tags}}, returning=True)]
 
     def update_attributes_by_query(self, query=None, attributes=None):
@@ -372,7 +418,9 @@ class Backend(Database):
             SET attributes=attributes || %(_attributes)s
             WHERE {where}
             RETURNING id
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return [row[0] for row in self._updateall(update, {**query.vars, **{'_attributes': attributes}}, returning=True)]
 
     def delete_alerts(self, query=None):
@@ -381,7 +429,9 @@ class Backend(Database):
             DELETE FROM alerts
             WHERE {where}
             RETURNING id
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return [row[0] for row in self._deleteall(delete, query.vars, returning=True)]
 
     # SEARCH & HISTORY
@@ -392,7 +442,9 @@ class Backend(Database):
                SET history=(%(history)s || history)[1:{limit}]
              WHERE id=%(id)s OR id LIKE %(like_id)s
          RETURNING *
-        """.format(limit=current_app.config['HISTORY_LIMIT'])
+        """.format(
+            limit=current_app.config['HISTORY_LIMIT']
+        )
         return self._updateone(update, {'id': id, 'like_id': id + '%', 'history': history}, returning=True)
 
     def get_alerts(self, query=None, raw_data=False, history=False, page=None, page_size=None):
@@ -406,8 +458,7 @@ class Backend(Database):
                 + 'previous_severity, trend_indication, receive_time, last_receive_id, last_receive_time, update_time,'
                 + '{history}'
             ).format(
-                raw_data='raw_data' if raw_data else 'NULL as raw_data',
-                history='history' if history else 'array[]::history[] as history'
+                raw_data='raw_data' if raw_data else 'NULL as raw_data', history='history' if history else 'array[]::history[] as history'
             )
 
         join = ''
@@ -424,7 +475,9 @@ class Backend(Database):
               FROM alerts {join}
              WHERE {where}
           ORDER BY {order}
-        """.format(select=select, join=join, where=query.where, order=query.sort or 'last_receive_time')
+        """.format(
+            select=select, join=join, where=query.where, order=query.sort or 'last_receive_time'
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_alert_history(self, alert, page=None, page_size=None):
@@ -436,8 +489,7 @@ class Backend(Database):
                AND {customer}
           ORDER BY update_time DESC
             """.format(
-            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL',
-            limit=current_app.config['HISTORY_LIMIT']
+            customer='customer=%(customer)s' if alert.customer else 'customer IS NULL', limit=current_app.config['HISTORY_LIMIT']
         )
         return [
             Record(
@@ -458,8 +510,9 @@ class Backend(Database):
                 user=getattr(h, 'user', None),
                 timeout=getattr(h, 'timeout', None),
                 type=h.type,
-                customer=h.customer
-            ) for h in self._fetchall(select, vars(alert), limit=page_size, offset=(page - 1) * page_size)
+                customer=h.customer,
+            )
+            for h in self._fetchall(select, vars(alert), limit=page_size, offset=(page - 1) * page_size)
         ]
 
     def get_history(self, query=None, page=None, page_size=None):
@@ -469,7 +522,9 @@ class Backend(Database):
                 SELECT a.id
                   FROM alerts a, unnest(history[1:{limit}]) h
                  WHERE h.id LIKE %(id)s
-            """.format(limit=current_app.config['HISTORY_LIMIT'])
+            """.format(
+                limit=current_app.config['HISTORY_LIMIT']
+            )
             query.vars['id'] = self._fetchone(select, query.vars)
 
         select = """
@@ -477,7 +532,9 @@ class Backend(Database):
               FROM alerts, unnest(history[1:{limit}]) h
              WHERE {where}
           ORDER BY update_time DESC
-        """.format(where=query.where, limit=current_app.config['HISTORY_LIMIT'])
+        """.format(
+            where=query.where, limit=current_app.config['HISTORY_LIMIT']
+        )
 
         return [
             Record(
@@ -498,8 +555,9 @@ class Backend(Database):
                 user=getattr(h, 'user', None),
                 timeout=getattr(h, 'timeout', None),
                 type=h.type,
-                customer=h.customer
-            ) for h in self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+                customer=h.customer,
+            )
+            for h in self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
         ]
 
     # COUNTS
@@ -509,7 +567,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM alerts
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def get_counts(self, query=None, group=None):
@@ -520,7 +580,9 @@ class Backend(Database):
             SELECT {group}, COUNT(*) FROM alerts
              WHERE {where}
             GROUP BY {group}
-        """.format(where=query.where, group=group)
+        """.format(
+            where=query.where, group=group
+        )
         return {s['group']: s.count for s in self._fetchall(select, query.vars)}
 
     def get_counts_by_severity(self, query=None):
@@ -529,7 +591,9 @@ class Backend(Database):
             SELECT severity, COUNT(*) FROM alerts
              WHERE {where}
             GROUP BY severity
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return {s.severity: s.count for s in self._fetchall(select, query.vars)}
 
     def get_counts_by_status(self, query=None):
@@ -538,7 +602,9 @@ class Backend(Database):
             SELECT status, COUNT(*) FROM alerts
             WHERE {where}
             GROUP BY status
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return {s.status: s.count for s in self._fetchall(select, query.vars)}
 
     def get_topn_count(self, query=None, group='event', topn=100):
@@ -551,7 +617,9 @@ class Backend(Database):
              WHERE {where}
           GROUP BY {group}
           ORDER BY count DESC
-        """.format(where=query.where, group=group)
+        """.format(
+            where=query.where, group=group
+        )
         return [
             {
                 'count': t.count,
@@ -559,8 +627,9 @@ class Backend(Database):
                 'environments': t.environments,
                 'services': t.services,
                 '%s' % group: t.event,
-                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources]
-            } for t in self._fetchall(select, query.vars, limit=topn)
+                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources],
+            }
+            for t in self._fetchall(select, query.vars, limit=topn)
         ]
 
     def get_topn_flapping(self, query=None, group='event', topn=100):
@@ -574,7 +643,9 @@ class Backend(Database):
              WHERE hist.type='severity'
           GROUP BY topn.{group}
           ORDER BY count DESC
-        """.format(where=query.where, group=group)
+        """.format(
+            where=query.where, group=group
+        )
         return [
             {
                 'count': t.count,
@@ -582,8 +653,9 @@ class Backend(Database):
                 'environments': t.environments,
                 'services': t.services,
                 'event': t.event,
-                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources]
-            } for t in self._fetchall(select, query.vars, limit=topn)
+                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources],
+            }
+            for t in self._fetchall(select, query.vars, limit=topn)
         ]
 
     def get_topn_standing(self, query=None, group='event', topn=100):
@@ -598,7 +670,9 @@ class Backend(Database):
              WHERE hist.type='severity'
           GROUP BY topn.{group}
           ORDER BY life_time DESC
-        """.format(where=query.where, group=group)
+        """.format(
+            where=query.where, group=group
+        )
         return [
             {
                 'count': t.count,
@@ -606,8 +680,9 @@ class Backend(Database):
                 'environments': t.environments,
                 'services': t.services,
                 'event': t.event,
-                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources]
-            } for t in self._fetchall(select, query.vars, limit=topn)
+                'resources': [{'id': r[0], 'resource': r[1], 'href': absolute_url('/alert/%s' % r[0])} for r in t.resources],
+            }
+            for t in self._fetchall(select, query.vars, limit=topn)
         ]
 
     # ENVIRONMENTS
@@ -618,7 +693,9 @@ class Backend(Database):
             SELECT environment, severity, status, count(1) FROM alerts
             WHERE {where}
             GROUP BY environment, CUBE(severity, status)
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         result = self._fetchall(select, query.vars, limit=topn)
 
         severity_count = defaultdict(list)
@@ -640,8 +717,10 @@ class Backend(Database):
                 'environment': e.environment,
                 'severityCounts': dict(severity_count[e.environment]),
                 'statusCounts': dict(status_count[e.environment]),
-                'count': total_count[e.environment]
-            } for e in environments]
+                'count': total_count[e.environment],
+            }
+            for e in environments
+        ]
 
     # SERVICES
 
@@ -651,7 +730,9 @@ class Backend(Database):
             SELECT environment, svc, severity, status, count(1) FROM alerts, UNNEST(service) svc
             WHERE {where}
             GROUP BY environment, svc, CUBE(severity, status)
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         result = self._fetchall(select, query.vars, limit=topn)
 
         severity_count = defaultdict(list)
@@ -674,8 +755,10 @@ class Backend(Database):
                 'service': s.svc,
                 'severityCounts': dict(severity_count[(s.environment, s.svc)]),
                 'statusCounts': dict(status_count[(s.environment, s.svc)]),
-                'count': total_count[(s.environment, s.svc)]
-            } for s in services]
+                'count': total_count[(s.environment, s.svc)],
+            }
+            for s in services
+        ]
 
     # ALERT GROUPS
 
@@ -685,13 +768,10 @@ class Backend(Database):
             SELECT environment, "group", count(1) FROM alerts
             WHERE {where}
             GROUP BY environment, "group"
-        """.format(where=query.where)
-        return [
-            {
-                'environment': g.environment,
-                'group': g.group,
-                'count': g.count
-            } for g in self._fetchall(select, query.vars, limit=topn)]
+        """.format(
+            where=query.where
+        )
+        return [{'environment': g.environment, 'group': g.group, 'count': g.count} for g in self._fetchall(select, query.vars, limit=topn)]
 
     # ALERT TAGS
 
@@ -701,7 +781,9 @@ class Backend(Database):
             SELECT environment, tag, count(1) FROM alerts, UNNEST(tags) tag
             WHERE {where}
             GROUP BY environment, tag
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return [{'environment': t.environment, 'tag': t.tag, 'count': t.count} for t in self._fetchall(select, query.vars, limit=topn)]
 
     # BLACKOUTS
@@ -724,7 +806,9 @@ class Backend(Database):
             FROM blackouts
             WHERE id=%(id)s
               AND {customer}
-        """.format(customer='customer=ANY(%(customers)s)' if customers else '1=1')
+        """.format(
+            customer='customer=ANY(%(customers)s)' if customers else '1=1'
+        )
         return self._fetchone(select, {'id': id, 'customers': customers})
 
     def get_blackouts(self, query=None, page=None, page_size=None):
@@ -734,7 +818,9 @@ class Backend(Database):
               FROM blackouts
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_blackouts_count(self, query=None):
@@ -742,7 +828,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM blackouts
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def is_blackout_period(self, alert):
@@ -887,7 +975,9 @@ class Backend(Database):
             SELECT * FROM twilio_rules
             WHERE id=%(id)s
               AND {customer}
-        """.format(customer='customer=ANY(%(customers)s)' if customers else '1=1')
+        """.format(
+            customer='customer=ANY(%(customers)s)' if customers else '1=1'
+        )
         return self._fetchone(select, {'id': id, 'customers': customers})
 
     def get_twilio_rules(self, query=None, page=None, page_size=None):
@@ -896,7 +986,9 @@ class Backend(Database):
             SELECT * FROM twilio_rules
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_twilio_rules_count(self, query=None):
@@ -904,7 +996,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM twilio_rules
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def get_twilio_rules_active(self, alert):
@@ -977,6 +1071,188 @@ class Backend(Database):
         """
         return self._deleteone(delete, (id,), returning=True)
 
+    # NOTIFICATION CHANNELS
+
+    def create_notification_channel(self, notification_channel):
+        insert = """
+            INSERT INTO notification_channels (id, type, api_token, api_sid, sender, customer)
+            VALUES (%(id)s, %(type)s, %(api_token)s, %(api_sid)s, %(sender)s, %(customer)s)
+            RETURNING *
+        """
+        return self._insert(insert, vars(notification_channel))
+
+    def get_notification_channel(self, id, customers=None):
+        select = """
+            SELECT * FROM notification_channels
+            WHERE id=%(id)s
+              AND {customer}
+        """.format(
+            customer='customer=ANY(%(customers)s)' if customers else '1=1'
+        )
+        return self._fetchone(select, {'id': id, 'customers': customers})
+
+    def get_notification_channels(self, query=None, page=None, page_size=None):
+        query = query or Query()
+        select = """
+            SELECT * FROM notification_channels
+             WHERE {where}
+          ORDER BY {order}
+        """.format(
+            where=query.where, order=query.sort
+        )
+        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_notification_channels_count(self, query=None):
+        query = query or Query()
+        select = """
+            SELECT COUNT(1) FROM notification_channels
+             WHERE {where}
+        """.format(
+            where=query.where
+        )
+        return self._fetchone(select, query.vars).count
+
+    def update_notification_channel(self, id, **kwargs):
+        update = """
+            UPDATE notification_channels
+            SET
+        """
+        if kwargs.get('type') is not None:
+            update += 'type=%(type)s, '
+        if 'apiToken' in kwargs:
+            update += 'api_token=%(group)s, '
+        if 'apiSid' in kwargs:
+            update += 'api_sid=%(tags)s, '
+        if 'customer' in kwargs:
+            update += 'customer=%(customer)s, '
+        update += """
+            "user"=COALESCE(%(user)s, "user")
+            WHERE id=%(id)s
+            RETURNING *
+        """
+        kwargs['id'] = id
+        kwargs['user'] = kwargs.get('user')
+        return self._updateone(update, kwargs, returning=True)
+
+    def delete_notification_channel(self, id):
+        delete = """
+            DELETE FROM notification_channels
+            WHERE id=%s
+            RETURNING id
+        """
+        return self._deleteone(delete, (id,), returning=True)
+
+    # NOTIFICATION RULES
+
+    def create_notification_rule(self, notification_rule):
+        insert = """
+            INSERT INTO notification_rules (id, priority, environment, service, resource, event, "group", tags,
+                customer, "user", create_time, start_time, end_time, days, receivers, severity, text, channel_id)
+            VALUES (%(id)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s,
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(severity)s, %(text)s, %(channel_id)s)
+            RETURNING *
+        """
+        return self._insert(insert, vars(notification_rule))
+
+    def get_notification_rule(self, id, customers=None):
+        select = """
+            SELECT * FROM notification_rules
+            WHERE id=%(id)s
+              AND {customer}
+        """.format(
+            customer='customer=ANY(%(customers)s)' if customers else '1=1'
+        )
+        return self._fetchone(select, {'id': id, 'customers': customers})
+
+    def get_notification_rules(self, query=None, page=None, page_size=None):
+        query = query or Query()
+        select = """
+            SELECT * FROM notification_rules
+             WHERE {where}
+          ORDER BY {order}
+        """.format(
+            where=query.where, order=query.sort
+        )
+        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_notification_rules_count(self, query=None):
+        query = query or Query()
+        select = """
+            SELECT COUNT(1) FROM notification_rules
+             WHERE {where}
+        """.format(
+            where=query.where
+        )
+        return self._fetchone(select, query.vars).count
+
+    def get_notification_rules_active(self, alert):
+        select = """
+            SELECT *
+            FROM notification_rules
+            WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
+              AND (days='{}' OR ARRAY[%(day)s] <@ days)
+              AND environment=%(environment)s
+              AND (severity='{}' OR ARRAY[%(severity)s] <@ severity)
+              AND (resource IS NULL OR resource=%(resource)s)
+              AND (service='{}' OR service <@ %(service)s)
+              AND (event IS NULL OR event=%(event)s)
+              AND ("group" IS NULL OR "group"=%(group)s)
+              AND (tags='{}' OR tags <@ %(tags)s)
+        """
+        if current_app.config['CUSTOMER_VIEWS']:
+            select += ' AND (customer IS NULL OR customer=%(customer)s)'
+        return self._fetchall(select, vars(alert))
+
+    def update_notification_rule(self, id, **kwargs):
+        update = """
+            UPDATE notification_rules
+            SET
+        """
+        if kwargs.get('environment') is not None:
+            update += 'environment=%(environment)s, '
+        if 'service' in kwargs:
+            update += 'service=%(service)s, '
+        if 'resource' in kwargs:
+            update += 'resource=%(resource)s, '
+        if 'event' in kwargs:
+            update += 'event=%(event)s, '
+        if 'group' in kwargs:
+            update += '"group"=%(group)s, '
+        if 'tags' in kwargs:
+            update += 'tags=%(tags)s, '
+        if 'customer' in kwargs:
+            update += 'customer=%(customer)s, '
+        if 'startTime' in kwargs:
+            update += 'start_time=%(startTime)s, '
+        if 'endTime' in kwargs:
+            update += 'end_time=%(endTime)s, '
+        if 'days' in kwargs:
+            update += 'days=%(days)s, '
+        if 'receivers' in kwargs:
+            update += 'receivers=%(receivers)s, '
+        if kwargs.get('severity') is not None:
+            update += 'severity=%(severity)s, '
+        if 'text' in kwargs:
+            update += 'text=%(text)s, '
+        if 'channelId' in kwargs:
+            update += 'channel_id=%(channelId)s,'
+        update += """
+            "user"=COALESCE(%(user)s, "user")
+            WHERE id=%(id)s
+            RETURNING *
+        """
+        kwargs['id'] = id
+        kwargs['user'] = kwargs.get('user')
+        return self._updateone(update, kwargs, returning=True)
+
+    def delete_notification_rule(self, id):
+        delete = """
+            DELETE FROM notification_rules
+            WHERE id=%s
+            RETURNING id
+        """
+        return self._deleteone(delete, (id,), returning=True)
+
     # HEARTBEATS
 
     def upsert_heartbeat(self, heartbeat):
@@ -999,7 +1275,9 @@ class Backend(Database):
               FROM heartbeats
              WHERE (id=%(id)s OR id LIKE %(like_id)s)
                AND {customer}
-        """.format(customer='customer=%(customers)s' if customers else '1=1')
+        """.format(
+            customer='customer=%(customers)s' if customers else '1=1'
+        )
         return self._fetchone(select, {'id': id, 'like_id': id + '%', 'customers': customers})
 
     def get_heartbeats(self, query=None, page=None, page_size=None):
@@ -1011,7 +1289,9 @@ class Backend(Database):
               FROM heartbeats
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_heartbeats_by_status(self, status=None, query=None, page=None, page_size=None):
@@ -1054,7 +1334,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM heartbeats
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def delete_heartbeat(self, id):
@@ -1080,7 +1362,9 @@ class Backend(Database):
             SELECT * FROM keys
              WHERE (id=%(key)s OR key=%(key)s)
                AND {user}
-        """.format(user='"user"=%(user)s' if user else '1=1')
+        """.format(
+            user='"user"=%(user)s' if user else '1=1'
+        )
         return self._fetchone(select, {'key': key, 'user': user})
 
     def get_keys(self, query=None, page=None, page_size=None):
@@ -1089,7 +1373,9 @@ class Backend(Database):
             SELECT * FROM keys
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_keys_by_user(self, user):
@@ -1104,7 +1390,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM keys
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def update_key(self, key, **kwargs):
@@ -1168,7 +1456,9 @@ class Backend(Database):
             SELECT * FROM users
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_users_count(self, query=None):
@@ -1176,7 +1466,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM users
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def get_user_by_username(self, username):
@@ -1232,6 +1524,7 @@ class Backend(Database):
 
     def update_user_attributes(self, id, old_attrs, new_attrs):
         from alerta.utils.collections import merge
+
         merge(old_attrs, new_attrs)
         attrs = {k: v for k, v in old_attrs.items() if v is not None}
         update = """
@@ -1278,7 +1571,9 @@ class Backend(Database):
             SELECT *, COALESCE(CARDINALITY(users), 0) AS count FROM groups
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_groups_count(self, query=None):
@@ -1286,7 +1581,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM groups
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def get_group_users(self, id):
@@ -1369,7 +1666,9 @@ class Backend(Database):
             SELECT * FROM perms
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_perms_count(self, query=None):
@@ -1377,7 +1676,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM perms
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def update_perm(self, id, **kwargs):
@@ -1443,7 +1744,9 @@ class Backend(Database):
             SELECT * FROM customers
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort)
+        """.format(
+            where=query.where, order=query.sort
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_customers_count(self, query=None):
@@ -1451,7 +1754,9 @@ class Backend(Database):
         select = """
             SELECT COUNT(1) FROM customers
              WHERE {where}
-        """.format(where=query.where)
+        """.format(
+            where=query.where
+        )
         return self._fetchone(select, query.vars).count
 
     def update_customer(self, id, **kwargs):
@@ -1522,7 +1827,9 @@ class Backend(Database):
             SELECT * FROM notes
              WHERE {where}
           ORDER BY {order}
-        """.format(where=query.where, order=query.sort or 'create_time')
+        """.format(
+            where=query.where, order=query.sort or 'create_time'
+        )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_alert_notes(self, id, page=None, page_size=None):
@@ -1632,7 +1939,9 @@ class Backend(Database):
               FROM alerts
              WHERE status NOT IN ('expired') AND COALESCE(timeout, {timeout})!=0
                AND (last_receive_time + INTERVAL '1 second' * timeout) < NOW() at time zone 'utc'
-        """.format(timeout=current_app.config['ALERT_TIMEOUT'])
+        """.format(
+            timeout=current_app.config['ALERT_TIMEOUT']
+        )
 
         return self._fetchall(select, {})
 
@@ -1647,7 +1956,9 @@ class Backend(Database):
                AND COALESCE(h.timeout, {timeout})!=0
                AND (a.update_time + INTERVAL '1 second' * h.timeout) < NOW() at time zone 'utc'
           ORDER BY a.id, a.update_time DESC
-        """.format(timeout=current_app.config['SHELVE_TIMEOUT'])
+        """.format(
+            timeout=current_app.config['SHELVE_TIMEOUT']
+        )
         return self._fetchall(select, {})
 
     def get_unack(self):
@@ -1661,7 +1972,9 @@ class Backend(Database):
                AND COALESCE(h.timeout, {timeout})!=0
                AND (a.update_time + INTERVAL '1 second' * h.timeout) < NOW() at time zone 'utc'
           ORDER BY a.id, a.update_time DESC
-        """.format(timeout=current_app.config['ACK_TIMEOUT'])
+        """.format(
+            timeout=current_app.config['ACK_TIMEOUT']
+        )
         return self._fetchall(select, {})
 
     # SQL HELPERS
@@ -1691,7 +2004,7 @@ class Backend(Database):
         """
         if limit is None:
             limit = current_app.config['DEFAULT_PAGE_SIZE']
-        query += ' LIMIT %s OFFSET %s''' % (limit, offset)
+        query += ' LIMIT %s OFFSET %s' '' % (limit, offset)
         cursor = self.get_db().cursor()
         self._log(cursor, query, vars)
         cursor.execute(query, vars)
@@ -1744,5 +2057,4 @@ class Backend(Database):
         return cursor.fetchall() if returning else None
 
     def _log(self, cursor, query, vars):
-        current_app.logger.debug('{stars}\n{query}\n{stars}'.format(
-            stars='*' * 40, query=cursor.mogrify(query, vars).decode('utf-8')))
+        current_app.logger.debug('{stars}\n{query}\n{stars}'.format(stars='*' * 40, query=cursor.mogrify(query, vars).decode('utf-8')))
