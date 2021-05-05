@@ -9,6 +9,7 @@ from alerta.app import alarm_model
 from alerta.database.base import Database
 from alerta.exceptions import NoCustomerMatch
 from alerta.models.enums import ADMIN_SCOPES
+from alerta.models.heartbeat import HeartbeatStatus
 
 from .utils import Query
 
@@ -934,6 +935,8 @@ class Backend(Database):
             data['group'] = blackout.group
         if blackout.tags:
             data['tags'] = blackout.tags
+        if blackout.origin:
+            data['origin'] = blackout.origin
         if blackout.customer:
             data['customer'] = blackout.customer
 
@@ -963,230 +966,70 @@ class Backend(Database):
 
         query['environment'] = alert.environment
         query['$and'] = [{'$or': [
-            {
-                'resource': None,
-                'service': None,
-                'event': None,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': None,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': None,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': None,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': alert.event,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': alert.event,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': alert.event,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': None,
-                'event': alert.event,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': None,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': None,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': None,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': None,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': None,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': alert.event,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': alert.event,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': alert.event,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': None,
-                'event': alert.event,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': None,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': None,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': None,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': alert.group,
-                'tags': None
-            },
-            {
-                'resource': alert.resource,
-                'service': {'$not': {'$elemMatch': {'$nin': alert.service}}},
-                'event': alert.event,
-                'group': alert.group,
-                'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}
-            }
+            {'resource': None, 'service': None, 'event': None, 'group': None, 'tags': None, 'origin': None},
+            {'resource': None, 'service': None, 'event': None, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': None, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': None, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': None, 'service': None, 'event': None, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': None, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': None, 'tags': None, 'origin': None},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': None, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': None, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': None, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': None, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': None, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': None, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': None, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': None, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': None, 'origin': alert.origin},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': None},
+            {'resource': alert.resource, 'service': {'$not': {'$elemMatch': {'$nin': alert.service}}}, 'event': alert.event, 'group': alert.group, 'tags': {'$not': {'$elemMatch': {'$nin': alert.tags}}}, 'origin': alert.origin},
         ]}]
 
         if current_app.config['CUSTOMER_VIEWS']:
@@ -1345,6 +1188,35 @@ class Backend(Database):
     def get_heartbeats(self, query=None, page=None, page_size=None):
         query = query or Query()
         return self.get_db().heartbeats.find(query.where, sort=query.sort).skip((page - 1) * page_size).limit(page_size)
+
+    def get_heartbeats_by_status(self, status=None, query=None, page=None, page_size=None):
+        status = status or list()
+        query = query or Query()
+
+        max_latency = current_app.config['HEARTBEAT_MAX_LATENCY']
+
+        pipeline = [{'$match': query.where}]
+        if status:
+            pipeline.extend([
+                {'$addFields': {'timeoutInMs': {'$multiply': ['$timeout', 1000]}}},
+                {'$addFields': {'isExpired': {'$gt': [{'$subtract': [datetime.utcnow(), '$receiveTime']}, '$timeoutInMs']}}},
+                {'$addFields': {'isSlow': {'$gt': [{'$subtract': ['$receiveTime', '$createTime']}, max_latency]}}}
+            ])
+            match_or = list()
+            if HeartbeatStatus.OK in status:
+                match_or.append({'isExpired': False, 'isSlow': False})
+            if HeartbeatStatus.Expired in status:
+                match_or.append({'isExpired': True})
+            if HeartbeatStatus.Slow in status:
+                match_or.append({'isExpired': False, 'isSlow': True})
+            pipeline.append({'$match': {'$or': match_or}})
+
+        pipeline.extend([
+            {'$sort': {k: v for k, v in query.sort}},
+            {'$skip': (page - 1) * page_size},
+            {'$limit': page_size}
+        ])
+        return self.get_db().heartbeats.aggregate(pipeline)
 
     def get_heartbeats_count(self, query=None):
         query = query or Query()
@@ -1810,17 +1682,17 @@ class Backend(Database):
     # HOUSEKEEPING
 
     def get_expired(self, expired_threshold, info_threshold):
-        # delete 'closed' or 'expired' alerts older than "expired_threshold" hours
-        # and 'informational' alerts older than "info_threshold" hours
+        # delete 'closed' or 'expired' alerts older than "expired_threshold" seconds
+        # and 'informational' alerts older than "info_threshold" seconds
 
         if expired_threshold:
-            expired_hours_ago = datetime.utcnow() - timedelta(hours=expired_threshold)
+            expired_seconds_ago = datetime.utcnow() - timedelta(seconds=expired_threshold)
             self.get_db().alerts.delete_many(
-                {'status': {'$in': ['closed', 'expired']}, 'lastReceiveTime': {'$lt': expired_hours_ago}})
+                {'status': {'$in': ['closed', 'expired']}, 'lastReceiveTime': {'$lt': expired_seconds_ago}})
 
         if info_threshold:
-            info_hours_ago = datetime.utcnow() - timedelta(hours=info_threshold)
-            self.get_db().alerts.delete_many({'severity': 'informational', 'lastReceiveTime': {'$lt': info_hours_ago}})
+            info_seconds_ago = datetime.utcnow() - timedelta(seconds=info_threshold)
+            self.get_db().alerts.delete_many({'severity': 'informational', 'lastReceiveTime': {'$lt': info_seconds_ago}})
 
         # get list of alerts to be newly expired
         pipeline = [

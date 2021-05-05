@@ -12,6 +12,7 @@ from alerta.app import alarm_model
 from alerta.database.base import Database
 from alerta.exceptions import NoCustomerMatch
 from alerta.models.enums import ADMIN_SCOPES
+from alerta.models.heartbeat import HeartbeatStatus
 from alerta.utils.format import DateTime
 from alerta.utils.response import absolute_url
 
@@ -707,17 +708,20 @@ class Backend(Database):
 
     def create_blackout(self, blackout):
         insert = """
-            INSERT INTO blackouts (id, priority, environment, service, resource, event, "group", tags,
-                customer, start_time, end_time, duration, "user", create_time, text)
-            VALUES (%(id)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s,
-                %(customer)s, %(start_time)s, %(end_time)s, %(duration)s, %(user)s, %(create_time)s, %(text)s)
-            RETURNING *
+            INSERT INTO blackouts (id, priority, environment, service, resource, event,
+                "group", tags, origin, customer, start_time, end_time,
+                duration, "user", create_time, text)
+            VALUES (%(id)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s,
+                %(group)s, %(tags)s, %(origin)s, %(customer)s, %(start_time)s, %(end_time)s,
+                %(duration)s, %(user)s, %(create_time)s, %(text)s)
+            RETURNING *, duration AS remaining
         """
         return self._insert(insert, vars(blackout))
 
     def get_blackout(self, id, customers=None):
         select = """
-            SELECT * FROM blackouts
+            SELECT *, GREATEST(EXTRACT(EPOCH FROM (end_time - GREATEST(start_time, NOW() at time zone 'utc'))), 0) AS remaining
+            FROM blackouts
             WHERE id=%(id)s
               AND {customer}
         """.format(customer='customer=ANY(%(customers)s)' if customers else '1=1')
@@ -726,7 +730,8 @@ class Backend(Database):
     def get_blackouts(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM blackouts
+            SELECT *, GREATEST(EXTRACT(EPOCH FROM (end_time - GREATEST(start_time, NOW() at time zone 'utc'))), 0) AS remaining
+              FROM blackouts
              WHERE {where}
           ORDER BY {order}
         """.format(where=query.where, order=query.sort)
@@ -747,39 +752,71 @@ class Backend(Database):
             WHERE start_time <= %(create_time)s AND end_time > %(create_time)s
               AND environment=%(environment)s
               AND (
-                 (resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}')
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s )
-                )
+                 ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+                 )
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
@@ -804,6 +841,8 @@ class Backend(Database):
             update += '"group"=%(group)s, '
         if 'tags' in kwargs:
             update += 'tags=%(tags)s, '
+        if 'origin' in kwargs:
+            update += 'origin=%(origin)s, '
         if 'customer' in kwargs:
             update += 'customer=%(customer)s, '
         if kwargs.get('startTime') is not None:
@@ -817,7 +856,7 @@ class Backend(Database):
         update += """
             "user"=COALESCE(%(user)s, "user")
             WHERE id=%(id)s
-            RETURNING *
+            RETURNING *, GREATEST(EXTRACT(EPOCH FROM (end_time - GREATEST(start_time, NOW() at time zone 'utc'))), 0) AS remaining
         """
         kwargs['id'] = id
         kwargs['user'] = kwargs.get('user')
@@ -946,13 +985,18 @@ class Backend(Database):
             VALUES (%(id)s, %(origin)s, %(tags)s, %(attributes)s, %(event_type)s, %(create_time)s, %(timeout)s, %(receive_time)s, %(customer)s)
             ON CONFLICT (origin, COALESCE(customer, '')) DO UPDATE
                 SET tags=%(tags)s, attributes=%(attributes)s, create_time=%(create_time)s, timeout=%(timeout)s, receive_time=%(receive_time)s
-            RETURNING *
+            RETURNING *,
+                   EXTRACT(EPOCH FROM (receive_time - create_time)) AS latency,
+                   EXTRACT(EPOCH FROM (NOW() - receive_time)) AS since
         """
         return self._upsert(upsert, vars(heartbeat))
 
     def get_heartbeat(self, id, customers=None):
         select = """
-            SELECT * FROM heartbeats
+            SELECT *,
+                   EXTRACT(EPOCH FROM (receive_time - create_time)) AS latency,
+                   EXTRACT(EPOCH FROM (NOW() - receive_time)) AS since
+              FROM heartbeats
              WHERE (id=%(id)s OR id LIKE %(like_id)s)
                AND {customer}
         """.format(customer='customer=%(customers)s' if customers else '1=1')
@@ -961,10 +1005,48 @@ class Backend(Database):
     def get_heartbeats(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM heartbeats
+            SELECT *,
+                   EXTRACT(EPOCH FROM (receive_time - create_time)) AS latency,
+                   EXTRACT(EPOCH FROM (NOW() - receive_time)) AS since
+              FROM heartbeats
              WHERE {where}
           ORDER BY {order}
         """.format(where=query.where, order=query.sort)
+        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_heartbeats_by_status(self, status=None, query=None, page=None, page_size=None):
+        status = status or list()
+        query = query or Query()
+
+        swhere = ''
+        if status:
+            q = list()
+            if HeartbeatStatus.OK in status:
+                q.append(
+                    """
+                    (EXTRACT(EPOCH FROM (NOW() at time zone 'utc' - receive_time)) <= timeout
+                    AND EXTRACT(EPOCH FROM (receive_time - create_time)) * 1000 <= {max_latency})
+                    """.format(max_latency=current_app.config['HEARTBEAT_MAX_LATENCY']))
+            if HeartbeatStatus.Expired in status:
+                q.append("(EXTRACT(EPOCH FROM (NOW() at time zone 'utc' - receive_time)) > timeout)")
+            if HeartbeatStatus.Slow in status:
+                q.append(
+                    """
+                    (EXTRACT(EPOCH FROM (NOW() at time zone 'utc' - receive_time)) <= timeout
+                    AND EXTRACT(EPOCH FROM (receive_time - create_time)) * 1000 > {max_latency})
+                    """.format(max_latency=current_app.config['HEARTBEAT_MAX_LATENCY']))
+            if q:
+                swhere = 'AND (' + ' OR '.join(q) + ')'
+
+        select = """
+            SELECT *,
+                   EXTRACT(EPOCH FROM (receive_time - create_time)) AS latency,
+                   EXTRACT(EPOCH FROM (NOW() - receive_time)) AS since
+              FROM heartbeats
+             WHERE {where}
+             {swhere}
+          ORDER BY {order}
+        """.format(where=query.where, swhere=swhere, order=query.sort)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_heartbeats_count(self, query=None):
@@ -1182,18 +1264,18 @@ class Backend(Database):
         insert = """
             INSERT INTO groups (id, name, text)
             VALUES (%(id)s, %(name)s, %(text)s)
-            RETURNING *
+            RETURNING *, 0 AS count
         """
         return self._insert(insert, vars(group))
 
     def get_group(self, id):
-        select = """SELECT * FROM groups WHERE id=%s"""
+        select = """SELECT *, COALESCE(CARDINALITY(users), 0) AS count FROM groups WHERE id=%s"""
         return self._fetchone(select, (id,))
 
     def get_groups(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM groups
+            SELECT *, COALESCE(CARDINALITY(users), 0) AS count FROM groups
              WHERE {where}
           ORDER BY {order}
         """.format(where=query.where, order=query.sort)
@@ -1228,7 +1310,7 @@ class Backend(Database):
         update += """
             update_time=NOW() at time zone 'utc'
             WHERE id=%(id)s
-            RETURNING *
+            RETURNING *, COALESCE(CARDINALITY(users), 0) AS count
         """
         kwargs['id'] = id
         return self._updateone(update, kwargs, returning=True)
@@ -1261,7 +1343,8 @@ class Backend(Database):
 
     def get_groups_by_user(self, user):
         select = """
-            SELECT * FROM groups
+            SELECT *, COALESCE(CARDINALITY(users), 0) AS count
+              FROM groups
             WHERE %s=ANY(users)
         """
         return self._fetchall(select, (user,))
@@ -1524,14 +1607,14 @@ class Backend(Database):
     # HOUSEKEEPING
 
     def get_expired(self, expired_threshold, info_threshold):
-        # delete 'closed' or 'expired' alerts older than "expired_threshold" hours
-        # and 'informational' alerts older than "info_threshold" hours
+        # delete 'closed' or 'expired' alerts older than "expired_threshold" seconds
+        # and 'informational' alerts older than "info_threshold" seconds
 
         if expired_threshold:
             delete = """
                 DELETE FROM alerts
                  WHERE (status IN ('closed', 'expired')
-                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(expired_threshold)s hours'))
+                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(expired_threshold)s seconds'))
             """
             self._deleteall(delete, {'expired_threshold': expired_threshold})
 
@@ -1539,7 +1622,7 @@ class Backend(Database):
             delete = """
                 DELETE FROM alerts
                  WHERE (severity='informational'
-                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(info_threshold)s hours'))
+                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(info_threshold)s seconds'))
             """
             self._deleteall(delete, {'info_threshold': info_threshold})
 

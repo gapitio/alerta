@@ -121,8 +121,14 @@ EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "text" already exists in blackouts.';
 END$$;
 
--- DROP TABLE IF EXISTS twilio_rules;
+DO $$
+BEGIN
+    ALTER TABLE blackouts ADD COLUMN origin text;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "origin" already exists in blackouts.';
+END$$;
 
+-- DROP TABLE IF EXISTS twilio_rules;
 CREATE TABLE IF NOT EXISTS twilio_rules (
     id text PRIMARY KEY,
     type text,
@@ -144,8 +150,6 @@ CREATE TABLE IF NOT EXISTS twilio_rules (
     create_time timestamp without time zone,
     text text
 );
-
-
 
 CREATE TABLE IF NOT EXISTS customers (
     id text PRIMARY KEY,

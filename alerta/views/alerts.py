@@ -303,7 +303,7 @@ def delete_alert(alert_id):
 @jsonp
 def search_alerts():
     query_time = datetime.utcnow()
-    query = qb.from_params(request.args, customers=g.customers, query_time=query_time)
+    query = qb.alerts.from_params(request.args, customers=g.customers, query_time=query_time)
     show_raw_data = request.args.get('show-raw-data', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
     show_history = request.args.get('show-history', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
     severity_count = Alert.get_counts_by_severity(query)
@@ -351,7 +351,7 @@ def search_alerts():
 @timer(gets_timer)
 @jsonp
 def history():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     paging = Page.from_params(request.args, items=0)
     history = Alert.get_history(query, paging.page, paging.page_size)
 
@@ -378,7 +378,7 @@ def history():
 @timer(count_timer)
 @jsonp
 def get_counts():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     severity_count = Alert.get_counts_by_severity(query)
     status_count = Alert.get_counts_by_status(query)
 
@@ -393,82 +393,82 @@ def get_counts():
 
 # top 10 counts
 @api.route('/alerts/top10/count', methods=['OPTIONS', 'GET'])
+@api.route('/alerts/topn/count', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_alerts)
 @timer(count_timer)
 @jsonp
-def get_top10_count():
-    query = qb.from_params(request.args, customers=g.customers)
-    top10 = Alert.get_top10_count(query)
+def get_topn_count():
+    query = qb.alerts.from_params(request.args, customers=g.customers)
+    paging = Page.from_params(request.args, 1)
+    topn = Alert.get_topn_count(query, topn=paging.page_size)
 
-    if top10:
+    if topn:
         return jsonify(
             status='ok',
-            top10=top10,
-            total=len(top10),
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            top10=topn,
+            total=len(topn)
         )
     else:
         return jsonify(
             status='ok',
             message='not found',
             top10=[],
-            total=0,
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            total=0
         )
 
 
 # top 10 flapping
 @api.route('/alerts/top10/flapping', methods=['OPTIONS', 'GET'])
+@api.route('/alerts/topn/flapping', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_alerts)
 @timer(count_timer)
 @jsonp
-def get_top10_flapping():
-    query = qb.from_params(request.args, customers=g.customers)
-    top10 = Alert.get_top10_flapping(query)
+def get_topn_flapping():
+    query = qb.alerts.from_params(request.args, customers=g.customers)
+    paging = Page.from_params(request.args, 1)
+    topn = Alert.get_topn_flapping(query, topn=paging.page_size)
 
-    if top10:
+    if topn:
         return jsonify(
             status='ok',
-            top10=top10,
-            total=len(top10),
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            top10=topn,
+            total=len(topn)
         )
     else:
         return jsonify(
             status='ok',
             message='not found',
             top10=[],
-            total=0,
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            total=0
         )
 
 
 # top 10 standing
 @api.route('/alerts/top10/standing', methods=['OPTIONS', 'GET'])
+@api.route('/alerts/topn/standing', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_alerts)
 @timer(count_timer)
 @jsonp
-def get_top10_standing():
-    query = qb.from_params(request.args, customers=g.customers)
-    top10 = Alert.get_top10_standing(query)
+def get_topn_standing():
+    query = qb.alerts.from_params(request.args, customers=g.customers)
+    paging = Page.from_params(request.args, 1)
+    topn = Alert.get_topn_standing(query, topn=paging.page_size)
 
-    if top10:
+    if topn:
         return jsonify(
             status='ok',
-            top10=top10,
-            total=len(top10),
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            top10=topn,
+            total=len(topn)
         )
     else:
         return jsonify(
             status='ok',
             message='not found',
             top10=[],
-            total=0,
-            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+            total=0
         )
 
 
@@ -479,7 +479,7 @@ def get_top10_standing():
 @timer(gets_timer)
 @jsonp
 def get_environments():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     environments = Alert.get_environments(query)
 
     if environments:
@@ -504,7 +504,7 @@ def get_environments():
 @timer(gets_timer)
 @jsonp
 def get_services():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     services = Alert.get_services(query)
 
     if services:
@@ -529,7 +529,7 @@ def get_services():
 @timer(gets_timer)
 @jsonp
 def get_groups():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     groups = Alert.get_groups(query)
 
     if groups:
@@ -554,7 +554,7 @@ def get_groups():
 @timer(gets_timer)
 @jsonp
 def get_tags():
-    query = qb.from_params(request.args, customers=g.customers)
+    query = qb.alerts.from_params(request.args, customers=g.customers)
     tags = Alert.get_tags(query)
 
     if tags:
@@ -697,7 +697,7 @@ def delete_note(alert_id, note_id):
     write_audit_trail.send(current_app._get_current_object(), event='alert-note-deleted', message='', user=g.login,
                            customers=g.customers, scopes=g.scopes, resource_id=note.id, type='note', request=request)
 
-    if note.delete():
+    if alert.delete_note(note_id):
         return jsonify(status='ok')
     else:
         raise ApiError('failed to delete note', 500)

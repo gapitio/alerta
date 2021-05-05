@@ -41,10 +41,12 @@ class Blackout:
         self.event = kwargs.get('event', None)
         self.group = kwargs.get('group', None)
         self.tags = kwargs.get('tags', None) or list()
+        self.origin = kwargs.get('origin', None)
         self.customer = kwargs.get('customer', None)
         self.start_time = start_time
         self.end_time = end_time
         self.duration = duration
+        self.remaining = kwargs.get('remaining', duration)
 
         self.user = kwargs.get('user', None)
         self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
@@ -64,6 +66,8 @@ class Blackout:
             self.priority = 6
         elif self.tags:
             self.priority = 7
+        if self.origin:
+            self.priority = 8
 
     @property
     def status(self):
@@ -74,16 +78,6 @@ class Blackout:
             return BlackoutStatus.Pending
         if self.end_time <= now:
             return BlackoutStatus.Expired
-
-    @property
-    def remaining(self):
-        now = datetime.utcnow()
-        if self.start_time <= now < self.end_time:
-            return int((self.end_time - now).total_seconds())
-        if self.start_time > now:
-            return self.duration
-        if self.end_time <= now:
-            return 0
 
     @classmethod
     def parse(cls, json: JSON) -> 'Blackout':
@@ -100,6 +94,7 @@ class Blackout:
             event=json.get('event', None),
             group=json.get('group', None),
             tags=json.get('tags', list()),
+            origin=json.get('origin', None),
             customer=json.get('customer', None),
             start_time=DateTime.parse(json['startTime']) if 'startTime' in json else None,
             end_time=DateTime.parse(json['endTime']) if 'endTime' in json else None,
@@ -120,6 +115,7 @@ class Blackout:
             'event': self.event,
             'group': self.group,
             'tags': self.tags,
+            'origin': self.origin,
             'customer': self.customer,
             'startTime': self.start_time,
             'endTime': self.end_time,
@@ -143,6 +139,8 @@ class Blackout:
             more += 'group=%r, ' % self.group
         if self.tags:
             more += 'tags=%r, ' % self.tags
+        if self.origin:
+            more += 'origin=%r, ' % self.origin
         if self.customer:
             more += 'customer=%r, ' % self.customer
 
@@ -168,10 +166,12 @@ class Blackout:
             event=doc.get('event', None),
             group=doc.get('group', None),
             tags=doc.get('tags', list()),
+            origin=doc.get('origin'),
             customer=doc.get('customer', None),
             start_time=doc.get('startTime', None),
             end_time=doc.get('endTime', None),
             duration=doc.get('duration', None),
+            remaining=doc.get('remaining', None),
             user=doc.get('user', None),
             create_time=doc.get('createTime', None),
             text=doc.get('text', None)
@@ -188,10 +188,12 @@ class Blackout:
             event=rec.event,
             group=rec.group,
             tags=rec.tags,
+            origin=rec.origin,
             customer=rec.customer,
             start_time=rec.start_time,
             end_time=rec.end_time,
             duration=rec.duration,
+            remaining=rec.remaining,
             user=rec.user,
             create_time=rec.create_time,
             text=rec.text
