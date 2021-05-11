@@ -17,3 +17,7 @@ requests-hawk==1.2.1
 sentry-sdk[flask]==1.45.0
 StrEnum==0.4.15
 werkzeug==3.0.2
+sendgrid==6.5.0
+python-http-client==3.2.1
+starkbank-ecdsa==1.0.0
+twilio==6.58.0
