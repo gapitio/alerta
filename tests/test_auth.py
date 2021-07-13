@@ -48,12 +48,13 @@ class AuthTestCase(unittest.TestCase):
             self.api_key = ApiKey(
                 user='admin@alerta.io',
                 scopes=[Scope.admin, Scope.read, Scope.write],
-                text='demo-key'
+                text='Demo API key - not for production use',
+                key='demo-key'
             )
             self.api_key.create()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.api_key.key,
+            'Authorization': f'Key {self.api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -65,6 +66,10 @@ class AuthTestCase(unittest.TestCase):
 
         response = self.client.get('/alerts')
         self.assertEqual(response.status_code, 401)
+
+    def test_user_defined_key(self):
+
+        self.assertEqual(self.api_key.key, 'demo-key')
 
     def test_admin_key(self):
 
@@ -385,7 +390,7 @@ class AuthTestCase(unittest.TestCase):
     def test_edit_api_keys(self):
 
         self.headers = {
-            'Authorization': 'Key %s' % self.api_key.key,
+            'Authorization': f'Key {self.api_key.key}',
             'Content-type': 'application/json'
         }
 
