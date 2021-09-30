@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 
 
@@ -51,7 +52,7 @@ class TrendIndication(str, Enum):
     Less_Severe = 'lessSevere'
 
 
-class Scope(str, Enum):
+class Scope(str):
 
     read = 'read'
     write = 'write'
@@ -86,6 +87,25 @@ class Scope(str, Enum):
     admin_management = 'admin:management'
     read_userinfo = 'read:userinfo'
 
+    @staticmethod
+    def init_app(app):
+        for scope in app.config['CUSTOM_SCOPES']:
+            Scope.create(scope)
+
+    @classmethod
+    def create(cls, scope):
+
+        m = re.fullmatch(r'(admin|write|read|delete):(\w+)(\.\w+)?', scope)
+        if not m:
+            raise ValueError(f'Scopes must match "action:resource[.type]" eg. "read:foo.bar": {scope}')
+
+        name = re.sub('[:.]', '_', scope)
+        setattr(cls, name, scope)
+
+    @classmethod
+    def find_all(cls):
+        return [s for s in vars(Scope).values() if isinstance(s, str) and s.startswith(('admin', 'write', 'read', 'delete'))]
+
     @property
     def action(self):
         return self.split(':')[0]
@@ -93,22 +113,32 @@ class Scope(str, Enum):
     @property
     def resource(self):
         try:
-            return self.split(':')[1]
+            return self.split(':')[1].split('.')[0]
+        except IndexError:
+            return None
+
+    @property
+    def type(self):
+        try:
+            return self.split(':')[1].split('.')[1]
         except IndexError:
             return None
 
     @staticmethod
-    def from_str(action: str, resource: str = None):
-        """Return a scope based on the supplied action and resource.
+    def from_str(action: str, resource: str = None, type: str = None):
+        """Return a scope based on the supplied action, resource and type.
 
         :param action: the scope action eg. read, write, delete or admin
         :param resource: the specific resource of the scope, if any eg. alerts,
             blackouts, heartbeats, users, perms, customers, keys, webhooks,
             oembed, management or userinfo or None
+        :param type: the specific type of the resource
         :return: Scope
         """
+        if resource and type:
+            return Scope(f'{action}:{resource}.{type}')
         if resource:
-            return Scope('{}:{}'.format(action, resource))
+            return Scope(f'{action}:{resource}')
         else:
             return Scope(action)
 
@@ -132,6 +162,7 @@ class ChangeType(str, Enum):
     value = 'value'
     severity = 'severity'
     note = 'note'
+    dismiss = 'dismiss'  # note dismissed
     timeout = 'timeout'
     expired = 'expired'
 

@@ -10,6 +10,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from alerta.database.base import Database, QueryBuilder
 from alerta.exceptions import ExceptionHandlers
 from alerta.models.alarms import AlarmModel
+from alerta.models.enums import Scope
 from alerta.utils.audit import AuditTrail
 from alerta.utils.config import Config
 from alerta.utils.hooks import HookTrigger
@@ -19,6 +20,10 @@ from alerta.utils.mailer import Mailer
 from alerta.utils.plugin import Plugins
 from alerta.utils.tracing import Tracing
 from alerta.utils.webhook import CustomWebhooks
+from alerta.version import __version__
+
+# Sentry will read the DSN from SENTRY_DSN environment variable.
+sentry_sdk.init(integrations=[FlaskIntegration()], release=__version__)
 
 config = Config()
 tracing = Tracing()
@@ -34,8 +39,6 @@ key_helper = ApiKeyHelper()
 
 db = Database()
 qb = QueryBuilder()
-# Sentry will grab DSN from SENTRY_DSN environment variable.
-sentry_sdk.init(integrations=[FlaskIntegration()])
 
 mailer = Mailer()
 plugins = Plugins()
@@ -43,7 +46,6 @@ custom_webhooks = CustomWebhooks()
 
 
 def create_app(config_override: Dict[str, Any] = None, environment: str = None) -> Flask:
-
     app = Flask(__name__)
     app.config['ENVIRONMENT'] = environment
     config.init_app(app)
@@ -58,6 +60,7 @@ def create_app(config_override: Dict[str, Any] = None, environment: str = None) 
     hooks.init_app(app)
     audit.init_app(app)
     alarm_model.init_app(app)
+    Scope.init_app(app)
 
     cors.init_app(app)
     compress.init_app(app)
@@ -96,7 +99,6 @@ except ImportError:
 
 
 def create_celery_app(app: Flask = None) -> 'Celery':
-
     from alerta.utils.format import register_custom_serializer
     register_custom_serializer()
 

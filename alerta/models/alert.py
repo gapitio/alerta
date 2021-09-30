@@ -37,15 +37,15 @@ class Alert:
             kwargs['value'] = str(kwargs['value'])
         for attr in ['create_time', 'receive_time', 'last_receive_time']:
             if not isinstance(kwargs.get(attr), (datetime, NoneType)):  # type: ignore
-                raise ValueError("Attribute '{}' must be datetime type".format(attr))
+                raise ValueError(f"Attribute '{attr}' must be datetime type")
 
         timeout = kwargs.get('timeout') if kwargs.get('timeout') is not None else current_app.config['ALERT_TIMEOUT']
         try:
             timeout = int(timeout)  # type: ignore
         except ValueError:
-            raise ValueError("Could not convert 'timeout' value of '{}' to an integer".format(timeout))
+            raise ValueError(f"Could not convert 'timeout' value of '{timeout}' to an integer")
         if timeout < 0:
-            raise ValueError("Invalid negative 'timeout' value ({})".format(timeout))
+            raise ValueError(f"Invalid negative 'timeout' value ({timeout})")
 
         self.id = kwargs.get('id') or str(uuid4())
         self.resource = resource
@@ -62,7 +62,7 @@ class Alert:
         self.text = kwargs.get('text', None) or ''
         self.tags = kwargs.get('tags', None) or list()
         self.attributes = kwargs.get('attributes', None) or dict()
-        self.origin = kwargs.get('origin', None) or '{}/{}'.format(os.path.basename(sys.argv[0]), platform.uname()[1])
+        self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'exceptionAlert'
         self.create_time = kwargs.get('create_time', None) or datetime.utcnow()
         self.day = self.create_time.strftime("%a")
@@ -517,17 +517,29 @@ class Alert:
     # top 10 alerts
     @staticmethod
     def get_top10_count(query: Query = None) -> List[Dict[str, Any]]:
-        return db.get_topn_count(query, topn=10)
+        return Alert.get_topn_count(query, topn=10)
+
+    @staticmethod
+    def get_topn_count(query: Query = None, topn: int = 10) -> List[Dict[str, Any]]:
+        return db.get_topn_count(query, topn=topn)
 
     # top 10 flapping
     @staticmethod
     def get_top10_flapping(query: Query = None) -> List[Dict[str, Any]]:
-        return db.get_topn_flapping(query, topn=10)
+        return Alert.get_topn_flapping(topn=10)
+
+    @staticmethod
+    def get_topn_flapping(query: Query = None, topn: int = 10) -> List[Dict[str, Any]]:
+        return db.get_topn_flapping(query, topn=topn)
 
     # top 10 standing
     @staticmethod
     def get_top10_standing(query: Query = None) -> List[Dict[str, Any]]:
-        return db.get_topn_standing(query, topn=10)
+        return Alert.get_topn_standing(topn=10)
+
+    @staticmethod
+    def get_topn_standing(query: Query = None, topn: int = 10) -> List[Dict[str, Any]]:
+        return db.get_topn_standing(query, topn=topn)
 
     # get environments
     @staticmethod
@@ -551,15 +563,43 @@ class Alert:
 
     # add note
     def add_note(self, text: str) -> Note:
-        return Note.from_alert(self, text)
+        note = Note.from_alert(self, text)
+        history = History(
+            id=note.id,
+            event=self.event,
+            severity=self.severity,
+            status=self.status,
+            value=self.value,
+            text=text,
+            change_type=ChangeType.note,
+            update_time=datetime.utcnow(),
+            user=g.login
+        )
+        db.add_history(self.id, history)
+        return note
 
     # get notes for alert
     def get_alert_notes(self, page: int = 1, page_size: int = 100) -> List['Note']:
         notes = db.get_alert_notes(self.id, page, page_size)
         return [Note.from_db(note) for note in notes]
 
+    def delete_note(self, note_id):
+        history = History(
+            id=note_id,
+            event=self.event,
+            severity=self.severity,
+            status=self.status,
+            value=self.value,
+            text='note dismissed',
+            change_type=ChangeType.dismiss,
+            update_time=datetime.utcnow(),
+            user=g.login
+        )
+        db.add_history(self.id, history)
+        return Note.delete_by_id(note_id)
+
     @staticmethod
-    def housekeeping(expired_threshold: int = 2, info_threshold: int = 12) -> Tuple[List['Alert'], List['Alert'], List['Alert']]:
+    def housekeeping(expired_threshold: int, info_threshold: int) -> Tuple[List['Alert'], List['Alert'], List['Alert']]:
         return (
             [Alert.from_db(alert) for alert in db.get_expired(expired_threshold, info_threshold)],
             [Alert.from_db(alert) for alert in db.get_unshelve()],

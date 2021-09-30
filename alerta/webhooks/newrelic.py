@@ -1,5 +1,7 @@
 from typing import Any, Dict
 
+from flask import current_app
+
 from alerta.models.alarms.alerta import SEVERITY_MAP
 from alerta.models.alert import Alert
 
@@ -54,15 +56,15 @@ class NewRelicWebhook(WebhookBase):
         return Alert(
             resource=resource,
             event=event,
-            environment='Production',
+            environment=current_app.config['DEFAULT_ENVIRONMENT'],
             severity=severity,
             status=status,
             service=[payload['account_name']],
             group=payload['targets'][0]['type'],
             text=payload['details'],
-            tags=['{}:{}'.format(key, value) for (key, value) in payload['targets'][0]['labels'].items()],
+            tags=[f'{key}:{value}' for (key, value) in payload['targets'][0]['labels'].items()],
             attributes=attributes,
-            origin='New Relic/v%s' % payload['version'],
+            origin=f"New Relic/v{payload['version']}",
             event_type=payload['event_type'].lower(),
             raw_data=payload
         )

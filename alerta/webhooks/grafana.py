@@ -1,7 +1,9 @@
+import copy
 import json
 from typing import Any, Dict
 
-from werkzeug.datastructures import ImmutableMultiDict
+from flask import current_app
+from werkzeug.datastructures import ImmutableMultiDict, MultiDict
 
 from alerta.app import alarm_model, qb
 from alerta.exceptions import ApiError, RejectException
@@ -16,7 +18,7 @@ JSON = Dict[str, Any]
 def parse_grafana(args: ImmutableMultiDict, alert: JSON, match: Dict[str, Any]) -> Alert:
 
     # get values from request params
-    environment = args.get('environment', 'Production')
+    environment = args.get('environment', current_app.config['DEFAULT_ENVIRONMENT'])
     alerting_severity = args.get('severity', 'major')
     service = args.getlist('service') or ['Grafana']
     group = args.get('group', 'Performance')
@@ -38,7 +40,7 @@ def parse_grafana(args: ImmutableMultiDict, alert: JSON, match: Dict[str, Any]) 
     attributes = {k.replace('.', '_'): v for (k, v) in match_tags.items()}
 
     # get alert rule tags
-    rules_tags = alert.get('tags') or {}
+    rules_tags = copy.copy(alert.get('tags') or {})
     environment = rules_tags.pop('environment', environment)
     alerting_severity = rules_tags.pop('severity', alerting_severity)
     if 'service' in rules_tags:
@@ -60,9 +62,9 @@ def parse_grafana(args: ImmutableMultiDict, alert: JSON, match: Dict[str, Any]) 
 
     attributes['ruleId'] = str(alert['ruleId'])
     if 'ruleUrl' in alert:
-        attributes['ruleUrl'] = '<a href="%s" target="_blank">Rule</a>' % alert['ruleUrl']
+        attributes['ruleUrl'] = f"<a href=\"{alert['ruleUrl']}\" target=\"_blank\">Rule</a>"
     if 'imageUrl' in alert:
-        attributes['imageUrl'] = '<a href="%s" target="_blank">Image</a>' % alert['imageUrl']
+        attributes['imageUrl'] = f"<a href=\"{alert['imageUrl']}\" target=\"_blank\">Image</a>"
 
     return Alert(
         resource=match['metric'],
@@ -71,7 +73,7 @@ def parse_grafana(args: ImmutableMultiDict, alert: JSON, match: Dict[str, Any]) 
         severity=severity,
         service=service,
         group=group,
-        value='%s' % match['value'],
+        value=f"{match['value']}",
         text=alert.get('message', None) or alert.get('title', alert['state']),
         tags=list(),
         attributes=attributes,
@@ -96,7 +98,7 @@ class GrafanaWebhook(WebhookBase):
 
         elif payload and payload['state'] == 'ok' and payload.get('ruleId'):
             try:
-                query = qb.from_dict({'attributes.ruleId': str(payload['ruleId'])})
+                query = qb.alerts.from_params(MultiDict([('attributes.ruleId', str(payload['ruleId']))]))
                 existingAlerts = Alert.find_all(query)
             except Exception as e:
                 raise ApiError(str(e), 500)

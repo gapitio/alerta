@@ -1,6 +1,8 @@
 import datetime
 from typing import Any, Dict
 
+from flask import current_app
+
 from alerta.app import alarm_model
 from alerta.exceptions import ApiError
 from alerta.models.alert import Alert
@@ -43,7 +45,7 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     # labels
     resource = labels.pop('exported_instance', None) or labels.pop('instance', 'n/a')
     event = labels.pop('event', None) or labels.pop('alertname')
-    environment = labels.pop('environment', 'Production')
+    environment = labels.pop('environment', current_app.config['DEFAULT_ENVIRONMENT'])
     customer = labels.pop('customer', None)
     correlate = labels.pop('correlate').split(',') if 'correlate' in labels else None
     service = labels.pop('service', '').split(',')
@@ -55,18 +57,18 @@ def parse_prometheus(alert: JSON, external_url: str) -> Alert:
     except ValueError:
         timeout = None
 
-    tags = ['{}={}'.format(k, v) for k, v in labels.items()]  # any labels left over are used for tags
+    tags = [f'{k}={v}' for k, v in labels.items()]  # any labels left over are used for tags
 
     # annotations
     value = annotations.pop('value', None)
     summary = annotations.pop('summary', None)
     description = annotations.pop('description', None)
-    text = description or summary or '{}: {} is {}'.format(severity.upper(), resource, event)
+    text = description or summary or f'{severity.upper()}: {resource} is {event}'
 
     if external_url:
         annotations['externalUrl'] = external_url  # needed as raw URL for bi-directional integration
     if 'generatorURL' in alert:
-        annotations['moreInfo'] = '<a href="{}" target="_blank">Prometheus Graph</a>'.format(alert['generatorURL'])
+        annotations['moreInfo'] = f"<a href=\"{alert['generatorURL']}\" target=\"_blank\">Prometheus Graph</a>"
 
     # attributes
     attributes = {

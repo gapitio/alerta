@@ -22,7 +22,7 @@ from . import api
 def create_user():
     if current_app.config['AUTH_PROVIDER'] != 'basic':
         raise ApiError(
-            'must use {} login flow to create new user'.format(current_app.config['AUTH_PROVIDER']), 400)
+            f"must use {current_app.config['AUTH_PROVIDER']} login flow to create new user", 400)
 
     try:
         user = User.parse(request.json)
@@ -130,7 +130,7 @@ def get_me_attributes():
 @permission(Scope.admin_users)
 @jsonp
 def list_users():
-    query = qb.from_params(request.args)
+    query = qb.users.from_params(request.args)
     total = User.count(query)
     paging = Page.from_params(request.args, total)
     users = User.find_all(query, page=paging.page, page_size=paging.page_size)

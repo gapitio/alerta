@@ -41,7 +41,7 @@ setuptools.setup(
         'bcrypt',
         'blinker',
         'cryptography',
-        'Flask>=0.10.1',
+        'Flask>=2.0.1',
         'Flask-Compress>=1.4.0',
         'Flask-Cors>=3.0.2',
         'mohawk',
@@ -72,6 +72,7 @@ setuptools.setup(
             'blackout = alerta.plugins.blackout:BlackoutHandler',
             'twilio_rule = alerta.plugins.twilio_rule:TwilioRulesHandler',
             'acked_by = alerta.plugins.acked_by:AckedBy',
+            'escalate = alerta.plugins.escalate:EscalateSeverity',
             'forwarder = alerta.plugins.forwarder:Forwarder',
             'timeout = alerta.plugins.timeout:TimeoutPolicy'
         ],

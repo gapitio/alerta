@@ -23,6 +23,8 @@ def config():
             }
         },
         'auth_required': current_app.config['AUTH_REQUIRED'],
+        'allow_readonly': current_app.config['ALLOW_READONLY'],
+        'readonly_scopes': current_app.config['READONLY_SCOPES'],
         'provider': current_app.config['AUTH_PROVIDER'],
         'customer_views': current_app.config['CUSTOMER_VIEWS'],
         'signup_enabled': current_app.config['SIGNUP_ENABLED'] if current_app.config['AUTH_PROVIDER'] == 'basic' else False,
@@ -44,6 +46,9 @@ def config():
             'heartbeat': current_app.config['HEARTBEAT_TIMEOUT'],
             'ack': current_app.config['ACK_TIMEOUT'],
             'shelve': current_app.config['SHELVE_TIMEOUT']
+        },
+        'blackouts': {
+            'duration': current_app.config['BLACKOUT_DURATION']
         },
         'dates': {
             'shortTime': current_app.config['DATE_FORMAT_SHORT_TIME'],

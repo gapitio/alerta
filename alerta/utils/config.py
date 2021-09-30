@@ -63,6 +63,8 @@ class Config:
         if 'ALLOWED_KEYCLOAK_ROLES' in os.environ:
             config['ALLOWED_OIDC_ROLES'] = get_config('ALLOWED_KEYCLOAK_ROLES', default=[], type=list, config=config)
 
+        config['LDAP_BIND_PASSWORD'] = get_config('LDAP_BIND_PASSWORD', default=None, type=str, config=config)
+
         config['OIDC_ISSUER_URL'] = get_config('OIDC_ISSUER_URL', default=None, type=str, config=config)
         config['ALLOWED_OIDC_ROLES'] = get_config('ALLOWED_OIDC_ROLES', default=[], type=list, config=config)
 
@@ -73,6 +75,22 @@ class Config:
 
         config['GOOGLE_TRACKING_ID'] = get_config('GOOGLE_TRACKING_ID', default=None, type=str, config=config)
 
+        # housekeeping
+        delete_expired_hrs = (
+            os.environ.get('DEFAULT_EXPIRED_DELETE_HRS', None)
+            or os.environ.get('HK_EXPIRED_DELETE_HRS', None)
+        )
+        delete_expired = delete_expired_hrs * 60 * 60 if delete_expired_hrs else None
+        config['DELETE_EXPIRED_AFTER'] = get_config('DELETE_EXPIRED_AFTER', default=delete_expired, type=int, config=config)
+
+        delete_info_hrs = (
+            os.environ.get('DEFAULT_INFO_DELETE_HRS', None)
+            or os.environ.get('HK_INFO_DELETE_HRS', None)
+        )
+        delete_info = delete_info_hrs * 60 * 60 if delete_info_hrs else None
+        config['DELETE_INFO_AFTER'] = get_config('DELETE_INFO_AFTER', default=delete_info, type=int, config=config)
+
+        # plugins
         config['PLUGINS'] = get_config('PLUGINS', default=[], type=list, config=config)
 
         # blackout plugin
@@ -84,12 +102,18 @@ class Config:
         config['ORIGIN_BLACKLIST'] = get_config('ORIGIN_BLACKLIST', default=[], type=list, config=config)
         config['ALLOWED_ENVIRONMENTS'] = get_config('ALLOWED_ENVIRONMENTS', default=[], type=list, config=config)
 
+        # webhooks
+        config['DEFAULT_ENVIRONMENT'] = get_config('DEFAULT_ENVIRONMENT', default=None, type=str, config=config)
+
         # Runtime config check
         if config['CUSTOMER_VIEWS'] and not config['AUTH_REQUIRED']:
             raise RuntimeError('Must enable authentication to use customer views')
 
         if config['CUSTOMER_VIEWS'] and not config['ADMIN_USERS']:
             raise RuntimeError('Customer views is enabled but there are no admin users')
+
+        if config['DEFAULT_ENVIRONMENT'] not in config['ALLOWED_ENVIRONMENTS']:
+            raise RuntimeError(f"Default environment \"{config['DEFAULT_ENVIRONMENT']}\" not in list of allowed environments")
 
         return config
 

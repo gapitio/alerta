@@ -28,7 +28,7 @@ def create_perm():
         current_app.config['DEFAULT_USER_ROLE'],
         current_app.config['DEFAULT_GUEST_ROLE']
     ]:
-        raise ApiError('{} role already exists'.format(perm.match), 409)
+        raise ApiError(f'{perm.match} role already exists', 409)
 
     for want_scope in perm.scopes:
         if not Permission.is_in_scope(want_scope, have_scopes=g.scopes):
@@ -68,7 +68,7 @@ def get_perm(perm_id):
 @jsonp
 def list_perms():
 
-    query = qb.from_params(request.args)
+    query = qb.perms.from_params(request.args)
     total = Permission.count(query)
     perms: list[Permission] = []
 
@@ -138,8 +138,8 @@ def update_perm(perm_id):
         raise ApiError('nothing to change', 400)
 
     for s in request.json.get('scopes', []):
-        if s not in list(Scope):
-            raise ApiError("'{}' is not a valid Scope".format(s), 400)
+        if s not in Scope.find_all():
+            raise ApiError(f"'{s}' is not a valid Scope", 400)
 
     perm = Permission.find_by_id(perm_id)
 
@@ -180,7 +180,7 @@ def delete_perm(perm_id):
 @permission(Scope.read_perms)
 @jsonp
 def list_scopes():
-    scopes = list(Scope)
+    scopes = Scope.find_all()
 
     return jsonify(
         status='ok',

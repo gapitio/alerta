@@ -1,7 +1,7 @@
 import os
 import platform
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
@@ -37,19 +37,19 @@ class Heartbeat:
         try:
             timeout = int(timeout)
         except ValueError:
-            raise ValueError("Could not convert 'timeout' value of '{}' to an integer".format(timeout))
+            raise ValueError(f"Could not convert 'timeout' value of '{timeout}' to an integer")
         if timeout < 0:
-            raise ValueError("Invalid negative 'timeout' value ({})".format(timeout))
+            raise ValueError(f"Invalid negative 'timeout' value ({timeout})")
 
         try:
             max_latency = int(max_latency)
         except ValueError:
-            raise ValueError("Could not convert 'max_latency' value of '{}' to an integer".format(timeout))
+            raise ValueError(f"Could not convert 'max_latency' value of '{timeout}' to an integer")
         if timeout < 0:
-            raise ValueError("Invalid negative 'max_latency' value ({})".format(timeout))
+            raise ValueError(f"Invalid negative 'max_latency' value ({timeout})")
 
         self.id = kwargs.get('id') or str(uuid4())
-        self.origin = origin or '{}/{}'.format(os.path.basename(sys.argv[0]), platform.uname()[1])
+        self.origin = origin or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
         self.tags = tags or list()
         self.attributes = kwargs.get('attributes', None) or dict()
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'Heartbeat'
@@ -57,16 +57,9 @@ class Heartbeat:
         self.timeout = timeout
         self.max_latency = max_latency
         self.receive_time = kwargs.get('receive_time', None) or datetime.utcnow()
+        self.latency = int((self.receive_time - self.create_time).total_seconds() * 1000)
+        self.since = datetime.utcnow() - self.receive_time
         self.customer = customer
-
-    @property
-    def latency(self) -> int:
-        return int((self.receive_time - self.create_time).total_seconds() * 1000)
-
-    @property
-    def since(self) -> timedelta:
-        since = datetime.utcnow() - self.receive_time
-        return since - timedelta(microseconds=since.microseconds)
 
     @property
     def status(self) -> str:
@@ -131,6 +124,8 @@ class Heartbeat:
             create_time=doc.get('createTime', None),
             timeout=doc.get('timeout', None),
             receive_time=doc.get('receiveTime', None),
+            latency=doc.get('latency', None),
+            since=doc.get('since', None),
             customer=doc.get('customer', None)
         )
 
@@ -145,6 +140,8 @@ class Heartbeat:
             create_time=rec.create_time,
             timeout=rec.timeout,
             receive_time=rec.receive_time,
+            latency=rec.latency,
+            since=rec.since,
             customer=rec.customer
         )
 
@@ -168,6 +165,10 @@ class Heartbeat:
     @staticmethod
     def find_all(query: Query = None, page: int = 1, page_size: int = 1000) -> List['Heartbeat']:
         return [Heartbeat.from_db(heartbeat) for heartbeat in db.get_heartbeats(query, page, page_size)]
+
+    @staticmethod
+    def find_all_by_status(status: List[str] = None, query: Query = None, page: int = 1, page_size: int = 1000) -> List['Heartbeat']:
+        return [Heartbeat.from_db(heartbeat) for heartbeat in db.get_heartbeats_by_status(status, query, page, page_size)]
 
     @staticmethod
     def count(query: Query = None) -> int:

@@ -1,3 +1,68 @@
+## v8.6.0 (2021-05-20)
+
+### Refactor
+
+- convert formatted strings to f-strings (more) (#1522)
+- convert tests to use f-strings (#1521)
+- convert formatted strings to f-strings (#1520)
+
+### Feat
+
+- add escalate severity custom action plugin (#1519)
+- Add support for user-defined API key (#1518)
+- log dismissing notes to alert history (#1507)
+- add default blackout duration to config endpoint (#1506)
+- support readonly users (#1505)
+
+### Fix
+
+- change housekeeping delete threshold to seconds (#1508)
+- config setting default environment for webhooks (#1510)
+- read LDAP_BIND_PASSWORD from environment variable (#1509)
+
+## v8.5.0 (2021-04-18)
+
+### Fix
+
+- **grafana**: ensure tags work on multi timeseries alert (#1450) (#1490)
+- add related id to note reponse (#1499)
+- **deps**: bump lxml from 4.6.2 to 4.6.3 (#1486)
+
+### Refactor
+
+- create "query builders" for all data models (#1446)
+
+### Feat
+
+- support custom top10 report sizes (#1498)
+- add alert origin to blackout options (#1497)
+- add support for custom auth scopes (#1479)
+
+## v8.4.1 (2021-02-28)
+
+### Fix
+
+- **deps**: bump multiple package dependencies (#1470)
+
+## v8.4.0 (2021-02-27)
+
+### Fix
+
+- **auth**: HMAC was falling thru to catchall if auth required (#1470)
+- **tests**: enforce authentication for forwarder test (#1471)
+- **deps**: update PyJWT to v2.0.0 (#1441)
+- request filter fixes in logging.py (#1442)
+
+### Refactor
+
+- use more enums and class properties (#1444)
+
+### Feat
+
+- **plugin,webhook**: Add support for custom error responses (#1466)
+- add pagination support to collection responses (#1443)
+- **plugin**: add timeout policy plugin to enforce ack and shelve timeouts (#1410)
+
 ## v8.3.3 (2021-01-06)
 
 ### Fix

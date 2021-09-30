@@ -30,7 +30,8 @@ class BlackoutsTestCase(unittest.TestCase):
             'correlate': ['node_down', 'node_marginal', 'node_up'],
             'service': ['Core', 'Web', 'Network'],
             'group': 'Network',
-            'tags': ['level=20', 'switch:off']
+            'tags': ['level=20', 'switch:off'],
+            'origin': 'foo/bar'
         }
 
         self.dev_alert = {
@@ -41,7 +42,8 @@ class BlackoutsTestCase(unittest.TestCase):
             'correlate': ['node_down', 'node_marginal', 'node_up'],
             'service': ['Core', 'Web', 'Network'],
             'group': 'Network',
-            'tags': ['level=20', 'switch:off']
+            'tags': ['level=20', 'switch:off'],
+            'origin': 'foo/bar'
         }
 
         self.fatal_alert = {
@@ -53,6 +55,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'correlate': ['node_down', 'node_marginal', 'node_up'],
             'tags': ['foo'],
             'attributes': {'foo': 'abc def', 'bar': 1234, 'baz': False},
+            'origin': 'foo/bar'
         }
         self.critical_alert = {
             'event': 'node_marginal',
@@ -61,6 +64,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'critical',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/bar',
             'timeout': 30
         }
         self.major_alert = {
@@ -70,6 +74,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'major',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/bar',
             'timeout': 40
         }
         self.normal_alert = {
@@ -79,6 +84,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'normal',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/quux',
             'timeout': 100
         }
         self.minor_alert = {
@@ -88,6 +94,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'minor',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/quux',
             'timeout': 40
         }
         self.ok_alert = {
@@ -97,6 +104,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'ok',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/quux',
             'timeout': 100
         }
         self.warn_alert = {
@@ -106,6 +114,7 @@ class BlackoutsTestCase(unittest.TestCase):
             'service': ['Network'],
             'severity': 'warning',
             'correlate': ['node_down', 'node_marginal', 'node_up'],
+            'origin': 'foo/quux',
             'timeout': 50
         }
 
@@ -135,7 +144,7 @@ class BlackoutsTestCase(unittest.TestCase):
         plugins.plugins['blackout'] = Blackout()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -155,7 +164,7 @@ class BlackoutsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 202)
 
         self.headers = {
-            'Authorization': 'Key %s' % self.customer_api_key.key,
+            'Authorization': f'Key {self.customer_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -164,7 +173,7 @@ class BlackoutsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 202)
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -177,7 +186,7 @@ class BlackoutsTestCase(unittest.TestCase):
         plugins.plugins['blackout'] = Blackout()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -286,7 +295,7 @@ class BlackoutsTestCase(unittest.TestCase):
     def test_previous_status(self):
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -431,7 +440,7 @@ class BlackoutsTestCase(unittest.TestCase):
         plugins.plugins['blackout'] = Blackout()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -474,7 +483,7 @@ class BlackoutsTestCase(unittest.TestCase):
         plugins.plugins['blackout'] = Blackout()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -562,6 +571,107 @@ class BlackoutsTestCase(unittest.TestCase):
         response = self.client.delete('/blackout/' + blackout_id, headers=self.headers)
         self.assertEqual(response.status_code, 200)
 
+    def test_origin_blackout(self):
+
+        os.environ['NOTIFICATION_BLACKOUT'] = 'False'
+        plugins.plugins['blackout'] = Blackout()
+
+        self.headers = {
+            'Authorization': f'Key {self.admin_api_key.key}',
+            'Content-type': 'application/json'
+        }
+
+        # create alert
+        response = self.client.post('/alert', data=json.dumps(self.prod_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        # create blackout (only for an origin)
+        blackout = {
+            'environment': 'Production',
+            'origin': 'foo/bar',
+        }
+        response = self.client.post('/blackout', data=json.dumps(blackout), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+
+        blackout_id = data['id']
+
+        # suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.prod_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 202)
+
+        # do not suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.minor_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        # remove blackout
+        response = self.client.delete('/blackout/' + blackout_id, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        # create alert
+        response = self.client.post('/alert', data=json.dumps(self.prod_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        # create blackout (only for origin with particular tags)
+        blackout = {
+            'environment': 'Production',
+            'tags': ['system:web01', 'switch:off'],
+            'origin': 'foo/bar'
+        }
+        response = self.client.post('/blackout', data=json.dumps(blackout), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+
+        blackout_id = data['id']
+
+        # do not suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.prod_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        self.prod_alert['tags'].append('system:web01')
+
+        # suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.prod_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 202)
+
+        # remove blackout
+        response = self.client.delete('/blackout/' + blackout_id, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        # create alert
+        response = self.client.post('/alert', data=json.dumps(self.dev_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        # create blackout (only for origin with certain event)
+        blackout = {
+            'environment': 'Development',
+            'event': 'node_marginal',
+            'origin': 'foo/quux'
+        }
+        response = self.client.post('/blackout', data=json.dumps(blackout), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+
+        blackout_id = data['id']
+
+        # do not suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.dev_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+
+        self.dev_alert['origin'] = 'foo/quux'
+
+        # suppress alert
+        response = self.client.post('/alert', data=json.dumps(self.dev_alert), headers=self.headers)
+        self.assertEqual(response.status_code, 202)
+
+        # list blackouts
+        response = self.client.get('/blackouts', headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        # remove blackout
+        response = self.client.delete('/blackout/' + blackout_id, headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
     def test_edit_blackout(self):
 
         # create new blackout
@@ -569,7 +679,7 @@ class BlackoutsTestCase(unittest.TestCase):
         plugins.plugins['blackout'] = Blackout()
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 
@@ -625,7 +735,7 @@ class BlackoutsTestCase(unittest.TestCase):
     def test_user_info(self):
 
         self.headers = {
-            'Authorization': 'Key %s' % self.admin_api_key.key,
+            'Authorization': f'Key {self.admin_api_key.key}',
             'Content-type': 'application/json'
         }
 

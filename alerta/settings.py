@@ -69,16 +69,20 @@ USER_DEFAULT_SCOPES = ['read', 'write']  # Note: 'write' scope implicitly includ
 DEFAULT_GUEST_ROLE = 'guest'
 GUEST_ROLES = [DEFAULT_GUEST_ROLE]
 GUEST_DEFAULT_SCOPES = ['read:alerts']
+CUSTOM_SCOPES = []
 DELETE_SCOPES = []  # Set to "delete:alerts" to prevent users with "write:alerts" scope being able to delete alerts
 CUSTOMER_VIEWS = False
+
+ALLOW_READONLY = False
+READONLY_SCOPES = ['read']
 
 BASIC_AUTH_REALM = 'Alerta'
 SIGNUP_ENABLED = True
 
 HMAC_AUTH_CREDENTIALS = [
     # {
-    #     'id': '',  # access key id  => $ uuidgen | tr '[:upper:]' '[:lower:]'
-    #     'key': '',  # secret key => $ date | md5 | base64
+    #     'key': '',  # access key id  => $ uuidgen | tr '[:upper:]' '[:lower:]'
+    #     'secret': '',  # secret key => $ date | md5 | base64
     #     'algorithm': 'sha256'  # valid hmac algorithm eg. sha256, sha384, sha512
     # }
 ]  # type: List[Dict[str, Any]]
@@ -184,8 +188,8 @@ ACK_TIMEOUT = 0  # auto-unack alerts after x seconds (0 seconds = do not auto-un
 SHELVE_TIMEOUT = 7200  # auto-unshelve alerts after x seconds (0 seconds = do not auto-unshelve)
 
 # Housekeeping settings
-DEFAULT_EXPIRED_DELETE_HRS = 2  # hours (0 hours = do not delete)
-DEFAULT_INFO_DELETE_HRS = 12  # hours (0 hours = do not delete)
+DELETE_EXPIRED_AFTER = 2 * 60 * 60  # seconds (0 = do not delete)
+DELETE_INFO_AFTER = 12 * 60 * 60  # seconds (0 = do not delete)
 
 # Send verification emails to new BasicAuth users
 EMAIL_VERIFICATION = False
@@ -261,3 +265,6 @@ FWD_DESTINATIONS = [
 ]  # type: List[Tuple]
 
 # valid actions=['*', 'alerts', 'actions', 'open', 'assign', 'ack', 'unack', 'shelve', 'unshelve', 'close', 'delete']
+
+# Webhooks
+DEFAULT_ENVIRONMENT = 'Production'  # default environment used by webhooks, value must be in ALLOWED_ENVIRONMENTS
