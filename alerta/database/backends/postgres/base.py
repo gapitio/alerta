@@ -1169,6 +1169,7 @@ class Backend(Database):
     def delete_on_call(self, id):
         delete = """
             DELETE FROM on_calls
+
             WHERE id=%s
             RETURNING id
         """

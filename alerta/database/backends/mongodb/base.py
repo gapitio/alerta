@@ -1138,6 +1138,7 @@ class Backend(Database):
             return data
 
     def get_notification_rule(self, id: str, customers: 'list | None' = None):
+
         query = {'_id': id}
 
         if customers:
