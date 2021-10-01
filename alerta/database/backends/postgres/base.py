@@ -34,7 +34,7 @@ class HistoryAdapter:
             a = adapt(o)
             if hasattr(a, 'prepare'):
                 a.prepare(self.conn)
-            return a.getquoted().decode("utf-8")
+            return a.getquoted().decode('utf-8')
 
         return '({}, {}, {}, {}, {}, {}, {}, {}::timestamp, {}, {})::history'.format(
             quoted(self.history.id),
@@ -53,10 +53,10 @@ class HistoryAdapter:
         return str(self.getquoted())
 
 
-Record = namedtuple("Record", [
-    "id", "resource", "event", "environment", "severity", "status", "service",
-    "group", "value", "text", "tags", "attributes", "origin", "update_time",
-    "user", "timeout", "type", "customer",
+Record = namedtuple('Record', [
+    'id', 'resource', 'event', 'environment', 'severity', 'status', 'service',
+    'group', 'value', 'text', 'tags', 'attributes', 'origin', 'update_time',
+    'user', 'timeout', 'type', 'customer',
 ])
 
 
