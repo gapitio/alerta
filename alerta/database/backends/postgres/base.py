@@ -90,13 +90,8 @@ class Backend(Database):
             conn = self.connect()
 
             with app.open_resource('sql/schema.sql') as f:
-                try:
-                    conn.cursor().execute(f.read())
-                    conn.commit()
-                except Exception as e:
-                    if raise_on_error:
-                        raise
-                    app.logger.warning(e)
+                conn.cursor().execute(f.read())
+                conn.commit()
 
         register_adapter(dict, Json)
         register_adapter(datetime, self._adapt_datetime)
@@ -2168,7 +2163,7 @@ class Backend(Database):
                  WHERE (severity=%(inform_severity)s
                         AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(info_threshold)s seconds'))
             """
-            self._deleteall(delete, {'inform_severity': alarm_model.DEFAULT_INFORM_SEVERITY, 'info_threshold': info_threshold})
+            self._deleteall(delete, {'info_threshold': info_threshold})
 
         # get list of alerts to be newly expired
         select = """

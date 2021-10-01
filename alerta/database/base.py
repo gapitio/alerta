@@ -44,6 +44,7 @@ def load_backend(backend):
 
 
 class Database(Base):
+
     def __init__(self, app=None):
         self.app = None
         if app is not None:
@@ -643,6 +644,7 @@ class Database(Base):
 
 
 class QueryBuilder(Base):
+
     def __init__(self, app=None):
         self.app = None
         if app is not None:
