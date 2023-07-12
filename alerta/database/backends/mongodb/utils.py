@@ -370,7 +370,7 @@ class OnCalls(QueryBuilder):
         query = dict()
         params = MultiDict(params)
 
-       # customer
+        # customer
         if customers:
             customer_query = {'customer': {'$in': customers}}
         else:
