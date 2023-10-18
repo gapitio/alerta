@@ -25,6 +25,7 @@ class Status(StrEnum):
     Open = 'open'
     Assign = 'assign'
     Ack = 'ack'
+    Unack = 'unack'
     Shelved = 'shelved'
     Blackout = 'blackout'
     Closed = 'closed'
