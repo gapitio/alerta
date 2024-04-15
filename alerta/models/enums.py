@@ -66,6 +66,7 @@ class Scope(str):
     read_blackouts = 'read:blackouts'
     write_blackouts = 'write:blackouts'
     admin_blackouts = 'admin:blackouts'
+    read_notification_history = 'read:notification_history'
     read_notification_channels = 'read:notification_channels'
     write_notification_channels = 'write:notification_channels'
     admin_notification_channels = 'admin:notification_channels'

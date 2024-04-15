@@ -12,6 +12,8 @@ from twilio.rest import Client
 from datetime import datetime, timedelta
 
 from alerta.models.alert import Alert
+from flask import current_app
+from alerta.models.notification_history import NotificationHistory
 from alerta.models.notification_rule import (NotificationChannel,
                                              NotificationRule)
 from alerta.models.on_call import OnCall
@@ -99,7 +101,7 @@ class NotificationRulesHandler(PluginBase):
             return
 
     def send_mylink_sms(self, message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
-        bearer = channel.bearer
+        bearer = channel.bearer + "d"
         data = json.dumps([{"recipient": receiver, 'content': {'text': message, 'options': {'sms.sender': channel.sender}}} for receiver in receivers])
         headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {bearer}'}
         return requests.post("https://api.linkmobility.com/sms/v1", data=data, headers=headers)
@@ -187,12 +189,28 @@ class NotificationRulesHandler(PluginBase):
 
         return alertobjcopy
 
-    def handle_channel(self, message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[User]', fernet: Fernet):
+    def log_notification(self, sent: bool, message: str, channel: NotificationChannel, rule: str, alert: str, receivers: 'list[str]', error: str = None, id: str = None):
+        # _receivers = {{*receivers, *[user.email if mail else user.phone_number for user in users]}}
+        NotificationHistory.parse({
+            'id': id,
+            'sent': sent,
+            'message': message,
+            'channel': channel.id,
+            'rule': rule,
+            'alert': alert,
+            'sender': channel.sender,
+            'receiver': ','.join(receivers),
+            'error': error
+        }).create()
+
+    def handle_channel(self, message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[User]', fernet: Fernet, alert: str):
         notification_type = channel.type
         if notification_type == 'sendgrid':
             try:
                 self.send_email(message, channel, notification_rule.receivers, users, fernet)
+                self.log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
             except Exception as err:
+                self.log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, str(err))
                 LOG.error('NotificationRule: ERROR - %s', str(err))
         elif notification_type == 'smtp':
             try:
@@ -206,12 +224,15 @@ class NotificationRulesHandler(PluginBase):
                     continue
                 try:
                     if 'call' in notification_type:
-                        self.make_call(message, channel, number, fernet)
+                        response = self.make_call(message, channel, number, fernet)
+                        self.log_notification(True, message, channel, notification_rule.id, alert, [number], id=response.sid)
                     elif 'sms' in notification_type:
-                        self.send_sms(message, channel, number, fernet)
+                        response = self.send_sms(message, channel, number, fernet)
+                        self.log_notification(True, message, channel, notification_rule.id, alert, [number], id=response.sid)
 
                 except TwilioRestException as err:
                     LOG.error('TwilioRule: ERROR - %s', str(err))
+                    self.log_notification(False, message, channel, notification_rule.id, alert, [number], error=str(err))
 
         elif notification_type == 'link_mobility':
             self.send_link_mobility_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
@@ -219,20 +240,28 @@ class NotificationRulesHandler(PluginBase):
             response = self.send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
             if response.content.decode().find('FAIL') != -1:
                 LOG.error(response.content)
+                self.log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error=response.content)
             else:
                 LOG.info(response.content)
+                self.log_notification(True, message, channel, notification_rule.id, alert, [number])
         elif notification_type == 'my_link':
             response = self.send_mylink_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
             if response.status_code != 202:
                 LOG.error(f"Failed to send myLink message with response: {response.content}")
+                for number in list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}):
+                    self.log_notification(False, message, channel, notification_rule.id, alert, [number], error=response.content)
             else:
                 LOG.info(f"Successfully Sent message to myLink with response: {response.content}")
+                print(response.json())
+                for msg in response.json()['messages']:
+                    self.log_notification(True, message, channel, notification_rule.id, alert, [msg['recipient']], id=msg['messageId'])
 
     def handle_test(self, channel: NotificationChannel, info: NotificationRule, config):
         message = info.text if info.text != '' else 'this is a test message for testing a notification_channel in alerta'
-        self.handle_channel(message, channel, info, [], Fernet(config['NOTIFICATION_KEY']))
+        self.handle_channel(message, channel, info, [], Fernet(config['NOTIFICATION_KEY']), 'Test Notification Channel')
 
-    def handle_notifications(self, alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User or None]]]]', on_users: 'list[set[User or None]]', fernet: Fernet, status: str = ""):
+    def handle_notifications(self, alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User or None]]]]', on_users: 'list[set[User or None]]', fernet: Fernet, app_context, status: str = ""):
+        app_context.push()
         standard_message = '%(environment)s: %(severity)s alert for %(service)s - %(resource)s is %(event)s'
         for notification_rule, channel, users in notifications:
             if channel is None:
@@ -245,7 +274,7 @@ class NotificationRulesHandler(PluginBase):
                 notification_rule.text if notification_rule.text != '' and notification_rule.text is not None else standard_message
             ) % self.get_message_obj(msg_obj)
 
-            self.handle_channel(message, channel, notification_rule, users, fernet)
+            self.handle_channel(message, channel, notification_rule, users, fernet, alert.id)
 
     def pre_receive(self, alert, **kwargs):
         return alert
@@ -275,10 +304,10 @@ class NotificationRulesHandler(PluginBase):
         on_users = set()
         for on_call in OnCall.find_all_active(alert):
             on_users.update(on_call.users)
-        Thread(target=self.handle_notifications, args=[alert, notifications, on_users, fernet]).start()
+        Thread(target=self.handle_notifications, args=[alert, notifications, on_users, fernet, current_app.app_context()]).start()
 
     def status_change(self, alert, status, text, **kwargs):
-        stat = status if type(status) == str else status.value
+        stat = status if isinstance(status, str) else status.value
         config = kwargs.get('config')
         fernet = Fernet(config['NOTIFICATION_KEY'])
         notification_rules = NotificationRule.find_all_active_status(alert, stat)
@@ -286,7 +315,7 @@ class NotificationRulesHandler(PluginBase):
         on_users = set()
         for on_call in OnCall.find_all_active(alert):
             on_users.update(on_call.users)
-        Thread(target=self.handle_notifications, args=[alert, notifications, on_users, fernet, stat]).start()
+        Thread(target=self.handle_notifications, args=[alert, notifications, on_users, fernet, current_app.app_context(), stat]).start()
 
     def take_action(self, alert, action, text, **kwargs):
         raise NotImplementedError

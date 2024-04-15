@@ -323,6 +323,23 @@ class Database(Base):
     def delete_notification_group(self, id):
         raise NotImplementedError
 
+    # NOTIFICATION HISTORY
+
+    def create_notification_history(self, notification_history):
+        raise NotImplementedError
+
+    def get_notification_history(self, id, customers=None):
+        raise NotImplementedError
+
+    def get_notifications_history(self, query=None, page=None, page_size=None):
+        raise NotImplementedError
+
+    def get_notifications_history_count(self, query=None):
+        raise NotImplementedError
+
+    def confirm_notification_history(self, id):
+        raise NotImplementedError
+
     # ESCALATION RULES
 
     def create_escalation_rule(self, escalation_rule):
@@ -596,6 +613,7 @@ class QueryBuilder(Base):
         self.__class__.blackouts = type('BlackoutsQueryBuilder', (cls.Blackouts, self.Blackouts, QueryBuilder), {})
         self.__class__.notification_channels = type('NotificationChannelsQueryBuilder', (cls.NotificationChannels, self.NotificationChannels, QueryBuilder), {})
         self.__class__.notification_rules = type('NotificationRulesQueryBuilder', (cls.NotificationRules, self.NotificationRules, QueryBuilder), {})
+        self.__class__.notification_history = type('NotificationRulesHistoryBuilder', (cls.NotificationHistory, self.NotificationHistory, QueryBuilder), {})
         self.__class__.escalation_rules = type('EscalationRulesQueryBuilder', (cls.EscalationRules, self.EscalationRules, QueryBuilder), {})
         self.__class__.on_calls = type('OnCallQueryBuilder', (cls.OnCalls, self.OnCalls, QueryBuilder), {})
         self.__class__.notification_groups = type('NotificationGroupQueryBuilder', (cls.NotificationGroups, self.NotificationGroups, QueryBuilder), {})
@@ -619,6 +637,12 @@ class QueryBuilder(Base):
             raise NotImplementedError('BlackoutsQueryBuilder has no from_params() method')
 
     class NotificationChannels:
+
+        @staticmethod
+        def from_params(params, customers=None, query_time=None):
+            raise NotImplementedError('NotificationChannelsQueryBuilder has no from_params() method')
+
+    class NotificationHistory:
 
         @staticmethod
         def from_params(params, customers=None, query_time=None):

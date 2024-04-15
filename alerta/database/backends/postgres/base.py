@@ -169,7 +169,7 @@ class Backend(Database):
     def destroy(self):
         conn = self.connect()
         cursor = conn.cursor()
-        for table in ['alerts', 'blackouts', 'notification_rules', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'users', ]:
+        for table in ['alerts', 'blackouts', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'users', ]:
             cursor.execute(f'DROP TABLE IF EXISTS {table}')
         conn.commit()
         conn.close()
@@ -1241,6 +1241,53 @@ class Backend(Database):
             RETURNING id
         """
         return self._deleteone(delete, (id,), returning=True)
+
+# NOTIFICATION SENT
+
+    def create_notification_history(self, notification_history):
+        insert = """
+            INSERT INTO notification_history (id, sent, message, channel, rule, alert, receiver, sender, sent_time, error)
+            VALUES (%(id)s, %(sent)s, %(message)s, %(channel)s, %(rule)s, %(alert)s, %(receiver)s, %(sender)s, %(sent_time)s, %(error)s)
+            RETURNING *
+        """
+        return self._insert(insert, vars(notification_history))
+
+    def get_notification_history(self, id):
+        select = """
+            SELECT * FROM notification_history
+            WHERE id=%(id)s
+        """
+        return self._fetchone(select, {'id': id})
+
+    def get_notifications_history(self, query=None, page=None, page_size=None):
+        query = query or Query()
+        select = """
+            SELECT * FROM notification_history
+             WHERE {where}
+          ORDER BY sent_time desc
+        """.format(
+            where=query.where
+        )
+        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_notifications_history_count(self, query=None):
+        query = query or Query()
+        select = """
+            SELECT COUNT(1) FROM notification_groups
+             WHERE {where}
+        """.format(
+            where=query.where
+        )
+        return self._fetchone(select, query.vars).count
+
+    def confirm_notification_history(self, id):
+        update = """
+            UPDATE notification_groups
+            SET confirmed=true, confirmed_time=%(time)s
+            WHERE id=%(id)s
+            RETURNING *
+        """
+        return self._updateone(update, {'id': id, 'time': datetime.utcnow()}, returning=True)
 
 # ESCALATION RULES
 

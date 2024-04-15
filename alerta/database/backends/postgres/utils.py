@@ -352,6 +352,43 @@ class NotificationRules(QueryBuilder):
         return Query(where='\n'.join(query), vars=qvars, sort=','.join(sort), group='')
 
 
+class NotificationHistory(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', None, 0),
+        'sent_time': ('sent_time', 'sent_time', -1),
+    }
+
+    @staticmethod
+    def from_params(params: MultiDict, customers=None, query_time=None):
+
+        if params.get('q', None):
+            try:
+                parser = QueryParser()
+                query = [parser.parse(
+                    query=params['q'],
+                    default_field=params.get('q.df')
+                )]
+                qvars = dict()  # type: Dict[str, Any]
+            except ParseException as e:
+                raise ApiError('Failed to parse query string.', 400, [e])
+        else:
+            query = ['1=1']
+            qvars = dict()
+
+        # customer
+        if customers:
+            query.append('AND customer=ANY(%(customers)s)')
+            qvars['customers'] = customers
+
+        # filter, sort-by
+        query, qvars = QueryBuilder.filter_query(params, NotificationHistory.VALID_PARAMS, query, qvars)
+        sort = QueryBuilder.sort_by_columns(params, NotificationHistory.VALID_PARAMS)
+
+        return Query(where='\n'.join(query), vars=qvars, sort=','.join(sort), group='')
+
+
 class EscalationRules(QueryBuilder):
 
     VALID_PARAMS = {
