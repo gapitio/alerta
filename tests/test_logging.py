@@ -57,7 +57,6 @@ class LoggingTestCase(unittest.TestCase):
         self.assertEqual(create_blackout_request['request']['data'], {'environment': 'Production'})
 
         delete_blackout_request = json.loads(m.request_history[1].text)
-
         self.assertEqual(delete_blackout_request['event'], 'blackout-deleted')
         self.assertEqual(delete_blackout_request['category'], 'write')
         self.assertEqual(delete_blackout_request['resource']['type'], 'blackout')
