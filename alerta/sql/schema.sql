@@ -266,8 +266,8 @@ BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
     UPDATE public.notification_rules SET event=NULL WHERE event='';
     UPDATE public.notification_rules SET "group"=NULL WHERE "group"='';
-    
-END$$;  
+
+END$$;
 
 CREATE TABLE IF NOT EXISTS on_calls(
     id text PRIMARY KEY,
@@ -291,6 +291,21 @@ CREATE TABLE IF NOT EXISTS notification_groups(
     id text PRIMARY KEY,
     name text UNIQUE NOT NULL,
     users text[]
+);
+
+CREATE TABLE IF NOT EXISTS notification_history(
+    id text PRIMARY KEY,
+    sent bool,
+    message text,
+    channel text,
+    rule text,
+    alert text,
+    receiver text,
+    sender text,
+    sent_time timestamp without time zone,
+    confirmed boolean,
+    confirmed_time timestamp without time zone,
+    error text
 );
 
 
