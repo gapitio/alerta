@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
 from alerta.app import db
 from alerta.database.base import Query
-
-if TYPE_CHECKING:
-    from alerta.models.alert import Alert
 
 JSON = Dict[str, Any]
 
@@ -21,7 +18,7 @@ class NotificationGroup:
     def parse(cls, json: JSON) -> 'NotificationGroup':
         if not isinstance(json.get('users', []), list):
             raise ValueError('users must be a list')
-        if "name" not in json:
+        if 'name' not in json:
             raise ValueError('Missing required key: "name"')
 
         notification_group = NotificationGroup(

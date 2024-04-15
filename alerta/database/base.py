@@ -363,7 +363,6 @@ class Database(Base):
     def delete_escalation_rule(self, id):
         raise NotImplementedError
 
-
     # ON CALLS
 
     def create_on_call(self, on_call):

@@ -467,7 +467,7 @@ class Backend(Database):
             FROM alerts
             WHERE status='open' AND last_receive_time < %(etime)s
         """
-        return self._fetchall(select, {"etime": datetime.utcnow() - timedelta(minutes=current_app.config['ESCALATE_TIME'])}, limit=1000)
+        return self._fetchall(select, {'etime': datetime.utcnow() - timedelta(minutes=current_app.config['ESCALATE_TIME'])}, limit=1000)
 
     def get_alert_history(self, alert, page=None, page_size=None):
         select = """
@@ -1081,7 +1081,7 @@ class Backend(Database):
             AND reactivate IS NOT NULL
             AND reactivate < %(time)s
         """
-        return self._fetchall(select, {"time": time})
+        return self._fetchall(select, {'time': time})
 
     def get_notification_rules_active_status(self, alert, status):
         select = """
@@ -1102,7 +1102,7 @@ class Backend(Database):
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
-        return self._fetchall(select, {**vars(alert), "status": status})
+        return self._fetchall(select, {**vars(alert), 'status': status})
 
     def update_notification_rule(self, id, **kwargs):
         update = """
@@ -1349,7 +1349,7 @@ class Backend(Database):
                 AND (e.use_advanced_severity=TRUE OR e.severity='{}' OR ARRAY[a.severity] <@ e.severity)
                 AND (e.use_advanced_severity=FALSE OR ((e.advanced_severity[s].from_='{}' OR ARRAY[a.previous_severity] <@ e.advanced_severity[s].from_) AND (e.advanced_severity[s].to='{}' OR ARRAY[a.severity] <@ e.advanced_severity[s].to)))
         """
-        return self._fetchall(select, {"now": datetime.utcnow()}, limit='ALL')
+        return self._fetchall(select, {'now': datetime.utcnow()}, limit='ALL')
 
     def update_escalation_rule(self, id, **kwargs):
         update = """

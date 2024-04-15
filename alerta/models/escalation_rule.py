@@ -4,24 +4,24 @@ from uuid import uuid4
 
 from alerta.app import db
 from alerta.database.base import Query
-from alerta.utils.response import absolute_url
-from alerta.models.notification_rule import AdvancedSeverity
 from alerta.models.alert import Alert
+from alerta.models.notification_rule import AdvancedSeverity
+from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
 
 
 def alert_from_record(rec) -> 'dict':
     return {
-        "id": rec.id,
-        "resource": rec.resource,
-        "event": rec.event,
-        "severity": rec.severity,
-        "environment": rec.environment,
-        "service": rec.service,
-        "timeout": rec.timeout,
-        "value": rec.value,
-        "text": rec.text,
+        'id': rec.id,
+        'resource': rec.resource,
+        'event': rec.event,
+        'severity': rec.severity,
+        'environment': rec.environment,
+        'service': rec.service,
+        'timeout': rec.timeout,
+        'value': rec.value,
+        'text': rec.text,
     }
 
 
@@ -229,8 +229,6 @@ class EscalationRule:
             end_time=rec.end_time,
             days=rec.days,
         )
-    
-
 
     @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'EscalationRule':

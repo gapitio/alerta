@@ -1,18 +1,18 @@
 import json
 import logging
 import smtplib
+from datetime import datetime, timedelta
 from threading import Thread
 
 import requests
 from cryptography.fernet import Fernet, InvalidToken
+from flask import current_app
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
-from datetime import datetime, timedelta
 
 from alerta.models.alert import Alert
-from flask import current_app
 from alerta.models.notification_history import NotificationHistory
 from alerta.models.notification_rule import (NotificationChannel,
                                              NotificationRule)
@@ -101,10 +101,10 @@ class NotificationRulesHandler(PluginBase):
             return
 
     def send_mylink_sms(self, message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
-        bearer = channel.bearer + "d"
-        data = json.dumps([{"recipient": receiver, 'content': {'text': message, 'options': {'sms.sender': channel.sender}}} for receiver in receivers])
+        bearer = channel.bearer + 'd'
+        data = json.dumps([{'recipient': receiver, 'content': {'text': message, 'options': {'sms.sender': channel.sender}}} for receiver in receivers])
         headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {bearer}'}
-        return requests.post("https://api.linkmobility.com/sms/v1", data=data, headers=headers)
+        return requests.post('https://api.linkmobility.com/sms/v1', data=data, headers=headers)
 
     def send_link_mobility_sms(self, message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
         numberOfReceivers = len(receivers)
@@ -247,11 +247,11 @@ class NotificationRulesHandler(PluginBase):
         elif notification_type == 'my_link':
             response = self.send_mylink_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
             if response.status_code != 202:
-                LOG.error(f"Failed to send myLink message with response: {response.content}")
+                LOG.error(f'Failed to send myLink message with response: {response.content}')
                 for number in list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}):
                     self.log_notification(False, message, channel, notification_rule.id, alert, [number], error=response.content)
             else:
-                LOG.info(f"Successfully Sent message to myLink with response: {response.content}")
+                LOG.info(f'Successfully Sent message to myLink with response: {response.content}')
                 print(response.json())
                 for msg in response.json()['messages']:
                     self.log_notification(True, message, channel, notification_rule.id, alert, [msg['recipient']], id=msg['messageId'])
@@ -260,7 +260,7 @@ class NotificationRulesHandler(PluginBase):
         message = info.text if info.text != '' else 'this is a test message for testing a notification_channel in alerta'
         self.handle_channel(message, channel, info, [], Fernet(config['NOTIFICATION_KEY']), 'Test Notification Channel')
 
-    def handle_notifications(self, alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User or None]]]]', on_users: 'list[set[User or None]]', fernet: Fernet, app_context, status: str = ""):
+    def handle_notifications(self, alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User or None]]]]', on_users: 'list[set[User or None]]', fernet: Fernet, app_context, status: str = ''):
         app_context.push()
         standard_message = '%(environment)s: %(severity)s alert for %(service)s - %(resource)s is %(event)s'
         for notification_rule, channel, users in notifications:
@@ -269,7 +269,7 @@ class NotificationRulesHandler(PluginBase):
 
             if notification_rule.use_oncall:
                 users.update(on_users)
-            msg_obj = {**alert.serialize, "status": status} if status != "" else alert.serialize
+            msg_obj = {**alert.serialize, 'status': status} if status != '' else alert.serialize
             message = (
                 notification_rule.text if notification_rule.text != '' and notification_rule.text is not None else standard_message
             ) % self.get_message_obj(msg_obj)
@@ -289,9 +289,9 @@ class NotificationRulesHandler(PluginBase):
                     bearer = data['access_token']
                     timeout = now + timedelta(0, data['expires_in'])
                     channel = channel.update_bearer(bearer, timeout)
-                    LOG.info(f"Updated access_token for myLink channel {channel.id}")
+                    LOG.info(f'Updated access_token for myLink channel {channel.id}')
                 else:
-                    LOG.error(f"Failed to update access token for myLink channel {channel.id} with response: {response.status_code} {response.content}")
+                    LOG.error(f'Failed to update access token for myLink channel {channel.id} with response: {response.status_code} {response.content}')
         return channel
 
     def post_receive(self, alert: 'Alert', **kwargs):

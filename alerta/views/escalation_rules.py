@@ -1,18 +1,16 @@
 from flask import current_app, g, jsonify, request
 from flask_cors import cross_origin
 
-from alerta.app import qb, alarm_model
+from alerta.app import alarm_model, qb
 from alerta.auth.decorators import permission
 from alerta.exceptions import ApiError
 from alerta.models.alert import Alert
-from alerta.models.enums import Scope
+from alerta.models.enums import Scope, TrendIndication
 from alerta.models.escalation_rule import EscalationRule
-from alerta.utils.api import assign_customer
+from alerta.utils.api import assign_customer, process_alert
 from alerta.utils.audit import write_audit_trail
 from alerta.utils.paging import Page
 from alerta.utils.response import absolute_url, jsonp
-from alerta.models.enums import TrendIndication
-from alerta.utils.api import process_alert
 
 from . import api
 

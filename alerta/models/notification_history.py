@@ -1,10 +1,9 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
 from alerta.app import db
 from alerta.database.base import Query
-
 
 JSON = Dict[str, Any]
 
@@ -21,9 +20,9 @@ class NotificationHistory:
         self.alert = alert
         self.receiver = receiver
         self.sender = sender
-        self.error = kwargs.get("error", None)
-        self.confirmed = kwargs.get("confirmed", None)
-        self.confirmed_time = kwargs.get("confirmed_time", None)
+        self.error = kwargs.get('error', None)
+        self.confirmed = kwargs.get('confirmed', None)
+        self.confirmed_time = kwargs.get('confirmed_time', None)
         # confirmed boolean,
         # confirmed_time timestamp without time zone
 
@@ -45,17 +44,17 @@ class NotificationHistory:
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
-            "sent": self.sent,
-            "message": self.message,
-            "channel": self.channel,
-            "rule": self.rule,
-            "alert": self.alert,
-            "receiver": self.receiver,
-            "sender": self.sender,
-            "sent_time": self.sent_time,
-            "confirmed": self.confirmed,
-            "confirmed_time": self.confirmed_time,
-            "error": self.error
+            'sent': self.sent,
+            'message': self.message,
+            'channel': self.channel,
+            'rule': self.rule,
+            'alert': self.alert,
+            'receiver': self.receiver,
+            'sender': self.sender,
+            'sent_time': self.sent_time,
+            'confirmed': self.confirmed,
+            'confirmed_time': self.confirmed_time,
+            'error': self.error
         }
 
     def __repr__(self) -> str:
@@ -65,17 +64,17 @@ class NotificationHistory:
     def from_document(cls, doc: Dict[str, Any]) -> 'NotificationHistory':
         return NotificationHistory(
             id=doc.get('id', None) or doc.get('_id'),
-            sent=doc["sent"],
-            message=doc["message"],
-            channel=doc["channel"],
-            rule=doc["rule"],
-            alert=doc["alert"],
-            receiver=doc["receiver"],
-            sender=doc["sender"],
-            sent_time=doc["sent_time"],
-            confirmed=doc["confirmed"],
-            confirmed_time=doc["confirmed_time"],
-            error=doc.get("error", None)
+            sent=doc['sent'],
+            message=doc['message'],
+            channel=doc['channel'],
+            rule=doc['rule'],
+            alert=doc['alert'],
+            receiver=doc['receiver'],
+            sender=doc['sender'],
+            sent_time=doc['sent_time'],
+            confirmed=doc['confirmed'],
+            confirmed_time=doc['confirmed_time'],
+            error=doc.get('error', None)
         )
 
     @ classmethod

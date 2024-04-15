@@ -877,11 +877,11 @@ class NotificationRuleTestCase(unittest.TestCase):
         }
         to_critical_major_from_all = {
             **all,
-            'advancedSeverity': [{'from': [], 'to':['major', 'critical']}],
+            'advancedSeverity': [{'from': [], 'to': ['major', 'critical']}],
         }
         to_normal_from_critical_major = {
             **all,
-            'advancedSeverity': [{'from': ['major', 'critical'], 'to':['normal']}],
+            'advancedSeverity': [{'from': ['major', 'critical'], 'to': ['normal']}],
         }
         alert_base = {
             'environment': 'Production',

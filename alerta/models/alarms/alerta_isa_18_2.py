@@ -11,7 +11,7 @@ from flask import current_app
 
 from alerta.exceptions import InvalidAction
 from alerta.models.alarms import AlarmModel
-from alerta.models.enums import Action, Severity, Status
+from alerta.models.enums import Severity, Status
 
 SEVERITY_MAP = {
     Severity.Security: 10,
