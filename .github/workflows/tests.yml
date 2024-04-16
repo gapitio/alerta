@@ -160,10 +160,16 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r requirements-ci.txt
           pip install .
-      - name: Integration Test with pytest
-        id: integration-test
+      - name: Integration Test (LDAP) with pytest
+        id: integration-test-ldap
         env:
-          DATABASE_URL: mongodb://127.0.0.1:27017/alerta
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
+        run: |
+          pytest tests/integration/test_auth_ldap.py
+      - name: Integration Test (SAML) with pytest
+        id: integration-test-saml
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
         run: |
           pytest tests/integration/test_auth_saml.py
       - uses: act10ns/slack@v2
