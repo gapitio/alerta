@@ -60,7 +60,7 @@ class NotificationRule:
             raise ValueError('Missing mandatory value for "environment"')
         if not channel_id:
             raise ValueError('Missing mandatory value for "notification_channel"')
-        if not type(receivers) == list:
+        if not isinstance(receivers, list):
             raise ValueError('Missing mandatory value for "receivers"')
 
         self.id = kwargs.get('id') or str(uuid4())
