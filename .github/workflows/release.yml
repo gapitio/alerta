@@ -73,6 +73,30 @@ jobs:
         run: |
           python3 -m pip install --upgrade build
           python3 -m build
+          zip alerta-api.zip -r dist/*
+          tar cvfz alerta-api.tar.gz dist/*
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Zip File
+        id: upload-zip-file
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./alerta-api.zip
+      - name: Upload Compressed TAR File
+        id: upload-tarball
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./alerta-api.tar.gz
 
       - uses: act10ns/slack@v2
         with:
