@@ -221,6 +221,13 @@ END$$;
 
 DO $$
 BEGIN
+    ALTER TABLE notification_rules ADD COLUMN excluded_tags text[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
     ALTER TABLE notification_rules ADD COLUMN status text[];
     UPDATE notification_rules SET status = '{}';
 EXCEPTION
