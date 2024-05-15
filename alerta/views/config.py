@@ -23,6 +23,7 @@ def config():
             }
         },
         'auth_required': current_app.config['AUTH_REQUIRED'],
+        'delete_alert_scope_enforced': 'delete:alerts' in current_app.config['DELETE_SCOPES'],
         'allow_readonly': current_app.config['ALLOW_READONLY'],
         'readonly_scopes': current_app.config['READONLY_SCOPES'],
         'provider': current_app.config['AUTH_PROVIDER'],

@@ -123,59 +123,53 @@ class StateMachine(AlarmModel):
             )
             return severity, status
 
-        # if alert has non-default status then assume state transition has been handled
-        # by a pre_receive() plugin and return the current severity and status
         if not action and alert.status != StateMachine.DEFAULT_STATUS:
             return next_state('External State Change, Any (*) -> Any (*)', current_severity, alert.status)
 
-        # Operator Shelve, Any (*) -> Shelve (E)
         if action == ACTION_SHELVE:
             return next_state('Operator Shelve, Any (*) -> Shelve (E)', current_severity, Status.Shelved)
-        # Operator Unshelve, Shelve (E) -> Normal (A) or Unack (B)
+
         if action == ACTION_UNSHELVE:
             if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
                 return next_state('Operator Unshelve, Shelve (E) -> Normal (A)', current_severity, Status.Closed)
             else:
                 return next_state('Operator Unshelve, Shelve (E) -> Unack (B)', current_severity, Status.Open)
-        # Operator Open, Any(*) to Open
+
         if action == ACTION_OPEN:
             if state == Status.Open:
                 raise InvalidAction(f'alert is already in {state} status')
+            if state == Status.Closed:
+                return next_state('Operator Open, Any(*) to Open', current_severity, Status.Unack)
+
             return next_state('Operator Open, Any(*) to Open', current_severity, Status.Open)
 
-        # Alarm Occurs, Normal (A) -> Unack (B)
+        if action == ACTION_ACK:
+            if state == Status.Open:
+                return next_state('Operator Ack, Unack (B) -> Ack (C)', current_severity, Status.Ack)
+            if state == Status.Unack:
+                return next_state(' Operator Ack, RTN Unack (D) -> Normal (A)', current_severity, Status.Closed)
+
+        if action == ACTION_UNACK:
+            if state == Status.Ack:
+                return next_state('Operator Unack, Ack (C) -> Unack (B)', current_severity, Status.Open)
+
+        if state == Status.Unack:
+            if current_severity != StateMachine.DEFAULT_NORMAL_SEVERITY:
+                return next_state('Alarm Occurs, Unack (A) -> Open (B)', current_severity, Status.Open)
+
         if state == Status.Closed:
             if current_severity != StateMachine.DEFAULT_NORMAL_SEVERITY:
                 return next_state('Alarm Occurs, Normal (A) -> Unack (B)', current_severity, Status.Open)
-        # Operator Ack, Unack (B) -> Ack (C)
-        if state == Status.Open:
-            if action == ACTION_ACK:
-                return next_state('Operator Ack, Unack (B) -> Ack (C)', current_severity, Status.Ack)
-        # Re-Alarm, Ack (C) -> Unack (B)
+
         if state == Status.Ack:
+            if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
+                return next_state('Ack (C) -> Normal', current_severity, Status.Closed)
             if self.trend(previous_severity, current_severity) == MORE_SEVERE:
                 if previous_severity != StateMachine.DEFAULT_PREVIOUS_SEVERITY:
                     return next_state('Re-Alarm, Ack (C) -> Unack (B)', current_severity, Status.Open)
-        # Process RTN Alarm Clears, Ack (C) -> Normal (A)
-        if state == Status.Ack:
-            if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
-                return next_state('Process RTN Alarm Clears, Ack (C) -> Normal (A)', current_severity, Status.Closed)
-        # Operator Unack, Ack (C) -> Open (B)
-        if state == Status.Ack:
-            if action == ACTION_UNACK:
-                return next_state('Operator Unack, Ack (C) -> Unack (B)', current_severity, Status.Open)
-        # Process RTN and Alarm Clears, Unack (B) -> RTN Unack (D)
         if state == Status.Open:
             if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
-                return next_state('Process RTN and Alarm Clears, Unack (B) -> RTN Unack (D)', current_severity, Status.Unack)
-        # Operator Ack, RTN Unack (D) -> Normal (A)
-        if state == Status.Unack:
-            if action == ACTION_ACK:
-                return next_state(' Operator Ack, RTN Unack (D) -> Normal (A)', current_severity, Status.Closed)
-        # Re-Alarm Unack, RTN Unack (D) -> Unack (B)
-        if state == Status.Unack:
-            if current_severity != StateMachine.DEFAULT_NORMAL_SEVERITY:
-                return next_state('Re-Alarm Unack, RTN Unack (D) -> Unack (B)', current_severity, Status.Open)
+                return next_state('Open -> Unack', current_severity, Status.Unack)
 
         # Return from Suppressed-by-design (F) -> Normal (A) or Unack (B)
         if state == F_DSUPR:
