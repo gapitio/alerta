@@ -1015,9 +1015,9 @@ class Backend(Database):
 
     def create_notification_rule(self, notification_rule):
         insert = """
-            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, status, reactivate,
+            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, status, reactivate, excluded_tags,
                 customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, severity, text, channel_id, advanced_severity, use_advanced_severity)
-            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(status)s, %(reactivate)s,
+            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(status)s, %(reactivate)s, %(excluded_tags)s,
                 %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(severity)s, %(text)s, %(channel_id)s, %(advanced_severity)s::severity_advanced[], %(use_advanced_severity)s )
             RETURNING *
         """
@@ -1068,6 +1068,7 @@ class Backend(Database):
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
               AND (tags='{}' OR tags <@ %(tags)s)
+              AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
               AND (status='{}' OR ARRAY[%(status)s] <@ status)
               AND active=true
         """
@@ -1098,6 +1099,7 @@ class Backend(Database):
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
               AND (tags='{}' OR tags <@ %(tags)s)
+              AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
               AND ARRAY[%(status)s] <@ status
               AND active=true
         """
@@ -1124,6 +1126,8 @@ class Backend(Database):
             update += '"group"=%(group)s, ' if kwargs['group'] != '' else '"group"=NULL, '
         if 'tags' in kwargs:
             update += 'tags=%(tags)s, '
+        if 'excludedTags' in kwargs:
+            update += 'excluded_tags=%(excludedTags)s, '
         if 'customer' in kwargs:
             update += 'customer=%(customer)s, '
         if 'startTime' in kwargs:

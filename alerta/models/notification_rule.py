@@ -81,6 +81,7 @@ class NotificationRule:
         self.event = kwargs['event'] if kwargs.get('event', '') != '' else None
         self.group = kwargs['group'] if kwargs.get('group', '') != '' else None
         self.tags = kwargs.get('tags', None) or list()
+        self.excluded_tags = kwargs.get('excluded_tags', None) or list()
         self.customer = kwargs.get('customer', None)
         self.days = kwargs.get('days', None) or list()
         self.advanced_severity = kwargs.get('advanced_severity') or [AdvancedSeverity([], [])]
@@ -126,10 +127,13 @@ class NotificationRule:
 
     @classmethod
     def parse(cls, json: JSON) -> 'NotificationRule':
+        print(json.get('excludedTags', []))
         if not isinstance(json.get('service', []), list):
             raise ValueError('service must be a list')
         if not isinstance(json.get('tags', []), list):
             raise ValueError('tags must be a list')
+        if not isinstance(json.get('excludedTags', []), list):
+            raise ValueError('excluded tags must be a list')
         notification_rule = NotificationRule(
             id=json.get('id', None),
             name=json.get('name', None),
@@ -149,6 +153,7 @@ class NotificationRule:
             event=json.get('event', None),
             group=json.get('group', None),
             tags=json.get('tags', list()),
+            excluded_tags=json.get('excludedTags', list()),
             customer=json.get('customer', None),
             reactivate=json.get('reactivate', None),
             start_time=(
@@ -194,6 +199,7 @@ class NotificationRule:
             'event': self.event,
             'group': self.group,
             'tags': self.tags,
+            'excludedTags': self.excluded_tags,
             'customer': self.customer,
             'user': self.user,
             'createTime': self.create_time,
@@ -220,6 +226,8 @@ class NotificationRule:
             more += 'group=%r, ' % self.group
         if self.tags:
             more += 'tags=%r, ' % self.tags
+        if self.excluded_tags:
+            more += 'excluded_tags=%r, ' % self.excluded_tags
         if self.customer:
             more += 'customer=%r, ' % self.customer
         if self.severity:
@@ -261,6 +269,7 @@ class NotificationRule:
             event=doc.get('event', None),
             group=doc.get('group', None),
             tags=doc.get('tags', list()),
+            excluded_tags=doc.get('excludedTags', list()),
             customer=doc.get('customer', None),
             user=doc.get('user', None),
             create_time=doc.get('createTime', None),
@@ -308,6 +317,7 @@ class NotificationRule:
             event=rec.event,
             group=rec.group,
             tags=rec.tags,
+            excluded_tags=rec.excluded_tags,
             customer=rec.customer,
             user=rec.user,
             create_time=rec.create_time,
