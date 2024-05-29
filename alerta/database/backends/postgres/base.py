@@ -998,7 +998,6 @@ class Backend(Database):
             WHERE id=%(id)s
             RETURNING *
         """
-        print(update)
         kwargs['id'] = id
         kwargs['user'] = kwargs.get('user')
         return self._updateone(update, kwargs, returning=True)
@@ -1011,13 +1010,74 @@ class Backend(Database):
         """
         return self._deleteone(delete, (id,), returning=True)
 
+    # DELAYED NOTIFICATIONS
+
+    def create_delayed_notification(self, delayed_notification):
+        insert = """
+            INSERT INTO delayed_notifications (id, alert_id, notification_rule_id, delay_time)
+            VALUES (%(id)s, %(alert_id)s, %(notification_rule_id)s, %(delay_time)s )
+            RETURNING *
+        """
+        return self._insert(insert, vars(delayed_notification))
+
+    def get_delayed_notifications(self, query=None, page=None, page_size=None):
+        query = query or Query()
+        select = """
+            SELECT * FROM delayed_notifications
+             WHERE {where}
+          ORDER BY {order}
+        """.format(
+            where=query.where, order=query.sort
+        )
+        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_delayed_notification(self, id):
+        select = """
+            SELECT * FROM delayed_notifications
+            WHERE id=%(id)s
+        """
+        return self._fetchone(select, {'id': id})
+
+    def get_delayed_notifications_firing(self, time):
+        select = """
+            SELECT * FROM delayed_notifications
+            WHERE delay_time < %s
+        """
+        return self._fetchall(select, (time,))
+
+    def get_delayed_notifications_count(self, query=None):
+        query = query or Query()
+        select = """
+            SELECT COUNT(1) FROM delayed_notifications
+             WHERE {where}
+        """.format(
+            where=query.where
+        )
+        return self._fetchone(select, query.vars).count
+
+    def delete_delayed_notifications_alert(self, alert_id):
+        delete = """
+            DELETE FROM delayed_notifications
+            WHERE alert_id=%s
+            RETURNING id
+        """
+        return self._deleteall(delete, (alert_id,), returning=True)
+
+    def delete_delayed_notification(self, id):
+        delete = """
+            DELETE FROM delayed_notifications
+            WHERE id=%s
+            RETURNING id
+        """
+        return self._deleteone(delete, (id,), returning=True)
+
     # NOTIFICATION RULES
 
     def create_notification_rule(self, notification_rule):
         insert = """
-            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, status, reactivate, excluded_tags,
+            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, status, reactivate, excluded_tags, delay_time,
                 customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, severity, text, channel_id, advanced_severity, use_advanced_severity)
-            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(status)s, %(reactivate)s, %(excluded_tags)s,
+            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(status)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
                 %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(severity)s, %(text)s, %(channel_id)s, %(advanced_severity)s::severity_advanced[], %(use_advanced_severity)s )
             RETURNING *
         """
@@ -1134,6 +1194,8 @@ class Backend(Database):
             update += 'start_time=%(startTime)s, '
         if 'endTime' in kwargs:
             update += 'end_time=%(endTime)s, '
+        if 'delayTime' in kwargs:
+            update += 'delay_time=%(delayTime)s, '
         if 'days' in kwargs:
             update += 'days=%(days)s, '
         if 'status' in kwargs:

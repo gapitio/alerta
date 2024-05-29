@@ -297,6 +297,38 @@ class NotificationChannels(QueryBuilder):
         return Query(where=query, sort=sort, group=None)
 
 
+class NotificationDelays(QueryBuilder):
+
+    VALID_PARAMS = {
+        # field (column, sort-by, direction)
+        'id': ('id', 'id', 1),
+        'alert_id': ('alert_id', 'alert_id', 1),
+        'notification_rule_id': ('notification_rule_id', 'notification_rule_id', 1),
+        'delay_time': ('delay_time', 'delay_time', 1),
+    }
+
+    @staticmethod
+    def from_params(params: ImmutableMultiDict, customers=None, query_time=None):
+
+        query = dict()
+        params = MultiDict(params)
+
+        # customer
+        if customers:
+            customer_query = {'customer': {'$in': customers}}
+        else:
+            customer_query = None
+
+        # filter, sort-by
+        query = QueryBuilder.filter_query(params, NotificationDelays.VALID_PARAMS, query)
+        sort = QueryBuilder.sort_by_columns(params, NotificationDelays.VALID_PARAMS)
+
+        if customer_query:
+            query = {'$and': [customer_query, query]}
+
+        return Query(where=query, sort=sort, group=None)
+
+
 class NotificationRules(QueryBuilder):
 
     VALID_PARAMS = {

@@ -271,6 +271,29 @@ class Database(Base):
     def delete_notification_channel(self, id):
         raise NotImplementedError
 
+    # DELAYED NOTIFICATIONS
+
+    def create_delayed_notification(self, delayed_notification):
+        raise NotImplementedError
+
+    def get_delayed_notifications(self, query=None, page=None, page_size=None):
+        raise NotImplementedError
+
+    def get_delayed_notification(self, id):
+        raise NotImplementedError
+
+    def get_delayed_notifications_firing(self, time):
+        raise NotImplementedError
+
+    def get_delayed_notifications_count(self, query=None):
+        raise NotImplementedError
+
+    def delete_delayed_notifications_alert(self, alert_id):
+        raise NotImplementedError
+
+    def delete_delayed_notification(self, id):
+        raise NotImplementedError
+
     # NOTIFICATION RULES
 
     def create_notification_rule(self, notification_rule):
@@ -611,6 +634,7 @@ class QueryBuilder(Base):
         self.__class__.alerts = type('AlertsQueryBuilder', (cls.Alerts, self.Alerts, QueryBuilder), {})
         self.__class__.blackouts = type('BlackoutsQueryBuilder', (cls.Blackouts, self.Blackouts, QueryBuilder), {})
         self.__class__.notification_channels = type('NotificationChannelsQueryBuilder', (cls.NotificationChannels, self.NotificationChannels, QueryBuilder), {})
+        self.__class__.notification_delay = type('NotificationDelaysQueryBuilder', (cls.NotificationDelays, self.NotificationDelays, QueryBuilder), {})
         self.__class__.notification_rules = type('NotificationRulesQueryBuilder', (cls.NotificationRules, self.NotificationRules, QueryBuilder), {})
         self.__class__.notification_history = type('NotificationRulesHistoryBuilder', (cls.NotificationHistory, self.NotificationHistory, QueryBuilder), {})
         self.__class__.escalation_rules = type('EscalationRulesQueryBuilder', (cls.EscalationRules, self.EscalationRules, QueryBuilder), {})
@@ -636,6 +660,12 @@ class QueryBuilder(Base):
             raise NotImplementedError('BlackoutsQueryBuilder has no from_params() method')
 
     class NotificationChannels:
+
+        @staticmethod
+        def from_params(params, customers=None, query_time=None):
+            raise NotImplementedError('NotificationChannelsQueryBuilder has no from_params() method')
+
+    class NotificationDelays:
 
         @staticmethod
         def from_params(params, customers=None, query_time=None):
