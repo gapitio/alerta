@@ -1,10 +1,11 @@
 import logging
+
 from flask import g, jsonify, request
 from flask_cors import cross_origin
 
 from alerta.app import qb
-from alerta.exceptions import ApiError
 from alerta.auth.decorators import permission
+from alerta.exceptions import ApiError
 from alerta.models.enums import Scope
 from alerta.models.notification_delay import NotificationDelay
 from alerta.plugins.notification_rule import handle_delay
