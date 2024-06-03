@@ -1,8 +1,8 @@
 import json
 import os
 import unittest
-
-import pkg_resources
+from importlib.metadata import EntryPoint, EntryPoints
+from unittest.mock import MagicMock, patch
 
 from alerta.app import create_app, plugins
 from alerta.models.enums import Scope
@@ -15,12 +15,21 @@ class RoutingTestCase(unittest.TestCase):
     def setUp(self):
 
         # create dummy routing rules
-        self.dist = pkg_resources.Distribution(__file__, project_name='alerta-routing', version='0.1')
-        s = 'rules = tests.test_zrouting:rules'
-        self.entry_point = pkg_resources.EntryPoint.parse(s, dist=self.dist)
-        self.dist._ep_map = {'alerta.routing': {'rules': self.entry_point}}
-        pkg_resources.working_set.add(self.dist)
+        self.mock_distribution = MagicMock()
+        self.mock_distribution.metadata = {
+            'name': 'alerta-routing',
+            'version': '0.1'
+        }
+        entry_point = EntryPoint(
+            name='rules',
+            value='tests.test_zrouting:rules',
+            group='alerta.routing'
+        )
+        self.entry_points = EntryPoints((entry_point,))
+        self.mock_distribution.entry_points = self.entry_points
 
+        self.patcher_distribution = patch('alerta.utils.plugin.distribution', return_value=self.mock_distribution)
+        self.mock_distribution = self.patcher_distribution.start()
         test_config = {
             'TESTING': True,
             'AUTH_REQUIRED': True,
@@ -114,7 +123,7 @@ class RoutingTestCase(unittest.TestCase):
 
     def tearDown(self):
         plugins.plugins.clear()
-        self.dist._ep_map.clear()
+        self.patcher_distribution.stop()
 
     def test_config(self):
 
