@@ -10,6 +10,7 @@ from alerta.exceptions import ApiError
 from alerta.models.enums import Scope
 from alerta.models.notification_channel import NotificationChannel
 from alerta.models.notification_rule import NotificationRule
+from alerta.plugins.notification_rule import handle_test
 from alerta.utils.api import assign_customer
 from alerta.utils.audit import write_audit_trail
 from alerta.utils.paging import Page
@@ -84,7 +85,7 @@ def notification_channel_test(notification_channel_id):
     except Exception as e:
         raise ApiError(str(e), 400)
     try:
-        plugins.plugins.get('notification_rule').handle_test(notification_channel, notification_rule, plugins.config)
+        handle_test(notification_channel, notification_rule, plugins.config)
     except Exception as e:
         raise ApiError(str(e), 500)
 

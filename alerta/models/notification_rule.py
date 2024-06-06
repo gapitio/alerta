@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -87,6 +87,7 @@ class NotificationRule:
         self.advanced_severity = kwargs.get('advanced_severity') or [AdvancedSeverity([], [])]
         self.use_advanced_severity = kwargs.get('use_advanced_severity', False)
         self.reactivate = kwargs.get('reactivate', None)
+        self.delay_time: timedelta = kwargs.get('delay_time', None)
 
         self.user = kwargs.get('user', None)
         self.create_time = (
@@ -127,7 +128,6 @@ class NotificationRule:
 
     @classmethod
     def parse(cls, json: JSON) -> 'NotificationRule':
-        print(json.get('excludedTags', []))
         if not isinstance(json.get('service', []), list):
             raise ValueError('service must be a list')
         if not isinstance(json.get('tags', []), list):
@@ -139,6 +139,7 @@ class NotificationRule:
             name=json.get('name', None),
             active=json.get('active', True),
             environment=json['environment'],
+            delay_time=json.get('delayTime', None),
             channel_id=json['channelId'],
             receivers=json['receivers'],
             user_ids=json.get('userIds'),
@@ -185,6 +186,7 @@ class NotificationRule:
             'href': absolute_url('/notificationrule/' + self.id),
             'priority': self.priority,
             'environment': self.environment,
+            'delayTime': self.delay_time,
             'channelId': self.channel_id,
             'receivers': self.receivers,
             'userIds': self.user_ids,
@@ -255,6 +257,7 @@ class NotificationRule:
             active=doc.get('active', True),
             priority=doc.get('priority', None),
             environment=doc['environment'],
+            delay_time=doc.get('delayTime', None),
             channel_id=doc['channelId'],
             receivers=doc.get('receivers') or list(),
             user_ids=doc.get('userIds'),
@@ -304,6 +307,7 @@ class NotificationRule:
             active=rec.active,
             priority=rec.priority,
             environment=rec.environment,
+            delay_time=rec.delay_time,
             channel_id=rec.channel_id,
             receivers=rec.receivers,
             user_ids=rec.user_ids,

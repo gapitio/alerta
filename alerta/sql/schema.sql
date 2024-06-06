@@ -178,6 +178,13 @@ CREATE TABLE IF NOT EXISTS escalation_rules (
     active boolean
 );
 
+CREATE TABLE IF NOT EXISTS delayed_notifications (
+    id text PRIMARY KEY,
+    alert_id text,
+    notification_rule_id text,
+    delay_time timestamp without time zone
+);
+
 CREATE TABLE IF NOT EXISTS notification_rules (
     id text PRIMARY KEY,
     priority integer NOT NULL,
@@ -199,6 +206,12 @@ CREATE TABLE IF NOT EXISTS notification_rules (
     channel_id text not null,
     FOREIGN key (channel_id) references notification_channels(id)
 );
+DO $$
+BEGIN
+    ALTER TABLE notification_rules ADD COLUMN delay_time interval;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "delay_time" already exists in notification_rules.';
+END$$;
 DO $$
 BEGIN
     ALTER TABLE notification_rules ADD COLUMN use_oncall boolean;
