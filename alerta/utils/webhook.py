@@ -1,7 +1,7 @@
+from importlib.metadata import entry_points
 from typing import TYPE_CHECKING, Iterator
 
 from flask import Flask
-from pkg_resources import iter_entry_points
 
 if TYPE_CHECKING:
     from typing import Dict  # noqa
@@ -23,7 +23,7 @@ class CustomWebhooks:
         self.webhooks = dict()  # type: Dict[str, WebhookBase]
 
     def register(self, app: Flask) -> None:
-        for ep in iter_entry_points('alerta.webhooks'):
+        for ep in entry_points(group='alerta.webhooks'):
             app.logger.debug(f"Server webhook '{ep.name}' found.")
             try:
                 webhook = ep.load()
