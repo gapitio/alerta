@@ -286,6 +286,7 @@ BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
     UPDATE public.notification_rules SET event=NULL WHERE event='';
     UPDATE public.notification_rules SET "group"=NULL WHERE "group"='';
+    UPDATE notification_rules SET excluded_tags='{}' WHERE excluded_tags IS NULL;
 
 END$$;
 
