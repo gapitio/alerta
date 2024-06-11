@@ -109,6 +109,16 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
         run: |
           pytest --cov=alerta tests/*.py
+      - name: Test Twilio with pytest
+        id: twilio
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
+          TWILIO_SID: ${{ secrets.TWILIO_SID }}
+          TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
+          TWILIO_SENDER: ${{ secrets.TWILIO_SENDER }}
+          TWILIO_RECEIVER: ${{ secrets.TWILIO_RECEIVER }}
+        run: |
+          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
