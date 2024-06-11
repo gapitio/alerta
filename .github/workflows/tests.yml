@@ -51,8 +51,8 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
         run: |
           pytest --cov=alerta tests/*.py
-      - name: Test Twilio with pytest
-        id: twilio
+      - name: Test Channel with pytest
+        id: channel
         if: github.event_name == 'pull_request'
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
@@ -60,8 +60,12 @@ jobs:
           TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
           TWILIO_SENDER: ${{ secrets.TWILIO_SENDER }}
           TWILIO_RECEIVER: ${{ secrets.TWILIO_RECEIVER }}
+          SENDGRID_TOKEN: ${{ secrets.SENDGRID_TOKEN }}
+          SENDGRID_SENDER: ${{ secrets.SENDGRID_SENDER }}
+          SENDGRID_RECEIVER: ${{ secrets.SENDGRID_RECEIVER }}
         run: |
-          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel
+          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel \
+            tests/test_notification_rule.py::NotificationRuleTestCase::test_sendgrid_channel
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
@@ -110,8 +114,8 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
         run: |
           pytest --cov=alerta tests/*.py
-      - name: Test Twilio with pytest
-        id: twilio
+      - name: Test Channel with pytest
+        id: channel
         if: github.event_name == 'pull_request'
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
@@ -119,8 +123,12 @@ jobs:
           TWILIO_TOKEN: ${{ secrets.TWILIO_TOKEN }}
           TWILIO_SENDER: ${{ secrets.TWILIO_SENDER }}
           TWILIO_RECEIVER: ${{ secrets.TWILIO_RECEIVER }}
+          SENDGRID_TOKEN: ${{ secrets.SENDGRID_TOKEN }}
+          SENDGRID_SENDER: ${{ secrets.SENDGRID_SENDER }}
+          SENDGRID_RECEIVER: ${{ secrets.SENDGRID_RECEIVER }}
         run: |
-          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel
+          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel \
+            tests/test_notification_rule.py::NotificationRuleTestCase::test_sendgrid_channel
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}

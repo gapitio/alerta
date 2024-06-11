@@ -1102,3 +1102,48 @@ class NotificationRuleTestCase(unittest.TestCase):
             map(get_history_id, history)
         )
         self.assertTrue(history[0]['sent'])
+
+    def test_sendgrid_channel(self):
+        try:
+            sendgrid_config = {
+                'token': os.environ['SENDGRID_TOKEN'],
+                'sender': os.environ['SENDGRID_SENDER'],
+                'receiver': os.environ['SENDGRID_RECEIVER']
+            }
+        except KeyError:
+            self.skipTest('Missing required twilio environment')
+        notification_rule = {
+            'environment': 'Production',
+            'channelId': 'sms',
+            'service': ['Core'],
+            'receivers': [sendgrid_config['receiver']],
+        }
+
+        channel = {
+            'id': 'sms',
+            'sender': sendgrid_config['sender'],
+            'type': 'sendgrid',
+            'apiToken': sendgrid_config['token'],
+        }
+
+        self.create_api_obj('/notificationchannels', channel, self.headers)
+        data = self.create_api_obj('/notificationrules', notification_rule, self.headers)
+        notification_rule_id = data['id']
+
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        alert_id = data['id']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', data['alert'], self.headers, 200)['notificationRules']
+        self.assertIn(
+            notification_rule_id,
+            map(get_id, active_notification_rules),
+        )
+        history = self.get_api_obj('notificationhistory', self.headers)['notificationHistory']
+
+        while len(history) == 0:
+            history = self.get_api_obj('notificationhistory', self.headers)['notificationHistory']
+
+        self.assertIn(
+            {'rule_id': notification_rule_id, 'alert_id': alert_id},
+            map(get_history_id, history)
+        )
+        self.assertTrue(history[0]['sent'])
