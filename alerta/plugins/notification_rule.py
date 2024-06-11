@@ -328,7 +328,7 @@ def handle_delay(delay: NotificationDelay):
     alert = Alert.find_by_id(delay.alert_id)
     rule = NotificationRule.find_by_id(delay.notification_rule_id)
     channel = update_bearer(rule.channel, fernet)
-    on_users = {on_call.users for on_call in OnCall.find_all_active(alert)}
+    on_users = [on_call.users for on_call in OnCall.find_all_active(alert)]
     Thread(target=handle_notifications, args=[alert, [(rule, channel, rule.users)], on_users, fernet, current_app.app_context()]).start()
 
 
