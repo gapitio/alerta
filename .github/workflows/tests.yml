@@ -53,6 +53,7 @@ jobs:
           pytest --cov=alerta tests/*.py
       - name: Test Twilio with pytest
         id: twilio
+        if: github.event_name == 'pull_request'
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
           TWILIO_SID: ${{ secrets.TWILIO_SID }}
@@ -111,6 +112,7 @@ jobs:
           pytest --cov=alerta tests/*.py
       - name: Test Twilio with pytest
         id: twilio
+        if: github.event_name == 'pull_request'
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/alerta
           TWILIO_SID: ${{ secrets.TWILIO_SID }}
