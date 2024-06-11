@@ -3,7 +3,6 @@ import os
 import unittest
 from datetime import datetime, timedelta
 
-
 from alerta.app import create_app, db, plugins
 from alerta.models.key import ApiKey
 
@@ -57,7 +56,7 @@ class ChannelNotificationTestCase(unittest.TestCase):
                 scopes=['admin', 'read', 'write'],
                 text='demo-key',
             )
-            self.admin_api_key.create()        
+            self.admin_api_key.create()
 
         self.headers = {
             'Authorization': f'Key {self.admin_api_key.key}',
@@ -76,7 +75,7 @@ class ChannelNotificationTestCase(unittest.TestCase):
     def create_api_obj(self, apiurl: str, apidata: dict, apiheaders: dict, status_code: int = 201) -> dict:
         response = self.client.post(apiurl, data=json.dumps(apidata), headers=apiheaders)
         self.assertEqual(response.status_code, status_code)
-        return json.loads(response.data.decode('utf-8'))    
+        return json.loads(response.data.decode('utf-8'))
 
     def test_delayed_notifications(self):
         notification_rule = {
@@ -120,7 +119,7 @@ class ChannelNotificationTestCase(unittest.TestCase):
             delayed_data = self.get_api_obj('/notificationdelay/fire', self.headers)
         self.assertTrue(datetime.now() - start >= timedelta(seconds=1))
         self.assertIn({'rule_id': delayed_notification_rule_id, 'alert_id': alert_id}, map(get_delay_id, delayed_data['notifications']))
-    
+
     def test_twilio_sms_channel(self):
         try:
             twilio_config = {
