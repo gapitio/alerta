@@ -64,8 +64,7 @@ jobs:
           SENDGRID_SENDER: ${{ secrets.SENDGRID_SENDER }}
           SENDGRID_RECEIVER: ${{ secrets.SENDGRID_RECEIVER }}
         run: |
-          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel \
-            tests/test_notification_rule.py::NotificationRuleTestCase::test_sendgrid_channel
+          pytest --cov=alerta tests/test_notification_rule_plugin.py
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
@@ -127,8 +126,7 @@ jobs:
           SENDGRID_SENDER: ${{ secrets.SENDGRID_SENDER }}
           SENDGRID_RECEIVER: ${{ secrets.SENDGRID_RECEIVER }}
         run: |
-          pytest --cov=alerta tests/test_notification_rule.py::NotificationRuleTestCase::test_twilio_sms_channel \
-            tests/test_notification_rule.py::NotificationRuleTestCase::test_sendgrid_channel
+          pytest --cov=alerta tests/test_notification_rule_plugin.py
       - uses: act10ns/slack@v2
         with:
           status: ${{ job.status }}
