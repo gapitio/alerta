@@ -1340,7 +1340,7 @@ class Backend(Database):
     def get_notifications_history_count(self, query=None):
         query = query or Query()
         select = """
-            SELECT COUNT(1) FROM notification_groups
+            SELECT COUNT(1) FROM notification_history
              WHERE {where}
         """.format(
             where=query.where
@@ -1349,7 +1349,7 @@ class Backend(Database):
 
     def confirm_notification_history(self, id):
         update = """
-            UPDATE notification_groups
+            UPDATE notification_history
             SET confirmed=true, confirmed_time=%(time)s
             WHERE id=%(id)s
             RETURNING *
