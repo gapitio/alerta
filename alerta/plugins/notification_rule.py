@@ -122,21 +122,6 @@ def send_mylink_sms(message: str, channel: NotificationChannel, receivers: 'list
     return requests.post('https://api.linkmobility.com/sms/v1', data=data, headers=headers)
 
 
-def send_link_mobility_sms(message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
-    numberOfReceivers = len(receivers)
-    if numberOfReceivers == 0:
-        return
-    headers = {'Content-Type': 'application/json'}
-    try:
-        headers['Authorization'] = f'Basic {fernet.decrypt(channel.api_sid.encode()).decode()}:{fernet.decrypt(channel.api_token.encode()).decode()}'
-    except InvalidToken:
-        headers['Authorization'] = f'Basic {channel.api_sid}:{channel.api_token}'
-    data = json.dumps({'platformId': channel.platform_id, 'platformPartnerId': channel.platform_partner_id, 'useDeliveryReport': False, 'sendRequestMessages': [{'source': channel.sender, 'destination': receiver, 'userData': message} for receiver in receivers]} if numberOfReceivers > 1 else {'platformId': channel.platform_id, 'platformPartnerId': channel.platform_partner_id, 'useDeliveryReport': False, 'source': channel.sender, 'destination': receivers[0], 'userData': message})
-    LOG.error(data)
-    LOG.error(f"{channel.host}/sms/{'send' if numberOfReceivers == 1 else 'sendbatch'}")
-    return requests.post(f"{channel.host}/sms/{'send' if numberOfReceivers == 1 else 'sendbatch'}", data, headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
-
-
 def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
     try:
         content = {'message': message, 'username': fernet.decrypt(channel.api_sid.encode()).decode(), 'sender': channel.sender, 'password': fernet.decrypt(channel.api_token.encode()).decode()}
@@ -263,8 +248,6 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
                 LOG.error('TwilioRule: ERROR - %s', str(err))
                 log_notification(False, message, channel, notification_rule.id, alert, [number], error=str(err))
 
-    elif notification_type == 'link_mobility':
-        send_link_mobility_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
     elif notification_type == 'link_mobility_xml':
         response = send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
         if response.content.decode().find('FAIL') != -1:
