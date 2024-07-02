@@ -135,6 +135,7 @@ LDAP_GROUP_NAME_ATTR = 'dn'  # eg. dn, memberOf, or cn
 LDAP_DEFAULT_DOMAIN = ''  # if set allows users to login with bare username
 LDAP_CONFIG = {}  # type: Dict[str, Any]
 ALLOWED_LDAP_GROUPS = ['*']
+LDAP_ALLOW_EMAIL_EDIT = True
 
 # Microsoft Identity Platform (v2.0)
 AZURE_TENANT = 'common'  # "common", "organizations", "consumers" or tenant ID

@@ -22,6 +22,7 @@ def config():
                 'previous_severity': alarm_model.DEFAULT_PREVIOUS_SEVERITY
             }
         },
+        'ldap_email_edit': current_app.config['LDAP_ALLOW_EMAIL_EDIT'],
         'auth_required': current_app.config['AUTH_REQUIRED'],
         'delete_alert_scope_enforced': 'delete:alerts' in current_app.config['DELETE_SCOPES'],
         'allow_readonly': current_app.config['ALLOW_READONLY'],
