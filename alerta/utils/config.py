@@ -66,6 +66,7 @@ class Config:
             config['ALLOWED_OIDC_ROLES'] = get_config('ALLOWED_KEYCLOAK_ROLES', default=[], type=list, config=config)
 
         config['LDAP_BIND_PASSWORD'] = get_config('LDAP_BIND_PASSWORD', default=None, type=str, config=config)
+        config['LDAP_ALLOW_EMAIL_EDIT'] = get_config('LDAP_ALLOW_EMAIL_EDIT', default=True, type=str, config=config)
 
         config['OIDC_ISSUER_URL'] = get_config('OIDC_ISSUER_URL', default=None, type=str, config=config)
         config['ALLOWED_OIDC_ROLES'] = get_config('ALLOWED_OIDC_ROLES', default=[], type=list, config=config)
