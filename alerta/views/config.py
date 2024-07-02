@@ -9,6 +9,7 @@ from . import api
 @api.route('/config', methods=['GET'])
 def config():
     return jsonify({
+        'version': current_app.config['GAPIT_VERSION'],
         'debug': current_app.debug,
         'endpoint': absolute_url().rstrip('/'),  # FIXME - shouldn't need to rstrip()
         'alarm_model': {

@@ -103,6 +103,8 @@ class Config:
         config['ORIGIN_BLACKLIST'] = get_config('ORIGIN_BLACKLIST', default=[], type=list, config=config)
         config['ALLOWED_ENVIRONMENTS'] = get_config('ALLOWED_ENVIRONMENTS', default=[], type=list, config=config)
 
+        config['GAPIT_VERSION'] = get_config('GAPIT_VERSION', default='dev', type=str, config=config)
+
         # webhooks
         config['DEFAULT_ENVIRONMENT'] = get_config('DEFAULT_ENVIRONMENT', default=None, type=str, config=config)
 
