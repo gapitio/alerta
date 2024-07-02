@@ -127,7 +127,7 @@ def login():
         user = User(name=name, login=login, password='', email=email,
                     roles=current_app.config['USER_ROLES'], text='LDAP user', email_verified=email_verified)
         user = user.create()
-    elif not current_app.config.get("LDAP_ALLOW_EMAIL_EDIT"):
+    elif not current_app.config.get('LDAP_ALLOW_EMAIL_EDIT'):
         user.update(login=login, email=email, email_verified=email_verified)
     else:
         user.update(login=login)
