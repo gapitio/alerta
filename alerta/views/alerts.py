@@ -1,6 +1,8 @@
+import csv
 from datetime import datetime
+from io import BytesIO, StringIO
 
-from flask import current_app, g, jsonify, request
+from flask import current_app, g, jsonify, request, send_file
 from flask_cors import cross_origin
 
 from alerta.app import qb
@@ -475,6 +477,41 @@ def get_topn_standing():
             top10=[],
             total=0
         )
+
+
+# report csv
+@api.route('/alerts/reports/download', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_alerts)
+@timer(count_timer)
+@jsonp
+def get_reports():
+    def decode_item(item: dict):
+        dItem = {}
+        for key, value in item:
+            if type(value) is list:
+                if len(value) > 0:
+                    if type(value[0]) is dict:
+                        value = [v[key.rstrip('s')] for v in value]
+                dItem[key] = ', '.join(value)
+            else:
+                dItem[key] = value
+        return dItem
+
+    paging = Page.from_params(request.args, 1)
+    query = qb.alerts.from_params(request.args)
+    count = Alert.get_topn_count(query, topn=paging.page_size)
+    standing = Alert.get_topn_standing(query, topn=paging.page_size)
+    flapping = Alert.get_topn_flapping(query, topn=paging.page_size)
+    count_arr = [[f'Top {len(count)} Offenders'],count[0].keys(), *(decode_item(item.items()).values() for item in count)] if len(count) > 0 else []
+    standing_arr = [[f'Top {len(standing)} Standing'], standing[0].keys(), *(decode_item(item.items()).values() for item in standing)] if len(standing) > 0 else []
+    flapping_arr = [[f'Top {len(flapping)} Flapping'],flapping[0].keys(), *(decode_item(item.items()).values() for item in flapping)] if len(flapping) > 0 else []
+    file = StringIO()
+    csv_writer = csv.writer(file)
+    csv_writer.writerows([*count_arr, *standing_arr, *flapping_arr])
+    file_bytes = BytesIO(file.getvalue().encode())
+
+    return send_file(file_bytes, download_name='report.csv')
 
 
 # get alert environments
