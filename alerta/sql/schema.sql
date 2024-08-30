@@ -153,6 +153,9 @@ BEGIN
             "to" text[]
         );
     END IF;
+    ALTER TYPE severity_advanced ADD ATTRIBUTE "text" text;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'attribute "text" already exists in type severity_advanced.';
 
 END$$;
 

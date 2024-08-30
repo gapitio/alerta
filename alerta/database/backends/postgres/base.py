@@ -68,7 +68,7 @@ class AdvancedSeverityAdapter:
                 a.prepare(self.conn)
             return a.getquoted().decode('utf-8')
 
-        return f'({quoted(self.advanced_severity.from_)},{quoted(self.advanced_severity.to)})::severity_advanced'
+        return f'({quoted(self.advanced_severity.from_)},{quoted(self.advanced_severity.to)},{quoted(self.advanced_severity.text)})::severity_advanced'
 
 
 Record = namedtuple('Record', [

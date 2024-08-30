@@ -273,6 +273,12 @@ def handle_test(channel: NotificationChannel, info: NotificationRule, config):
     handle_channel(message, channel, info, [], Fernet(config['NOTIFICATION_KEY']), 'Test Notification Channel')
 
 
+def get_advanced_notification_text(rule: NotificationRule, alert: Alert):
+    for advanced_severity in rule.advanced_severity:
+        if (alert.previous_severity in advanced_severity.from_ or advanced_severity.from_ == []) and (alert.severity in advanced_severity.to or advanced_severity.to == []):
+            return advanced_severity.text.replace('%(default)s', rule.text) if advanced_severity.text != '' and advanced_severity.text is not None else rule.text
+
+
 def handle_notifications(alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User | None]]]]', on_users: 'list[set[User | None]]', fernet: Fernet, app_context, status: str = ''):
     app_context.push()
     standard_message = '%(environment)s: %(severity)s alert for %(service)s - %(resource)s is %(event)s'
@@ -283,8 +289,9 @@ def handle_notifications(alert: 'Alert', notifications: 'list[tuple[Notification
         if notification_rule.use_oncall:
             users.update(on_users)
         msg_obj = {**alert.serialize, 'status': status} if status != '' else alert.serialize
+        text = get_advanced_notification_text(notification_rule, alert) if notification_rule.use_advanced_severity else notification_rule.text
         message = (
-            notification_rule.text if notification_rule.text != '' and notification_rule.text is not None else standard_message
+            text if text != '' and text is not None else standard_message
         ) % get_message_obj(msg_obj)
 
         handle_channel(message, channel, notification_rule, users, fernet, alert.id)

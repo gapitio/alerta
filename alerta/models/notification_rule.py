@@ -15,26 +15,29 @@ JSON = Dict[str, Any]
 
 
 class AdvancedSeverity:
-    def __init__(self, _from: 'list[str]', _to: 'list[str]') -> None:
+    def __init__(self, _from: 'list[str]', _to: 'list[str]', text: str) -> None:
         self.from_ = _from
         self.to = _to
+        self.text = text
 
     @property
     def serialize(self):
         return {
             'from': self.from_,
-            'to': self.to
+            'to': self.to,
+            'text': self.text
         }
 
     def __repr__(self):
-        return 'AdvancedSeverity(from={!r}, to={!r})'.format(
-            self.from_, self.to)
+        return 'AdvancedSeverity(from={!r}, to={!r}, text={!r})'.format(
+            self.from_, self.to, self.text)
 
     @classmethod
     def from_document(cls, doc):
         return AdvancedSeverity(
             _from=doc.get('from', list()),
-            _to=doc.get('to', list())
+            _to=doc.get('to', list()),
+            text=doc.get('text')
         )
 
     @classmethod
@@ -42,6 +45,7 @@ class AdvancedSeverity:
         return AdvancedSeverity(
             _from=rec.from_,
             _to=rec.to,
+            text=rec.text
         )
 
     @classmethod
