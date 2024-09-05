@@ -147,16 +147,12 @@ END$$;
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'severity_advanced') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'severity_advanced') AND NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_triggers') THEN
         CREATE TYPE severity_advanced AS (
             "from_" text[],
             "to" text[]
         );
     END IF;
-    ALTER TYPE severity_advanced ADD ATTRIBUTE "text" text;
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'attribute "text" already exists in type severity_advanced.';
-
 END$$;
 
 CREATE TABLE IF NOT EXISTS escalation_rules (
@@ -180,6 +176,33 @@ CREATE TABLE IF NOT EXISTS escalation_rules (
     advanced_severity severity_advanced[],
     active boolean
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_triggers') THEN
+        ALTER TYPE severity_advanced RENAME TO notification_triggers;
+        ALTER TYPE notification_triggers RENAME ATTRIBUTE "from_" TO from_severity;
+        ALTER TYPE notification_triggers RENAME ATTRIBUTE "to" TO to_severity;
+        ALTER TYPE notification_triggers ADD ATTRIBUTE "status" text[]; 
+        ALTER TYPE notification_triggers ADD ATTRIBUTE "text" text;
+    END IF;
+END$$;
+
+DO $$
+BEGIN
+    ALTER TABLE escalation_rules ADD COLUMN triggers notification_triggers[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "triggers" already exists in escalation_rules.';
+END$$;
+
+DO $$
+BEGIN
+    UPDATE escalation_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}';
+    ALTER table escalation_rules DROP COLUMN severity;
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
+END$$;
+
 
 CREATE TABLE IF NOT EXISTS delayed_notifications (
     id text PRIMARY KEY,
@@ -223,16 +246,24 @@ EXCEPTION
 END$$;
 DO $$
 BEGIN
-    ALTER TABLE notification_rules ADD COLUMN advanced_severity severity_advanced[];
+    ALTER TABLE notification_rules ADD COLUMN advanced_severity notification_triggers[];
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "advanced_severity" already exists in notification_rules.';
 END$$;
 
 DO $$
 BEGIN
-    ALTER TABLE notification_rules ADD COLUMN use_advanced_severity boolean;
+    ALTER TABLE notification_rules RENAME COLUMN advanced_severity to triggers;
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "use_advanced_severity" already exists in notification_rules.';
+    WHEN duplicate_column THEN RAISE NOTICE 'column "triggers" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}';
+    ALTER table notification_rules DROP COLUMN severity;
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
 END$$;
 
 DO $$
@@ -248,6 +279,14 @@ BEGIN
     UPDATE notification_rules SET status = '{}';
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "status" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}';
+    ALTER table notification_rules DROP COLUMN "status";
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "status" have already been dropped from notification_rules.';
 END$$;
 
 DO $$

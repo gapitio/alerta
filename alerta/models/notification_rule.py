@@ -14,37 +14,41 @@ if TYPE_CHECKING:
 JSON = Dict[str, Any]
 
 
-class AdvancedSeverity:
-    def __init__(self, _from: 'list[str]', _to: 'list[str]', text: str) -> None:
-        self.from_ = _from
-        self.to = _to
+class NotificationTriggers:
+    def __init__(self, from_severity: 'list[str]', to_severity: 'list[str]', status: 'list[str]' = [], text: str = "") -> None:
+        self.from_severity = from_severity
+        self.to_severity = to_severity
+        self.status = status
         self.text = text
 
     @property
     def serialize(self):
         return {
-            'from': self.from_,
-            'to': self.to,
+            'from_severity': self.from_severity,
+            'to_severity': self.to_severity,
+            'status': self.status,
             'text': self.text
         }
 
     def __repr__(self):
-        return 'AdvancedSeverity(from={!r}, to={!r}, text={!r})'.format(
-            self.from_, self.to, self.text)
+        return 'AdvancedSeverity(from={!r}, to={!r}, status={!r}, text={!r})'.format(
+            self.from_severity, self.to_severity, self.status, self.text)
 
     @classmethod
     def from_document(cls, doc):
-        return AdvancedSeverity(
-            _from=doc.get('from', list()),
-            _to=doc.get('to', list()),
+        return NotificationTriggers(
+            from_severity=doc.get('from_severity', list()),
+            to_severity=doc.get('to_severity', list()),
+            status=doc.get('status', list()),
             text=doc.get('text')
         )
 
     @classmethod
     def from_record(cls, rec):
-        return AdvancedSeverity(
-            _from=rec.from_,
-            _to=rec.to,
+        return NotificationTriggers(
+            from_severity=rec.from_severity,
+            to_severity=rec.to_severity,
+            status=rec.status,
             text=rec.text
         )
 
@@ -78,8 +82,6 @@ class NotificationRule:
         self.use_oncall = use_oncall
         self.start_time: time = kwargs.get('start_time') or None
         self.end_time: time = kwargs.get('end_time') or None
-        self.severity = kwargs.get('severity') or list()
-        self.status = kwargs.get('status') or list()
         self.service = kwargs.get('service', None) or list()
         self.resource = kwargs['resource'] if kwargs.get('resource', '') != '' else None
         self.event = kwargs['event'] if kwargs.get('event', '') != '' else None
@@ -88,8 +90,7 @@ class NotificationRule:
         self.excluded_tags = kwargs.get('excluded_tags', None) or list()
         self.customer = kwargs.get('customer', None)
         self.days = kwargs.get('days', None) or list()
-        self.advanced_severity = kwargs.get('advanced_severity') or [AdvancedSeverity([], [])]
-        self.use_advanced_severity = kwargs.get('use_advanced_severity', False)
+        self.triggers = kwargs.get('triggers') or [NotificationTriggers([], [], [])]
         self.reactivate = kwargs.get('reactivate', None)
         self.delay_time: timedelta = kwargs.get('delay_time', None)
 
@@ -149,10 +150,7 @@ class NotificationRule:
             user_ids=json.get('userIds'),
             group_ids=json.get('groupIds'),
             use_oncall=json.get('useOnCall', False),
-            severity=json.get('severity', list()),
-            status=json.get('status', list()),
-            advanced_severity=[AdvancedSeverity(severity['from'], severity['to']) for severity in json.get('advancedSeverity', [])],
-            use_advanced_severity=json.get('useAdvancedSeverity', False),
+            triggers=[NotificationTriggers(trigger['from_severity'], trigger['to_severity'], trigger['status'], trigger['text']) for trigger in json.get('triggers', [])],
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
@@ -197,10 +195,7 @@ class NotificationRule:
             'groupIds': self.group_ids,
             'useOnCall': self.use_oncall,
             'service': self.service,
-            'severity': self.severity,
-            'status': self.status,
-            'advancedSeverity': [a_severity.serialize for a_severity in self.advanced_severity],
-            'useAdvancedSeverity': self.use_advanced_severity,
+            'triggers': [trigger.serialize for trigger in self.triggers],
             'resource': self.resource,
             'event': self.event,
             'group': self.group,
@@ -236,14 +231,8 @@ class NotificationRule:
             more += 'excluded_tags=%r, ' % self.excluded_tags
         if self.customer:
             more += 'customer=%r, ' % self.customer
-        if self.severity:
-            more += 'severity=%r, ' % self.severity
-        if self.status:
-            more += 'status=%r, ' % self.status
-        if self.advanced_severity:
-            more += 'advanced_severity=%r, ' % self.advanced_severity
-        if self.use_advanced_severity:
-            more += 'use_advanced_severity=%r, ' % self.use_advanced_severity
+        if self.triggers:
+            more += 'triggers=%r, ' % self.triggers
 
         return 'NotificationRule(id={!r}, priority={!r}, environment={!r}, receivers={!r}, {})'.format(
             self.id,
@@ -268,10 +257,7 @@ class NotificationRule:
             group_ids=doc.get('groupIds'),
             use_oncall=doc.get('useOnCall', False),
             service=doc.get('service', list()),
-            severity=doc.get('severity', list()),
-            status=doc.get('status', list()),
-            advanced_severity=[AdvancedSeverity.from_db(advanced_severity) for advanced_severity in doc.get('advancedSeverity', [])],
-            use_advanced_severity=doc.get('useAdvancedSeverity', list()),
+            triggers=[NotificationTriggers.from_db(trigger) for trigger in doc.get('triggers', [])],
             resource=doc.get('resource', None),
             event=doc.get('event', None),
             group=doc.get('group', None),
@@ -318,9 +304,7 @@ class NotificationRule:
             group_ids=rec.group_ids,
             use_oncall=rec.use_oncall,
             service=rec.service,
-            severity=rec.severity,
-            advanced_severity=[AdvancedSeverity.from_db(advanced_severity) for advanced_severity in rec.advanced_severity or []],
-            use_advanced_severity=rec.use_advanced_severity,
+            triggers=[NotificationTriggers.from_db(trigger) for trigger in rec.triggers or []],
             resource=rec.resource,
             event=rec.event,
             group=rec.group,
@@ -334,7 +318,6 @@ class NotificationRule:
             start_time=rec.start_time,
             end_time=rec.end_time,
             days=rec.days,
-            status=rec.status,
         )
 
     @classmethod
@@ -385,9 +368,9 @@ class NotificationRule:
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_reactivate(now)]
 
     def update(self, **kwargs) -> 'NotificationRule':
-        advanced_severities = kwargs.get('advancedSeverity')
-        if advanced_severities is not None:
-            kwargs['advancedSeverity'] = [AdvancedSeverity.from_document(advanced_severity) for advanced_severity in advanced_severities]
+        triggers = kwargs.get('triggers')
+        if triggers is not None:
+            kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
         return NotificationRule.from_db(db.update_notification_rule(self.id, **kwargs))
 
     def delete(self) -> bool:

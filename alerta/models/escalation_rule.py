@@ -5,7 +5,7 @@ from uuid import uuid4
 from alerta.app import db
 from alerta.database.base import Query
 from alerta.models.alert import Alert
-from alerta.models.notification_rule import AdvancedSeverity
+from alerta.models.notification_rule import NotificationTriggers
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
@@ -38,7 +38,6 @@ class EscalationRule:
         self.time: timedelta = ttime
         self.start_time: time = kwargs.get('start_time') or None
         self.end_time: time = kwargs.get('end_time') or None
-        self.severity = kwargs.get('severity') or list()
         self.service = kwargs.get('service', None) or list()
         self.resource = kwargs.get('resource', None)
         self.event = kwargs.get('event', None)
@@ -46,8 +45,7 @@ class EscalationRule:
         self.tags = kwargs.get('tags', None) or list()
         self.customer = kwargs.get('customer', None)
         self.days = kwargs.get('days', None) or list()
-        self.advanced_severity = kwargs.get('advanced_severity') or [AdvancedSeverity([], [])]
-        self.use_advanced_severity = kwargs.get('use_advanced_severity', False)
+        self.triggers = kwargs.get('triggers') or [NotificationTriggers([], [], [])]
 
         self.user = kwargs.get('user', None)
         self.create_time = (
@@ -80,9 +78,7 @@ class EscalationRule:
             active=json.get('active', True),
             environment=json['environment'],
             ttime=json['time'],
-            severity=json.get('severity', list()),
-            advanced_severity=[AdvancedSeverity(severity['from'], severity['to']) for severity in json.get('advancedSeverity', [])],
-            use_advanced_severity=json.get('useAdvancedSeverity', False),
+            triggers=[NotificationTriggers(trigger['from_severity'], trigger['to_severity']) for trigger in json.get('triggers', [])],
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
@@ -118,9 +114,7 @@ class EscalationRule:
             'environment': self.environment,
             'time': self.time,
             'service': self.service,
-            'severity': self.severity,
-            'advancedSeverity': [a_severity.serialize for a_severity in self.advanced_severity],
-            'useAdvancedSeverity': self.use_advanced_severity,
+            'triggers': [trigger.serialize for trigger in self.triggers],
             'resource': self.resource,
             'event': self.event,
             'group': self.group,
@@ -151,12 +145,8 @@ class EscalationRule:
             more += 'tags=%r, ' % self.tags
         if self.customer:
             more += 'customer=%r, ' % self.customer
-        if self.severity:
-            more += 'severity=%r, ' % self.severity
-        if self.advanced_severity:
-            more += 'advanced_severity=%r, ' % self.advanced_severity
-        if self.use_advanced_severity:
-            more += 'use_advanced_severity=%r, ' % self.use_advanced_severity
+        if self.triggers:
+            more += 'triggers=%r, ' % self.triggers
 
         return 'EscalationRule(id={!r}, priority={!r}, environment={!r},time={!r},{})'.format(
             self.id,
@@ -175,9 +165,7 @@ class EscalationRule:
             environment=doc['environment'],
             ttime=doc['time'],
             service=doc.get('service', list()),
-            severity=doc.get('severity', list()),
-            advanced_severity=[AdvancedSeverity.from_db(advanced_severity) for advanced_severity in doc.get('advancedSeverity', [])],
-            use_advanced_severity=doc.get('useAdvancedSeverity', list()),
+            triggers=[NotificationTriggers.from_db(trigger) for trigger in doc.get('triggers', [])],
             resource=doc.get('resource', None),
             event=doc.get('event', None),
             group=doc.get('group', None),
@@ -215,8 +203,7 @@ class EscalationRule:
             environment=rec.environment,
             ttime=rec.time,
             service=rec.service,
-            severity=rec.severity,
-            advanced_severity=[AdvancedSeverity.from_db(advanced_severity) for advanced_severity in rec.advanced_severity or []],
+            triggers=[NotificationTriggers.from_db(trigger) for trigger in rec.triggers or []],
             use_advanced_severity=rec.use_advanced_severity,
             resource=rec.resource,
             event=rec.event,
@@ -267,9 +254,9 @@ class EscalationRule:
         return [Alert.parse(alert if isinstance(alert, dict) else alert_from_record(alert)) for alert in db.get_escalation_alerts()]
 
     def update(self, **kwargs) -> 'EscalationRule':
-        advanced_severities = kwargs.get('advancedSeverity')
-        if advanced_severities is not None:
-            kwargs['advancedSeverity'] = [AdvancedSeverity.from_document(advanced_severity) for advanced_severity in advanced_severities]
+        triggers = kwargs.get('triggers')
+        if triggers is not None:
+            kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
         return EscalationRule.from_db(db.update_escalation_rule(self.id, **kwargs))
 
     def delete(self) -> bool:
