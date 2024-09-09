@@ -150,7 +150,7 @@ class NotificationRule:
             user_ids=json.get('userIds'),
             group_ids=json.get('groupIds'),
             use_oncall=json.get('useOnCall', False),
-            triggers=[NotificationTriggers(trigger['from_severity'], trigger['to_severity'], trigger['status'], trigger['text']) for trigger in json.get('triggers', [])],
+            triggers=[NotificationTriggers(trigger.get('from_severity', []), trigger.get('to_severity', []), trigger.get('status'), trigger.get('text', '')) for trigger in json.get('triggers', [])],
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
