@@ -254,9 +254,14 @@ END$$;
 DO $$
 BEGIN
     ALTER TABLE notification_rules RENAME COLUMN advanced_severity to triggers;
-    UPDATE notification_rules SET triggers = '{}' WHERE use_advanced_severity = FALSE;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "triggers" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    UPDATE notification_rules SET triggers = '{}' WHERE use_advanced_severity = FALSE;
+EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column use_advanced_severity do no longer exist in notification_rules';
 END$$;
 
