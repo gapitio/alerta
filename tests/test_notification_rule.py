@@ -517,9 +517,9 @@ class NotificationRuleTestCase(unittest.TestCase):
         pop_event_rule = {**base_rule}
         pop_event_rule.pop('event')
 
-        more_severity_rule = {**base_rule, 'severity': ['major', 'minor', 'critical']}
-        wrong_severity_rule = {**base_rule, 'severity': ['minor']}
-        none_severity_rule = {**base_rule, 'severity': []}
+        more_severity_rule = {**base_rule, 'triggers': [{'to_severity':['major', 'minor', 'critical']}]}
+        wrong_severity_rule = {**base_rule, 'triggers': [{'to_severity':['minor']}]}
+        none_severity_rule = {**base_rule, 'triggers': []}
         pop_severity_rule = {**base_rule}
         pop_severity_rule.pop('severity')
 
@@ -861,27 +861,25 @@ class NotificationRuleTestCase(unittest.TestCase):
 
         self.delete_api_obj('/notificationrules/' + notification_rule_id, self.headers)
 
-    def test_advanced_severity(self):
+    def test_triggers(self):
 
         all = {
             'environment': 'Production',
             'channelId': 'SMS_Channel',
             'receivers': [],
-            'useAdvancedSeverity': True,
             'text': 'administartively sms',
         }
         simple = {
             **all,
-            'useAdvancedSeverity': False,
-            'severity': ['critical', 'major']
+            'triggers': [{'to_severity': ['critical', 'major']}]
         }
         to_critical_major_from_all = {
             **all,
-            'advancedSeverity': [{'from': [], 'to': ['major', 'critical']}],
+            'triggers': [{'to_severity': ['major', 'critical']}]
         }
         to_normal_from_critical_major = {
             **all,
-            'advancedSeverity': [{'from': ['major', 'critical'], 'to': ['normal']}],
+            'triggers': [{'from_severity': ['major', 'critical'], 'to_severity': ['normal']}],
         }
         alert_base = {
             'environment': 'Production',
