@@ -1122,9 +1122,9 @@ class Backend(Database):
               AND (days='{}' OR ARRAY[%(day)s] <@ days)
               AND environment=%(environment)s
               AND (
-                    (triggers[s].from_severity='{}' OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
-                    AND (triggers[s].to_severity='{}' OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
-                    AND (triggers[s].status='{}' OR ARRAY[%(status)s] <@ triggers[s].status)
+                    (triggers[s].from_severity='{}' OR triggers[s].from_severity IS NULL OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
+                    AND (triggers[s].to_severity='{}' OR triggers[s].to_severity IS NULL OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
+                    AND (triggers[s].status='{}' OR triggers[s].status IS NULL OR ARRAY[%(status)s] <@ triggers[s].status)
                 )
               AND (resource IS NULL OR resource=%(resource)s)
               AND (service='{}' OR service <@ %(service)s)
