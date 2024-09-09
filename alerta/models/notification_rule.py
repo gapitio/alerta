@@ -15,7 +15,7 @@ JSON = Dict[str, Any]
 
 
 class NotificationTriggers:
-    def __init__(self, from_severity: 'list[str]', to_severity: 'list[str]', status: 'list[str]' = [], text: str = "") -> None:
+    def __init__(self, from_severity: 'list[str]', to_severity: 'list[str]', status: 'list[str]' = [], text: str = '') -> None:
         self.from_severity = from_severity or []
         self.to_severity = to_severity or []
         self.status = status or []

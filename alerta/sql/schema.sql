@@ -183,7 +183,7 @@ BEGIN
         ALTER TYPE severity_advanced RENAME TO notification_triggers;
         ALTER TYPE notification_triggers RENAME ATTRIBUTE "from_" TO from_severity;
         ALTER TYPE notification_triggers RENAME ATTRIBUTE "to" TO to_severity;
-        ALTER TYPE notification_triggers ADD ATTRIBUTE "status" text[]; 
+        ALTER TYPE notification_triggers ADD ATTRIBUTE "status" text[];
         ALTER TYPE notification_triggers ADD ATTRIBUTE "text" text;
     END IF;
 END$$;
