@@ -267,7 +267,7 @@ END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}' and "status" = '{}';
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}' and "status" = '{}' AND NOT use_advanced_severity;
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
 END$$;
@@ -289,14 +289,14 @@ END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}' and severity = '{}';
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}' and severity = '{}' and not use_advanced_severity;
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "status" have already been dropped from notification_rules.';
 END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}', severity, status, null)::notification_triggers) where "status" != '{}' and severity != '{}';
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}', severity, status, null)::notification_triggers) where "status" != '{}' and severity != '{}' and not use_advanced_severity;
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "status" have already been dropped from notification_rules.';
 END$$;
