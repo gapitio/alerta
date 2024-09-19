@@ -253,6 +253,13 @@ END$$;
 
 DO $$
 BEGIN
+    UPDATE notification_rules SET advanced_severity = '{}' WHERE use_advanced_severity = FALSE;
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column use_advanced_severity do no longer exist in notification_rules';
+END$$;
+
+DO $$
+BEGIN
     ALTER TABLE notification_rules RENAME COLUMN advanced_severity to triggers;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "triggers" already exists in notification_rules.';
@@ -260,15 +267,7 @@ END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules SET triggers = '{}' WHERE use_advanced_severity = FALSE;
-EXCEPTION
-    WHEN undefined_column THEN RAISE NOTICE 'column use_advanced_severity do no longer exist in notification_rules';
-END$$;
-
-DO $$
-BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}';
-    ALTER table notification_rules DROP COLUMN severity;
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}' and "status" = '{}';
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
 END$$;
@@ -290,10 +289,24 @@ END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}';
-    ALTER table notification_rules DROP COLUMN "status";
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}' and severity = '{}';
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "status" have already been dropped from notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}', severity, status, null)::notification_triggers) where "status" != '{}' and severity != '{}';
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "status" have already been dropped from notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    ALTER table notification_rules DROP COLUMN "status";
+    ALTER table notification_rules DROP COLUMN severity;
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "status" and severity have already been dropped from notification_rules.';
 END$$;
 
 DO $$
