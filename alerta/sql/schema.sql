@@ -290,20 +290,8 @@ END$$;
 DO $$
 BEGIN
     UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}' and severity = '{}' and not use_advanced_severity;
-END$$;
-
-DO $$
-BEGIN
     UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}', severity, status, null)::notification_triggers) where "status" != '{}' and severity != '{}' and not use_advanced_severity;
-END$$;
-
-DO $$
-BEGIN
     UPDATE notification_rules as re set triggers = n.f from (SELECT "id", array_agg((tr.from_severity, tr.to_severity, b.status, tr.text)::notification_triggers) as f from notification_rules as b, unnest(triggers) as tr GROUP BY id) as n where "status" != '{}' and use_advanced_severity and n.id = re.id;
-END$$;
-
-DO $$
-BEGIN
     ALTER table notification_rules DROP COLUMN "status";
     ALTER table notification_rules DROP COLUMN severity;
 EXCEPTION
