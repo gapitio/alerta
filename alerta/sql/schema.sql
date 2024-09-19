@@ -311,6 +311,14 @@ END$$;
 
 DO $$
 BEGIN
+    ALTER table notification_rules DROP COLUMN advanced_severity;
+    ALTER table notification_rules DROP COLUMN use_advanced_severity;
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column advanced_severity and use_advanced_severity have already been dropped from notification_rules.';
+END$$;
+
+DO $$
+BEGIN
     ALTER TABLE notification_rules ADD COLUMN active boolean;
     UPDATE notification_rules SET active = true;
 EXCEPTION
