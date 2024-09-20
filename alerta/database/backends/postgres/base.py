@@ -53,9 +53,9 @@ class HistoryAdapter:
         return str(self.getquoted())
 
 
-class AdvancedSeverityAdapter:
-    def __init__(self, advanced_severity) -> None:
-        self.advanced_severity = advanced_severity
+class NotificationTriggersAdapter:
+    def __init__(self, notification_triggers) -> None:
+        self.triggers = notification_triggers
         self.conn = None
 
     def prepare(self, conn):
@@ -68,7 +68,7 @@ class AdvancedSeverityAdapter:
                 a.prepare(self.conn)
             return a.getquoted().decode('utf-8')
 
-        return f'({quoted(self.advanced_severity.from_)},{quoted(self.advanced_severity.to)})::severity_advanced'
+        return f'({quoted(self.triggers.from_severity)},{quoted(self.triggers.to_severity)}, {quoted(self.triggers.status)},{quoted(self.triggers.text)})::notification_triggers'
 
 
 Record = namedtuple('Record', [
@@ -105,11 +105,11 @@ class Backend(Database):
             conn,
             globally=True
         )
-        register_composite('severity_advanced', conn, globally=True)
+        register_composite('notification_triggers', conn, globally=True)
         from alerta.models.alert import History
-        from alerta.models.notification_rule import AdvancedSeverity
+        from alerta.models.notification_rule import NotificationTriggers
         register_adapter(History, HistoryAdapter)
-        register_adapter(AdvancedSeverity, AdvancedSeverityAdapter)
+        register_adapter(NotificationTriggers, NotificationTriggersAdapter)
 
     def connect(self):
         retry = 0
@@ -1075,10 +1075,10 @@ class Backend(Database):
 
     def create_notification_rule(self, notification_rule):
         insert = """
-            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, status, reactivate, excluded_tags, delay_time,
-                customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, severity, text, channel_id, advanced_severity, use_advanced_severity)
-            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(status)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(severity)s, %(text)s, %(channel_id)s, %(advanced_severity)s::severity_advanced[], %(use_advanced_severity)s )
+            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, reactivate, excluded_tags, delay_time,
+                customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, text, channel_id, triggers)
+            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
         return self._insert(insert, vars(notification_rule))
@@ -1116,20 +1116,22 @@ class Backend(Database):
 
     def get_notification_rules_active(self, alert):
         select = """
-            SELECT * from (select *, generate_subscripts(advanced_severity,1) as s
+            SELECT * from (select *, generate_subscripts(triggers,1) as s
             FROM notification_rules) as foo
             WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
               AND (days='{}' OR ARRAY[%(day)s] <@ days)
               AND environment=%(environment)s
-              AND (use_advanced_severity=TRUE OR severity='{}' OR ARRAY[%(severity)s] <@ severity)
-              AND (use_advanced_severity=FALSE OR ((advanced_severity[s].from_='{}' OR ARRAY[%(previous_severity)s] <@ advanced_severity[s].from_) AND (advanced_severity[s].to='{}' OR ARRAY[%(severity)s] <@ advanced_severity[s].to)))
+              AND (
+                    (triggers[s].from_severity='{}' OR triggers[s].from_severity IS NULL OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
+                    AND (triggers[s].to_severity='{}' OR triggers[s].to_severity IS NULL OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
+                    AND (triggers[s].status='{}' OR triggers[s].status IS NULL OR ARRAY[%(status)s] <@ triggers[s].status)
+                )
               AND (resource IS NULL OR resource=%(resource)s)
               AND (service='{}' OR service <@ %(service)s)
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
               AND (tags='{}' OR tags <@ %(tags)s)
               AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
-              AND (status='{}' OR ARRAY[%(status)s] <@ status)
               AND active=true
         """
         if current_app.config['CUSTOMER_VIEWS']:
@@ -1147,20 +1149,22 @@ class Backend(Database):
 
     def get_notification_rules_active_status(self, alert, status):
         select = """
-            SELECT * from (select *, generate_subscripts(advanced_severity,1) as s
+            SELECT * from (select *, generate_subscripts(triggers,1) as s
             FROM notification_rules) as foo
             WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
               AND (days='{}' OR ARRAY[%(day)s] <@ days)
               AND environment=%(environment)s
-              AND (use_advanced_severity=TRUE OR severity='{}' OR ARRAY[%(severity)s] <@ severity)
-              AND (use_advanced_severity=FALSE OR ((advanced_severity[s].from_='{}' OR ARRAY[%(previous_severity)s] <@ advanced_severity[s].from_) AND (advanced_severity[s].to='{}' OR ARRAY[%(severity)s] <@ advanced_severity[s].to)))
+              AND (
+                    (triggers[s].from_severity='{}' OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
+                    AND (triggers[s].to_severity='{}' OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
+                    AND (ARRAY[%(status)s] <@ triggers[s].status)
+                )
               AND (resource IS NULL OR resource=%(resource)s)
               AND (service='{}' OR service <@ %(service)s)
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
               AND (tags='{}' OR tags <@ %(tags)s)
               AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
-              AND ARRAY[%(status)s] <@ status
               AND active=true
         """
         if current_app.config['CUSTOMER_VIEWS']:
@@ -1206,10 +1210,8 @@ class Backend(Database):
             update += 'use_oncall=%(useOnCall)s, '
         if kwargs.get('severity') is not None:
             update += 'severity=%(severity)s, '
-        if kwargs.get('advancedSeverity') is not None:
-            update += 'advanced_severity=%(advancedSeverity)s::severity_advanced[], '
-        if kwargs.get('useAdvancedSeverity') is not None:
-            update += 'use_advanced_severity=%(useAdvancedSeverity)s, '
+        if kwargs.get('triggers') is not None:
+            update += 'triggers=%(triggers)s::notification_triggers[], '
         if 'text' in kwargs:
             update += 'text=%(text)s, '
         if 'channelId' in kwargs:
@@ -1361,9 +1363,9 @@ class Backend(Database):
     def create_escalation_rule(self, escalation_rule):
         insert = """
             INSERT INTO escalation_rules (id, active, "time", priority, environment, service, resource, event, "group", tags,
-                customer, "user", create_time, start_time, end_time, days, severity, advanced_severity, use_advanced_severity)
+                customer, "user", create_time, start_time, end_time, days, triggers)
             VALUES (%(id)s, %(active)s, %(time)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(severity)s, %(advanced_severity)s::severity_advanced[], %(use_advanced_severity)s )
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
         test = self._insert(insert, vars(escalation_rule))
@@ -1403,7 +1405,7 @@ class Backend(Database):
     def get_escalation_alerts(self):
         select = """
             SELECT DISTINCT a.id, a.resource, a.event, a.severity, a.environment, a.service, a.text, a.value, a.timeout
-            FROM public.alerts as a, public.escalation_rules as e, generate_subscripts(e.advanced_severity,1) as s
+            FROM public.alerts as a, public.escalation_rules as e, generate_subscripts(e.triggers,1) as s
             WHERE e.active
                 AND a.status = 'open'
                 AND (%(now)s - a.last_receive_time > e.time)
@@ -1413,8 +1415,7 @@ class Backend(Database):
                 AND (e.event IS NULL OR e.event=a.event or e.event = '')
                 AND (e.group IS NULL OR e.group=a.group)
                 AND (e.tags='{}' OR e.tags <@ a.tags)
-                AND (e.use_advanced_severity=TRUE OR e.severity='{}' OR ARRAY[a.severity] <@ e.severity)
-                AND (e.use_advanced_severity=FALSE OR ((e.advanced_severity[s].from_='{}' OR ARRAY[a.previous_severity] <@ e.advanced_severity[s].from_) AND (e.advanced_severity[s].to='{}' OR ARRAY[a.severity] <@ e.advanced_severity[s].to)))
+                AND (((e.triggers[s].from_severity='{}' OR ARRAY[a.previous_severity] <@ e.triggers[s].from_severity) AND (e.triggers[s].to_severity='{}' OR ARRAY[a.severity] <@ e.triggers[s].to_severity)))
         """
         return self._fetchall(select, {'now': datetime.utcnow()}, limit='ALL')
 
@@ -1447,10 +1448,8 @@ class Backend(Database):
             update += 'days=%(days)s, '
         if kwargs.get('severity') is not None:
             update += 'severity=%(severity)s, '
-        if kwargs.get('advancedSeverity') is not None:
-            update += 'advanced_severity=%(advancedSeverity)s::severity_advanced[], '
-        if kwargs.get('useAdvancedSeverity') is not None:
-            update += 'use_advanced_severity=%(useAdvancedSeverity)s, '
+        if kwargs.get('triggers') is not None:
+            update += 'triggers=%(triggers)s::notification_triggers[], '
         if 'active' in kwargs:
             update += 'active=%(active)s,'
         update += """
