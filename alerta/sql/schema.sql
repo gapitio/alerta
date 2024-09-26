@@ -346,6 +346,7 @@ BEGIN
     UPDATE public.notification_rules SET event=NULL WHERE event='';
     UPDATE public.notification_rules SET "group"=NULL WHERE "group"='';
     UPDATE notification_rules SET excluded_tags='{}' WHERE excluded_tags IS NULL;
+    UPDATE notification_rules set triggers = ARRAY[('{}', '{}', '{}', null)::notification_triggers] WHERE triggers = '{}';
 
 END$$;
 
