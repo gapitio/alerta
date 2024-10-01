@@ -4,6 +4,7 @@ from io import BytesIO, StringIO
 
 from flask import current_app, g, jsonify, request, send_file
 from flask_cors import cross_origin
+from psycopg2.errors import CannotCoerce, UndefinedColumn
 
 from alerta.app import qb
 from alerta.auth.decorators import permission
@@ -312,13 +313,17 @@ def search_alerts():
     query = qb.alerts.from_params(request.args, customers=g.customers, query_time=query_time)
     show_raw_data = request.args.get('show-raw-data', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
     show_history = request.args.get('show-history', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
-    severity_count = Alert.get_counts_by_severity(query)
-    status_count = Alert.get_counts_by_status(query)
+    try:
+        severity_count = Alert.get_counts_by_severity(query)
+        status_count = Alert.get_counts_by_status(query)
 
-    total = sum(severity_count.values())
-    paging = Page.from_params(request.args, total)
-
-    alerts = Alert.find_all(query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
+        total = sum(severity_count.values())
+        paging = Page.from_params(request.args, total)
+        alerts = Alert.find_all(query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
+    except (UndefinedColumn, CannotCoerce) as e:
+        e.cursor.connection.rollback()
+        current_app.logger.info(f'Alert search failed with message: {e.diag.message_primary}. HINT: {e.diag.message_hint}')
+        return jsonify(status='error', name='Alert Search', message=f'{e.diag.message_primary}. HINT: {e.diag.message_hint}'), 400
 
     if alerts:
         return jsonify(
@@ -360,7 +365,12 @@ def history():
     query = qb.alerts.from_params(request.args, customers=g.customers)
     total = Alert.get_history_count()
     paging = Page.from_params(request.args, total)
-    history = Alert.get_history(query, paging.page, paging.page_size)
+    try:
+        history = Alert.get_history(query, paging.page, paging.page_size)
+    except (UndefinedColumn, CannotCoerce) as e:
+        e.cursor.connection.rollback()
+        current_app.logger.info(f'Alert history search failed with message: {e.diag.message_primary}. HINT: {e.diag.message_hint}')
+        return jsonify(status='error', name='History Search', message=f'{e.diag.message_primary}. HINT: {e.diag.message_hint}'), 400
 
     if history:
         return jsonify(
@@ -522,7 +532,11 @@ def get_reports():
 @jsonp
 def get_environments():
     query = qb.alerts.from_params(request.args, customers=g.customers)
-    environments = Alert.get_environments(query)
+    try:
+        environments = Alert.get_environments(query)
+    except (UndefinedColumn, CannotCoerce) as e:
+        e.cursor.connection.rollback()
+        environments = Alert.get_environments()
 
     if environments:
         return jsonify(
