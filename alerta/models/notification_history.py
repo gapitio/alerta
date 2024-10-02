@@ -121,5 +121,9 @@ class NotificationHistory:
     def count(query: 'Query|None' = None) -> int:
         return db.get_notifications_history_count(query)
 
+    @ staticmethod
+    def healthcheck() -> int:
+        return db.get_notifications_history_hc()
+
     def confirm(self) -> 'NotificationHistory':
         return NotificationHistory.from_db(db.confirm_notification_history(self.id))

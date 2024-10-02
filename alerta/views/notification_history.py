@@ -41,3 +41,10 @@ def list_notification_history():
             notificationHistory=[],
             total=0,
         )
+
+
+@api.route('/notificationhistory/hc', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_notification_history)
+def healthcheck():
+    return str(NotificationHistory.healthcheck() > 0)

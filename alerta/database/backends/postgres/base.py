@@ -1339,6 +1339,14 @@ class Backend(Database):
         )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
+    def get_notifications_history_hc(self):
+        select = """
+            SELECT COUNT(1) FROM (SELECT DISTINCT ON ("rule") * FROM notification_history
+            WHERE  now() - sent_time < '1h'
+            ORDER BY "rule", sent_time DESC) AS f WHERE sent = false
+        """
+        return self._fetchone(select, {"now": datetime.utcnow()}).count
+
     def get_notifications_history_count(self, query=None):
         query = query or Query()
         select = """

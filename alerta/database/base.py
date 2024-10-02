@@ -357,6 +357,9 @@ class Database(Base):
     def get_notifications_history(self, query=None, page=None, page_size=None):
         raise NotImplementedError
 
+    def get_notifications_history_hc(self):
+        raise NotImplementedError
+
     def get_notifications_history_count(self, query=None):
         raise NotImplementedError
 
