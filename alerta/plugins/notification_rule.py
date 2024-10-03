@@ -7,8 +7,6 @@ from threading import Thread
 import requests
 from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 from alerta.models.alert import Alert
 from alerta.models.notification_delay import NotificationDelay
@@ -144,18 +142,20 @@ def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, 
 
 def send_email(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
     mails = {*receivers, *[user.email for user in on_call_users]}
-    newMail = Mail(
-        from_email=channel.sender,
-        to_emails=list(mails),
-        subject='Alerta',
-        html_content=message,
-    )
-    try:
-        api_token = fernet.decrypt(channel.api_token.encode()).decode()
-    except InvalidToken:
-        api_token = channel.api_token
-    email_client = SendGridAPIClient(api_token)
-    return email_client.send(newMail)
+    data = {
+        'personalizations': [
+            {'to': [{'email': email} for email in mails]}
+        ],
+        'from': {'email': channel.sender},
+        'subject': 'Alerta',
+        'content': [{'type': 'text/html', 'value': message}],
+    }
+    api_token = fernet.decrypt(channel.api_token.encode()).decode()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {api_token}',
+    }
+    return requests.post('https://api.sendgrid.com/v3/mail/send', json=data, headers=headers)
 
 
 def get_message_obj(alertobj: 'dict') -> 'dict':
@@ -206,16 +206,21 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
     notification_type = channel.type
     if notification_type == 'sendgrid':
         try:
-            send_email(message, channel, notification_rule.receivers, users, fernet)
-            log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
-        except Exception as err:
-            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, str(err))
-            LOG.error('NotificationRule: ERROR - %s', str(err))
+            response = send_email(message, channel, notification_rule.receivers, users, fernet)
+            if response.status_code != 202:
+                data = response.json()['errors'][0]
+                log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, f'Got status code {response.status_code}: {data["message"]}')
+                LOG.error('NotificationRule: %s', f'Got status code {response.status_code}: {data["message"]} for field {data["field"]} With help: {data["help"]}')
+            else:
+                log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
+        except InvalidToken:
+            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt api token')
+            LOG.error('NotificationChannel: Failed to decrypt api token')
     elif notification_type == 'smtp':
         try:
             send_smtp_mail(message, channel, notification_rule.receivers, users, fernet)
         except Exception as err:
-            LOG.error('NotificationRule: ERROR - %s', str(err))
+            LOG.error('NotificationRule: %s', str(err))
     elif 'twilio' in notification_type:
 
         for number in {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}:
@@ -230,13 +235,13 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
                 response_data = response.json()
                 if response.status_code != 201:
                     log_notification(False, message, channel, notification_rule.id, alert, [number], error=f"Got status code {response.status_code} with error code {response_data['code']}: {response_data['message']}")
-                    LOG.error('TwilioRule: ERROR - %s', f"Got status code {response.status_code} with error code {response_data['code']}: {response_data['message']}. More info: {response_data['more_info']}")
+                    LOG.error('NotificationRule: %s', f"Got status code {response.status_code} with error code {response_data['code']}: {response_data['message']}. More info: {response_data['more_info']}")
                 else:
                     log_notification(True, message, channel, notification_rule.id, alert, [number], id=response_data['sid'])
 
-            except InvalidToken as err:
-                LOG.error('TwilioRule: ERROR - %s', str(err))
-                log_notification(False, message, channel, notification_rule.id, alert, [number], error=str(err))
+            except InvalidToken:
+                LOG.error('NotificationChannel: Failed to decrypt api token')
+                log_notification(False, message, channel, notification_rule.id, alert, [number], error='NotificationChannel: Failed to decrypt api token')
 
     elif notification_type == 'link_mobility_xml':
         response = send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
