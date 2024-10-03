@@ -19,5 +19,4 @@ sendgrid==6.5.0
 sentry-sdk[flask]==1.45.0
 starkbank-ecdsa==1.0.0
 StrEnum==0.4.15
-twilio==7.0.0
 werkzeug==3.0.2

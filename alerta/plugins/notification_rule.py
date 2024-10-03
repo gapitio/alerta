@@ -9,8 +9,6 @@ from cryptography.fernet import Fernet, InvalidToken
 from flask import current_app
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from twilio.base.exceptions import TwilioRestException
-from twilio.rest import Client
 
 from alerta.models.alert import Alert
 from alerta.models.notification_delay import NotificationDelay
@@ -23,6 +21,7 @@ from alerta.plugins import PluginBase
 
 LOG = logging.getLogger('alerta.plugins.notification_rule')
 TWILIO_MAX_SMS_LENGTH = 1600
+TWILIO_BASE_URL = 'https://api.twilio.com/2010-04-01/Accounts'
 
 LINK_MOBILITY_XML = """
 <?xml version="1.0"?>
@@ -53,36 +52,22 @@ def remove_unspeakable_chr(message: str, unspeakables: 'dict[str,str]|None' = No
     return speakable_message
 
 
-def get_twilio_client(channel: NotificationChannel, fernet: Fernet, **kwargs):
-    try:
-        api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
-        api_token = fernet.decrypt(channel.api_token.encode()).decode()
-    except InvalidToken:
-        api_sid = channel.api_sid
-        api_token = channel.api_token
-    return Client(api_sid, api_token)
-
-
 def make_call(message: str, channel: NotificationChannel, receiver: str, fernet: Fernet, **kwargs):
     twiml_message = f'<Response><Pause/><Say>{remove_unspeakable_chr(message)}</Say></Response>'
-    call_client = get_twilio_client(channel, fernet, **kwargs)
-    if not call_client:
-        return
-    send_sms(message, channel, receiver, fernet, client=call_client)
-    return call_client.calls.create(
-        twiml=twiml_message,
-        to=receiver,
-        from_=channel.sender,
-    )
+    data = {'Twiml': twiml_message, 'From': channel.sender, 'To': receiver}
+    api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
+    api_token = fernet.decrypt(channel.api_token.encode()).decode()
+    send_sms(message, channel, receiver, fernet)
+    return requests.post(f'{TWILIO_BASE_URL}/{api_sid}/Calls.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
 
 
-def send_sms(message: str, channel: NotificationChannel, receiver: str, fernet: Fernet, client: Client = None, **kwargs):
+def send_sms(message: str, channel: NotificationChannel, receiver: str, fernet: Fernet, **kwargs):
     restricted_message = message[: TWILIO_MAX_SMS_LENGTH - 4]
     body = message if len(message) <= TWILIO_MAX_SMS_LENGTH else restricted_message[: restricted_message.rfind(' ')] + ' ...'
-    sms_client = client or get_twilio_client(channel, fernet, **kwargs)
-    if not sms_client:
-        return
-    return sms_client.messages.create(body=body, to=receiver, from_=channel.sender)
+    data = {'Body': body, 'From': channel.sender, 'To': receiver}
+    api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
+    api_token = fernet.decrypt(channel.api_token.encode()).decode()
+    return requests.post(f'{TWILIO_BASE_URL}/{api_sid}/Messages.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
 
 
 def update_bearer(channel: NotificationChannel, fernet):
@@ -239,12 +224,17 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
             try:
                 if 'call' in notification_type:
                     response = make_call(message, channel, number, fernet)
-                    log_notification(True, message, channel, notification_rule.id, alert, [number], id=response.sid)
                 elif 'sms' in notification_type:
                     response = send_sms(message, channel, number, fernet)
-                    log_notification(True, message, channel, notification_rule.id, alert, [number], id=response.sid)
 
-            except TwilioRestException as err:
+                response_data = response.json()
+                if response.status_code != 201:
+                    log_notification(False, message, channel, notification_rule.id, alert, [number], error=f"Got status code {response.status_code} with error code {response_data['code']}: {response_data['message']}")
+                    LOG.error('TwilioRule: ERROR - %s', f"Got status code {response.status_code} with error code {response_data['code']}: {response_data['message']}. More info: {response_data['more_info']}")
+                else:
+                    log_notification(True, message, channel, notification_rule.id, alert, [number], id=response_data['sid'])
+
+            except InvalidToken as err:
                 LOG.error('TwilioRule: ERROR - %s', str(err))
                 log_notification(False, message, channel, notification_rule.id, alert, [number], error=str(err))
 
