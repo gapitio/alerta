@@ -212,11 +212,13 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
 
     elif notification_type == 'smtp':
         try:
-            send_smtp_mail(message, channel, notification_rule.receivers, users, fernet)
+            send_smtp_mail(message, channel, {*notification_rule.receivers, *[user.email for user in users]}, users, fernet)
+            log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
         except InvalidToken:
             log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt authentication keys')
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
         except Exception as err:
+            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, str(err))
             LOG.error('NotificationRule: %s', str(err))
 
     elif 'twilio' in notification_type:
