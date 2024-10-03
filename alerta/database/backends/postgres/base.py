@@ -981,6 +981,8 @@ class Backend(Database):
             update += 'api_sid=%(apiSid)s, '
         if 'customer' in kwargs:
             update += 'customer=%(customer)s, '
+        if 'sender' in kwargs:
+            update += 'sender=%(sender)s, '
         if 'host' in kwargs:
             update += 'host=%(host)s, '
         if 'platformId' in kwargs:
