@@ -94,7 +94,7 @@ def mylink_bearer_request(channel: NotificationChannel, fernet: Fernet):
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
         return requests.post('https://sso.linkmobility.com/auth/realms/CPaaS/protocol/openid-connect/token', headers=headers, data=data)
     except InvalidToken:
-        LOG.error('Failed to send message due to invalid NOTIFICATION_KEY')
+        LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
         return
 
 
@@ -106,10 +106,7 @@ def send_mylink_sms(message: str, channel: NotificationChannel, receivers: 'list
 
 
 def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
-    try:
-        content = {'message': message, 'username': fernet.decrypt(channel.api_sid.encode()).decode(), 'sender': channel.sender, 'password': fernet.decrypt(channel.api_token.encode()).decode()}
-    except InvalidToken:
-        content = {'message': message, 'username': channel.api_sid, 'sender': channel.sender, 'password': channel.api_token}
+    content = {'message': message, 'username': fernet.decrypt(channel.api_sid.encode()).decode(), 'sender': channel.sender, 'password': fernet.decrypt(channel.api_token.encode()).decode()}
 
     xml_content: 'list[str]' = kwargs['xml']
     for line in xml_content:
@@ -129,12 +126,8 @@ def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers
 def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
     mails = {*receivers, *[user.email for user in on_call_users]}
     server = smtplib.SMTP_SSL(channel.host)
-    try:
-        api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
-        api_token = fernet.decrypt(channel.api_token.encode()).decode()
-    except InvalidToken:
-        api_sid = channel.api_sid
-        api_token = channel.api_token
+    api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
+    api_token = fernet.decrypt(channel.api_token.encode()).decode()
     server.login(api_sid, api_token)
     server.sendmail(channel.sender, list(mails), f"From: {channel.sender}\nTo: {','.join(mails)}\nSubject: Alerta\n\n{message}")
     server.quit()
@@ -214,15 +207,19 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
             else:
                 log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
         except InvalidToken:
-            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt api token')
-            LOG.error('NotificationChannel: Failed to decrypt api token')
+            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt authentication keys')
+            LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
+
     elif notification_type == 'smtp':
         try:
             send_smtp_mail(message, channel, notification_rule.receivers, users, fernet)
+        except InvalidToken:
+            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt authentication keys')
+            LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
         except Exception as err:
             LOG.error('NotificationRule: %s', str(err))
-    elif 'twilio' in notification_type:
 
+    elif 'twilio' in notification_type:
         for number in {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}:
             if number is None or number == '':
                 continue
@@ -240,17 +237,22 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
                     log_notification(True, message, channel, notification_rule.id, alert, [number], id=response_data['sid'])
 
             except InvalidToken:
-                LOG.error('NotificationChannel: Failed to decrypt api token')
-                log_notification(False, message, channel, notification_rule.id, alert, [number], error='NotificationChannel: Failed to decrypt api token')
+                LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
+                log_notification(False, message, channel, notification_rule.id, alert, [number], error='NotificationChannel: Failed to decrypt authentication keys')
 
     elif notification_type == 'link_mobility_xml':
-        response = send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
-        if response.content.decode().find('FAIL') != -1:
-            LOG.error(response.content)
-            log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error=response.content)
-        else:
-            LOG.info(response.content)
-            log_notification(True, message, channel, notification_rule.id, alert, [number])
+        try:
+            response = send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
+            if response.content.decode().find('FAIL') != -1:
+                LOG.error(response.content)
+                log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error=response.content)
+            else:
+                LOG.info(response.content)
+                log_notification(True, message, channel, notification_rule.id, alert, [number])
+        except InvalidToken:
+            log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error='NotificationChannel: Failed to decrypt authentication keys')
+            LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
+
     elif notification_type == 'my_link':
         response = send_mylink_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
         if response.status_code != 202:
