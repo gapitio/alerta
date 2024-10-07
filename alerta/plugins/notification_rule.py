@@ -88,7 +88,7 @@ def send_sms(message: str, channel: NotificationChannel, receiver: str, fernet: 
 def update_bearer(channel: NotificationChannel, fernet):
     if channel.type == 'my_link':
         now = datetime.now()
-        if channel.bearer is None or channel.bearer_timeout < datetime.now():
+        if channel.bearer is None or channel.bearer_timeout < (now + timedelta(0, 600)):
             response = mylink_bearer_request(channel, fernet)
             if response.status_code == 200:
                 data = response.json()
