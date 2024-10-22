@@ -1,5 +1,6 @@
 from flask import current_app, g, jsonify, request
 from flask_cors import cross_origin
+from psycopg2.errors import CannotCoerce, UndefinedColumn
 
 from alerta.app import qb
 from alerta.auth.decorators import permission
@@ -96,9 +97,14 @@ def get_notification_rules_active():
 @jsonp
 def list_notification_rules():
     query = qb.notification_rules.from_params(request.args, customers=g.customers)
-    total = NotificationRule.count(query)
-    paging = Page.from_params(request.args, total)
-    notification_rules = NotificationRule.find_all(query, page=paging.page, page_size=paging.page_size)
+    try:
+        total = NotificationRule.count(query)
+        paging = Page.from_params(request.args, total)
+        notification_rules = NotificationRule.find_all(query, page=paging.page, page_size=paging.page_size)
+    except (UndefinedColumn, CannotCoerce) as e:
+        e.cursor.connection.rollback()
+        current_app.logger.info(f'Notification rule search failed with message: {e.diag.message_primary}. HINT: {e.diag.message_hint}')
+        return jsonify(status='error', name='Notification Search', message=f'{e.diag.message_primary}. HINT: {e.diag.message_hint}'), 400
 
     if notification_rules:
         return jsonify(
