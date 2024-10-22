@@ -185,7 +185,7 @@ class StateMachine(AlarmModel):
             else:
                 return next_state('Return from Out-of-service, Out-of-service (G) -> Unack (B)', current_severity, Status.Open)
 
-        return next_state('NOOP', current_severity, current_status)
+        return next_state('NOOP', current_severity, state)
 
     @staticmethod
     def is_suppressed(alert):
