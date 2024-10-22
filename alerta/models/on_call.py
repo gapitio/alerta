@@ -4,7 +4,8 @@ from uuid import uuid4
 
 from alerta.app import db
 from alerta.database.base import Query
-from alerta.models.user import User
+from alerta.models.notification_group import NotificationGroup
+from alerta.models.user import NotificationInfo, User
 from alerta.utils.response import absolute_url
 
 if TYPE_CHECKING:
@@ -35,11 +36,16 @@ class OnCall:
 
     @property
     def users(self):
-        group_users = [db.get_notification_group_users(group_id) for group_id in self.group_ids]
-        users = {User.find_by_id(user_id) for user_id in self.user_ids}
+        groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
+        group_users = [db.get_notification_group_users(group.id) for group in groups]
+        users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
+        for group in groups:
+            for index in range(max(len(group.phone_numbers), len(group.mails))):
+                if index < len(group.phone_numbers) and index < len(group.mails):
+                    users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
         for user_list in group_users:
             for user in user_list:
-                users.add(User.find_by_id(user.id))
+                users.add(User.find_by_id(user.id).notification_info)
         return users
 
     @ classmethod

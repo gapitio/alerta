@@ -21,6 +21,20 @@ class UserStatus(StrEnum):
     Unknown = 'unknown'  # aka 'stale'
 
 
+class NotificationInfo:
+    def __init__(self, **kwargs):
+        self.phone_number = kwargs.get('phone_number', None)
+        self.country = kwargs.get('country', None)
+        self.email = kwargs.get('email', None)
+
+    @property
+    def country_code(self) -> 'str':
+        if self.country == '' or self.country is None:
+            return ''
+        cc_start, cc_stop = [self.country.find('(') + 1, self.country.find(')')]
+        return self.country[cc_start:cc_stop]
+
+
 class User:
     """
     User model for all auth providers.
@@ -57,15 +71,12 @@ class User:
             return None
 
     @property
-    def is_active(self) -> bool:
-        return self.status == UserStatus.Active
+    def notification_info(self) -> NotificationInfo:
+        return NotificationInfo(phone_number=self.phone_number, country=self.country, email=self.email)
 
     @property
-    def country_code(self) -> 'str':
-        if self.country == '' or self.country is None:
-            return ''
-        cc_start, cc_stop = [self.country.find('(') + 1, self.country.find(')')]
-        return self.country[cc_start:cc_stop]
+    def is_active(self) -> bool:
+        return self.status == UserStatus.Active
 
     @classmethod
     def parse(cls, json: JSON) -> 'User':
