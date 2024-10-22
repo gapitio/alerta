@@ -18,7 +18,7 @@ from alerta.models.notification_history import NotificationHistory
 from alerta.models.notification_rule import (NotificationChannel,
                                              NotificationRule)
 from alerta.models.on_call import OnCall
-from alerta.models.user import User
+from alerta.models.user import NotificationInfo
 from alerta.plugins import PluginBase
 
 LOG = logging.getLogger('alerta.plugins.notification_rule')
@@ -143,7 +143,7 @@ def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers
     return requests.post(f'{channel.host}', data, headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
 
 
-def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[User]', fernet: Fernet, **kwargs):
+def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
     mails = {*receivers, *[user.email for user in on_call_users]}
     server = smtplib.SMTP_SSL(channel.host)
     try:
@@ -157,7 +157,7 @@ def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, 
     server.quit()
 
 
-def send_email(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[User]', fernet: Fernet, **kwargs):
+def send_email(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
     mails = {*receivers, *[user.email for user in on_call_users]}
     newMail = Mail(
         from_email=channel.sender,
@@ -217,7 +217,7 @@ def delay_notification(alert: Alert, notification_rule: NotificationRule):
     }).create()
 
 
-def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[User]', fernet: Fernet, alert: str):
+def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[NotificationInfo]', fernet: Fernet, alert: str):
     notification_type = channel.type
     if notification_type == 'sendgrid':
         try:
@@ -279,7 +279,7 @@ def get_notification_trigger_text(rule: NotificationRule, alert: Alert, status: 
             return trigger.text.replace('%(default)s', rule.text) if trigger.text != '' and trigger.text is not None else rule.text
 
 
-def handle_notifications(alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[User | None]]]]', on_users: 'list[set[User | None]]', fernet: Fernet, app_context, status: str = ''):
+def handle_notifications(alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[NotificationInfo | None]]]]', on_users: 'list[set[NotificationInfo | None]]', fernet: Fernet, app_context, status: str = ''):
     app_context.push()
     standard_message = '%(environment)s: %(severity)s alert for %(service)s - %(resource)s is %(event)s'
     for notification_rule, channel, users in notifications:

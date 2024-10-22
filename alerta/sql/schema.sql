@@ -374,6 +374,10 @@ CREATE TABLE IF NOT EXISTS notification_groups(
     users text[]
 );
 
+
+ALTER TABLE notification_groups ADD COLUMN IF NOT EXISTS phone_numbers text[];
+ALTER TABLE notification_groups ADD COLUMN IF NOT EXISTS mails text[];
+
 CREATE TABLE IF NOT EXISTS notification_history(
     id text PRIMARY KEY,
     sent bool,

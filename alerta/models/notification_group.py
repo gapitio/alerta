@@ -13,6 +13,8 @@ class NotificationGroup:
         self.id = kwargs.get('id') or str(uuid4())
         self.name = kwargs.get('name')
         self.users = kwargs.get('users') or []
+        self.phone_numbers = kwargs.get('phone_numbers', [])
+        self.mails = kwargs.get('mails', [])
 
     @ classmethod
     def parse(cls, json: JSON) -> 'NotificationGroup':
@@ -25,6 +27,8 @@ class NotificationGroup:
             id=json.get('id'),
             name=json.get('name'),
             users=json.get('users'),
+            phone_numbers=json.get('phoneNumbers'),
+            mails=json.get('mails')
         )
         return notification_group
 
@@ -34,13 +38,17 @@ class NotificationGroup:
             'id': self.id,
             'name': self.name,
             'users': self.users,
+            'phoneNumbers': self.phone_numbers,
+            'mails': self.mails,
         }
 
     def __repr__(self) -> str:
-        return 'NotificationGroup(id={!r}, name={!r}, users={!r})'.format(
+        return 'NotificationGroup(id={!r}, name={!r}, users={!r}, phone_numbers={!r}, mails={!r})'.format(
             self.id,
             self.name,
             self.users,
+            self.phone_numbers,
+            self.mails,
         )
 
     @ classmethod
@@ -49,6 +57,8 @@ class NotificationGroup:
             id=doc.get('id', None) or doc.get('_id'),
             name=doc.get('name'),
             users=doc.get('users'),
+            phone_numbers=doc.get('phone_numbers'),
+            mails=doc.get('mails'),
         )
 
     @ classmethod
@@ -57,6 +67,8 @@ class NotificationGroup:
             id=rec.id,
             name=rec.name,
             users=rec.users,
+            phone_numbers=rec.phone_numbers,
+            mails=rec.mails,
         )
 
     @ classmethod
