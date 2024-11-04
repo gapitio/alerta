@@ -1295,11 +1295,12 @@ class Backend(Database):
         if 'name' in kwargs:
             update += 'name=%(name)s, '
         if 'users' in kwargs:
-            update += 'users=%(users)s '
+            update += 'users=%(users)s, '
         if 'phoneNumbers' in kwargs:
             update += 'phone_numbers=%(phoneNumbers)s, '
         if 'mails' in kwargs:
             update += 'mails=%(mails)s, '
+        update = update[0:-2]
         update += """
             WHERE id=%(id)s
             RETURNING *
