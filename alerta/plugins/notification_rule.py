@@ -116,7 +116,7 @@ def mylink_bearer_request(channel: NotificationChannel, fernet: Fernet):
 
 
 def send_mylink_sms(message: str, channel: NotificationChannel, receivers: 'list[str]', fernet: Fernet, **kwargs):
-    bearer = channel.bearer + 'd'
+    bearer = channel.bearer
     data = json.dumps([{'recipient': receiver, 'content': {'text': message, 'options': {'sms.sender': channel.sender}}} for receiver in receivers])
     headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {bearer}'}
     return requests.post('https://api.linkmobility.com/sms/v1', data=data, headers=headers)
