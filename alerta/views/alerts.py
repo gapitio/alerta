@@ -17,7 +17,8 @@ from alerta.models.metrics import Timer, timer
 from alerta.models.note import Note
 from alerta.models.switch import Switch
 from alerta.utils.api import (assign_customer, process_action, process_alert,
-                              process_delete, process_note, process_status)
+                              process_delete, process_multiple_alert,
+                              process_note, process_status)
 from alerta.utils.audit import write_audit_trail
 from alerta.utils.paging import Page
 from alerta.utils.response import absolute_url, jsonp
@@ -78,6 +79,43 @@ def receive():
 
     if alert:
         return jsonify(status='ok', id=alert.id, alert=alert.serialize), 201
+    else:
+        raise ApiError('insert or update of received alert failed', 500)
+
+
+@api.route('/alerts', methods=['OPTIONS', 'POST'])
+@cross_origin()
+@permission(Scope.write_alerts)
+@timer(receive_timer)
+@jsonp
+def receive_multiple():
+    try:
+        alerts: 'list[Alert]' = [Alert.parse(alert) for alert in request.json]
+    except ValueError as e:
+        raise ApiError(str(e), 400)
+
+    try:
+        alerts = process_multiple_alert(alerts)
+    except RejectException as e:
+        raise ApiError(str(e), 403)
+    except RateLimit as e:
+        return jsonify(status='error', message=str(e), id=[alert.id for alert in alerts]), 429
+    except HeartbeatReceived as heartbeat:
+        return jsonify(status='ok', message=str(heartbeat), id=heartbeat.id), 202
+    except BlackoutPeriod as e:
+        return jsonify(status='ok', message=str(e), id=[alert.id for alert in alerts]), 202
+    except ForwardingLoop as e:
+        return jsonify(status='ok', message=str(e)), 202
+    except AlertaException as e:
+        raise ApiError(e.message, code=e.code, errors=e.errors)
+    except Exception as e:
+        raise ApiError(str(e), 500)
+
+    #     write_audit_trail.send(current_app._get_current_object(), event='alert-received', message=alert.text, user=g.login,
+    #                            customers=g.customers, scopes=g.scopes, resource_id=alert.id, type='alert', request=request)
+
+    if len(alerts) > 0:
+        return jsonify(status='ok', id=[alert.id for alert in alerts], alerts=[alert.serialize for alert in alerts]), 201
     else:
         raise ApiError('insert or update of received alert failed', 500)
 

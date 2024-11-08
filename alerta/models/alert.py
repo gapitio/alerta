@@ -576,6 +576,150 @@ class Alert:
     def get_groups(query: Query = None) -> List[str]:
         return db.get_alert_groups(query)
 
+    @staticmethod
+    def create_multiple_alerts(alerts: 'list[Alert]'):
+        if len(alerts) < 1:
+            return []
+        now = datetime.utcnow()
+        for alert in alerts:
+
+            trend_indication = alarm_model.trend(alarm_model.DEFAULT_PREVIOUS_SEVERITY, alert.severity)
+
+            _, alert.status = alarm_model.transition(
+                alert=alert
+            )
+
+            alert.duplicate_count = 0
+            alert.repeat = False
+            alert.previous_severity = alarm_model.DEFAULT_PREVIOUS_SEVERITY
+            alert.trend_indication = trend_indication
+            alert.receive_time = now
+            alert.last_receive_id = alert.id
+            alert.last_receive_time = now
+            alert.update_time = now
+
+            alert.history = [History(
+                id=alert.id,
+                event=alert.event,
+                severity=alert.severity,
+                status=alert.status,
+                value=alert.value,
+                text=alert.text,
+                change_type=ChangeType.new,
+                update_time=alert.create_time,
+                user=g.login,
+                timeout=alert.timeout
+            )]
+        return [Alert.from_db(alert) for alert in db.create_multiple_alerts(alerts)]
+
+    @staticmethod
+    def dedup_multiple_alerts(duplicates: 'list[dict[str, Alert]]'):
+        if len(duplicates) < 1:
+            return []
+        now = datetime.utcnow()
+        alerts = []
+        for alert in duplicates:
+            alert, duplicate_of = (alert['alert'], alert['duplicate'])
+            status, previous_value, previous_status, _ = alert._get_hist_info()
+
+            _, new_status = alarm_model.transition(
+                alert=alert,
+                current_status=status,
+                previous_status=previous_status
+            )
+
+            alert.repeat = True
+            alert.last_receive_id = alert.id
+            alert.last_receive_time = now
+
+            if new_status != status:
+                r = status_change_hook.send(duplicate_of, status=new_status, text=alert.text)
+                _, (_, new_status, text) = r[0]
+                alert.update_time = now
+
+                history = History(
+                    id=alert.id,
+                    event=alert.event,
+                    severity=alert.severity,
+                    status=new_status,
+                    value=alert.value,
+                    text=text,
+                    change_type=ChangeType.status,
+                    update_time=alert.create_time,
+                    user=g.login,
+                    timeout=alert.timeout,
+                )  # type: Optional[History]
+
+            elif current_app.config['HISTORY_ON_VALUE_CHANGE'] and alert.value != previous_value:
+                history = History(
+                    id=alert.id,
+                    event=alert.event,
+                    severity=alert.severity,
+                    status=status,
+                    value=alert.value,
+                    text=alert.text,
+                    change_type=ChangeType.value,
+                    update_time=alert.create_time,
+                    user=g.login,
+                    timeout=alert.timeout,
+                )
+            else:
+                history = None
+
+            alert.history = history
+            alert.status = new_status
+            alerts.append(alert)
+        return [Alert.from_db(alert) for alert in db.dedup_multiple_alerts(alerts)]
+
+    @staticmethod
+    def update_multiple(correlates: 'list[dict[str, Alert]]') -> 'Alert':
+        if len(correlates) < 1:
+            return []
+        now = datetime.utcnow()
+        alerts = []
+        for alert in correlates:
+            alert, correlate_with = (alert['alert'], alert['correlate'])
+            alert.previous_severity = db.get_severity(alert)
+            alert.trend_indication = alarm_model.trend(alert.previous_severity, alert.severity)
+
+            status, _, previous_status, _ = alert._get_hist_info()
+
+            _, new_status = alarm_model.transition(
+                alert=alert,
+                current_status=status,
+                previous_status=previous_status
+            )
+
+            alert.duplicate_count = 0
+            alert.repeat = False
+            alert.receive_time = now
+            alert.last_receive_id = alert.id
+            alert.last_receive_time = now
+
+            if new_status != status:
+                r = status_change_hook.send(correlate_with, status=new_status, text=alert.text)
+                _, (_, new_status, text) = r[0]
+                alert.update_time = now
+            else:
+                text = alert.text
+
+            alert.history = [History(
+                id=alert.id,
+                event=alert.event,
+                severity=alert.severity,
+                status=new_status,
+                value=alert.value,
+                text=text,
+                change_type=ChangeType.severity,
+                update_time=alert.create_time,
+                user=g.login,
+                timeout=alert.timeout
+            )]
+
+            alert.status = new_status
+            alerts.append(alert)
+        return [Alert.from_db(alert) for alert in db.correlate_multiple_alerts(alerts)]
+
     # get tags
     @staticmethod
     def get_tags(query: Query = None) -> List[str]:
