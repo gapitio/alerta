@@ -1345,7 +1345,7 @@ class Backend(Database):
             WHERE  now() - sent_time < '1h'
             ORDER BY "rule", sent_time DESC) AS f WHERE sent = false
         """
-        return self._fetchone(select, {"now": datetime.utcnow()}).count
+        return self._fetchone(select, {'now': datetime.utcnow()}).count
 
     def get_notifications_history_count(self, query=None):
         query = query or Query()
