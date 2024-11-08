@@ -119,7 +119,16 @@ class Database(Base):
     def dedup_alert(self, alert, history):
         raise NotImplementedError
 
+    def dedup_multiple_alerts(self, alerts):
+        raise NotImplementedError
+
     def correlate_alert(self, alert, history):
+        raise NotImplementedError
+
+    def correlate_multiple_alerts(self, alerts):
+        raise NotImplementedError
+
+    def create_multiple_alerts(self, alerts):
         raise NotImplementedError
 
     def create_alert(self, alert):
