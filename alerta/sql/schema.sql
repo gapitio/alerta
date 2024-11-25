@@ -155,6 +155,16 @@ BEGIN
     END IF;
 END$$;
 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'advanced_tags') THEN
+        CREATE TYPE advanced_tags AS (
+            "all" text[],
+            "any" text[]
+        );
+    END IF;
+END$$;
+
 CREATE TABLE IF NOT EXISTS escalation_rules (
     id text PRIMARY KEY,
     priority integer NOT NULL,
@@ -232,6 +242,24 @@ CREATE TABLE IF NOT EXISTS notification_rules (
     channel_id text not null,
     FOREIGN key (channel_id) references notification_channels(id)
 );
+DO $$
+BEGIN
+    ALTER TABLE notification_rules ADD COLUMN tags_a advanced_tags[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "delay_time" already exists in notification_rules.';
+END$$;
+DO $$
+BEGIN
+    UPDATE notification_rules SET tags_a = array[(tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(tags) != pg_typeof(tags_a);
+    UPDATE notification_rules set tags_a = tags::advanced_tags[] where pg_typeof(tags) = pg_typeof(tags_a);
+END$$;
+DO $$
+BEGIN
+    ALTER table notification_rules DROP COLUMN "tags";
+    ALTER table notification_rules RENAME COLUMN tags_a to tags;
+END$$;
+
+
 DO $$
 BEGIN
     ALTER TABLE notification_rules ADD COLUMN delay_time interval;

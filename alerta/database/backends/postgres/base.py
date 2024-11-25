@@ -71,6 +71,24 @@ class NotificationTriggersAdapter:
         return f'({quoted(self.triggers.from_severity)},{quoted(self.triggers.to_severity)}, {quoted(self.triggers.status)},{quoted(self.triggers.text)})::notification_triggers'
 
 
+class AdvancedTagsAdapter:
+    def __init__(self, tags) -> None:
+        self.tags = tags
+        self.conn = None
+
+    def prepare(self, conn):
+        self.conn = conn
+
+    def getquoted(self):
+        def quoted(o):
+            a = adapt(o)
+            if hasattr(a, 'prepare'):
+                a.prepare(self.conn)
+            return a.getquoted().decode('utf-8')
+
+        return f'({quoted(self.tags.all)},{quoted(self.tags.any)})::advanced_tags'
+
+
 Record = namedtuple('Record', [
     'id', 'resource', 'event', 'environment', 'severity', 'status', 'service',
     'group', 'value', 'text', 'tags', 'attributes', 'origin', 'update_time',
@@ -106,10 +124,12 @@ class Backend(Database):
             globally=True
         )
         register_composite('notification_triggers', conn, globally=True)
+        register_composite('advanced_tags', conn, globally=True)
         from alerta.models.alert import History
-        from alerta.models.notification_rule import NotificationTriggers
+        from alerta.models.notification_rule import NotificationTriggers, AdvancedTags
         register_adapter(History, HistoryAdapter)
         register_adapter(NotificationTriggers, NotificationTriggersAdapter)
+        register_adapter(AdvancedTags, AdvancedTagsAdapter)
 
     def connect(self):
         retry = 0
@@ -1118,7 +1138,7 @@ class Backend(Database):
 
     def get_notification_rules_active(self, alert):
         select = """
-            SELECT * from (select *, generate_subscripts(triggers,1) as s
+            SELECT * from (select *, generate_subscripts(triggers,1) as s, generate_subscripts(tags,1) as t
             FROM notification_rules) as foo
             WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
               AND (days='{}' OR ARRAY[%(day)s] <@ days)
@@ -1132,7 +1152,8 @@ class Backend(Database):
               AND (service='{}' OR service <@ %(service)s)
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
-              AND (tags='{}' OR tags <@ %(tags)s)
+              AND (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
+              AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
               AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
               AND active=true
         """
@@ -1151,7 +1172,7 @@ class Backend(Database):
 
     def get_notification_rules_active_status(self, alert, status):
         select = """
-            SELECT * from (select *, generate_subscripts(triggers,1) as s
+            SELECT * from (select *, generate_subscripts(triggers,1) as s, generate_subscripts(tags,1) as t
             FROM notification_rules) as foo
             WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
               AND (days='{}' OR ARRAY[%(day)s] <@ days)
@@ -1165,7 +1186,8 @@ class Backend(Database):
               AND (service='{}' OR service <@ %(service)s)
               AND (event IS NULL OR event=%(event)s)
               AND ("group" IS NULL OR "group"=%(group)s)
-              AND (tags='{}' OR tags <@ %(tags)s)
+              AND (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
+              AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
               AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
               AND active=true
         """
@@ -1190,8 +1212,8 @@ class Backend(Database):
             update += 'event=%(event)s, ' if kwargs['event'] != '' else 'event=NULL, '
         if 'group' in kwargs:
             update += '"group"=%(group)s, ' if kwargs['group'] != '' else '"group"=NULL, '
-        if 'tags' in kwargs:
-            update += 'tags=%(tags)s, '
+        if kwargs.get('tags') is not None:
+            update += 'tags=%(tags)s::advanced_tags[], '
         if 'excludedTags' in kwargs:
             update += 'excluded_tags=%(excludedTags)s, '
         if 'customer' in kwargs:
