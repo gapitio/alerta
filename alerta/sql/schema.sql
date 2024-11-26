@@ -155,6 +155,16 @@ BEGIN
     END IF;
 END$$;
 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'advanced_tags') THEN
+        CREATE TYPE advanced_tags AS (
+            "all" text[],
+            "any" text[]
+        );
+    END IF;
+END$$;
+
 CREATE TABLE IF NOT EXISTS escalation_rules (
     id text PRIMARY KEY,
     priority integer NOT NULL,
@@ -234,6 +244,24 @@ CREATE TABLE IF NOT EXISTS notification_rules (
 );
 DO $$
 BEGIN
+    ALTER TABLE notification_rules ADD COLUMN tags_a advanced_tags[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "tags_a" already exists in notification_rules.';
+END$$;
+DO $$
+BEGIN
+    UPDATE notification_rules SET tags_a = array[(tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(tags) != pg_typeof(tags_a);
+    UPDATE notification_rules set tags_a = tags::advanced_tags[] where pg_typeof(tags) = pg_typeof(tags_a);
+END$$;
+DO $$
+BEGIN
+    ALTER table notification_rules DROP COLUMN "tags";
+    ALTER table notification_rules RENAME COLUMN tags_a to tags;
+END$$;
+
+
+DO $$
+BEGIN
     ALTER TABLE notification_rules ADD COLUMN delay_time interval;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "delay_time" already exists in notification_rules.';
@@ -277,6 +305,23 @@ BEGIN
     ALTER TABLE notification_rules ADD COLUMN excluded_tags text[];
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
+    ALTER TABLE notification_rules ADD COLUMN excluded_tags_a advanced_tags[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags_a" already exists in notification_rules.';
+END$$;
+DO $$
+BEGIN
+    UPDATE notification_rules SET excluded_tags_a = array[(excluded_tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(excluded_tags) != pg_typeof(excluded_tags_a);
+    UPDATE notification_rules set excluded_tags_a = excluded_tags::advanced_tags[] where pg_typeof(excluded_tags) = pg_typeof(excluded_tags_a);
+END$$;
+DO $$
+BEGIN
+    ALTER table notification_rules DROP COLUMN "excluded_tags";
+    ALTER table notification_rules RENAME COLUMN excluded_tags_a to excluded_tags;
 END$$;
 
 DO $$

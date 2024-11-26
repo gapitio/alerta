@@ -15,6 +15,44 @@ if TYPE_CHECKING:
 JSON = Dict[str, Any]
 
 
+class AdvancedTags:
+    def __init__(self, all: 'list[str]', any: 'list[str]') -> None:
+        self.all = all or []
+        self.any = any or []
+
+    @property
+    def serialize(self):
+        return {
+            'all': self.all,
+            'any': self.any,
+        }
+
+    def __repr__(self):
+        return 'AdvancedTags(all={!r}, any={!r})'.format(
+            self.from_severity, self.to_severity)
+
+    @classmethod
+    def from_document(cls, doc):
+        return AdvancedTags(
+            all=doc.get('all', list()),
+            any=doc.get('any', list()),
+        )
+
+    @classmethod
+    def from_record(cls, rec):
+        return AdvancedTags(
+            all=rec.all,
+            any=rec.any,
+        )
+
+    @classmethod
+    def from_db(cls, r):
+        if isinstance(r, dict):
+            return cls.from_document(r)
+        elif isinstance(r, tuple):
+            return cls.from_record(r)
+
+
 class NotificationTriggers:
     def __init__(self, from_severity: 'list[str]', to_severity: 'list[str]', status: 'list[str]' = [], text: str = '') -> None:
         self.from_severity = from_severity or []
@@ -88,7 +126,8 @@ class NotificationRule:
         self.event = kwargs['event'] if kwargs.get('event', '') != '' else None
         self.group = kwargs['group'] if kwargs.get('group', '') != '' else None
         self.tags = kwargs.get('tags', None) or list()
-        self.excluded_tags = kwargs.get('excluded_tags', None) or list()
+        self.tags = kwargs.get('tags') or [AdvancedTags([], [])]
+        self.excluded_tags = kwargs.get('excluded_tags', None) or [AdvancedTags([], [])]
         self.customer = kwargs.get('customer', None)
         self.days = kwargs.get('days', None) or list()
         self.triggers = kwargs.get('triggers') or [NotificationTriggers([], [], [])]
@@ -161,8 +200,8 @@ class NotificationRule:
             resource=json.get('resource', None),
             event=json.get('event', None),
             group=json.get('group', None),
-            tags=json.get('tags', list()),
-            excluded_tags=json.get('excludedTags', list()),
+            tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('tags', [])],
+            excluded_tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('excludedTags', [])],
             customer=json.get('customer', None),
             reactivate=json.get('reactivate', None),
             start_time=(
@@ -205,8 +244,8 @@ class NotificationRule:
             'resource': self.resource,
             'event': self.event,
             'group': self.group,
-            'tags': self.tags,
-            'excludedTags': self.excluded_tags,
+            'tags': [tag.serialize for tag in self.tags],
+            'excludedTags': [tag.serialize for tag in self.excluded_tags],
             'customer': self.customer,
             'user': self.user,
             'createTime': self.create_time,
@@ -231,10 +270,6 @@ class NotificationRule:
             more += 'event=%r, ' % self.event
         if self.group:
             more += 'group=%r, ' % self.group
-        if self.tags:
-            more += 'tags=%r, ' % self.tags
-        if self.excluded_tags:
-            more += 'excluded_tags=%r, ' % self.excluded_tags
         if self.customer:
             more += 'customer=%r, ' % self.customer
         if self.triggers:
@@ -267,8 +302,8 @@ class NotificationRule:
             resource=doc.get('resource', None),
             event=doc.get('event', None),
             group=doc.get('group', None),
-            tags=doc.get('tags', list()),
-            excluded_tags=doc.get('excludedTags', list()),
+            tags=[AdvancedTags.from_db(tag) for tag in doc.get('tags', [])],
+            excluded_tags=[AdvancedTags.from_db(tag) for tag in doc.get('excludedTags', [])],
             customer=doc.get('customer', None),
             user=doc.get('user', None),
             create_time=doc.get('createTime', None),
@@ -314,8 +349,8 @@ class NotificationRule:
             resource=rec.resource,
             event=rec.event,
             group=rec.group,
-            tags=rec.tags,
-            excluded_tags=rec.excluded_tags,
+            tags=[AdvancedTags.from_db(tag) for tag in rec.tags or []],
+            excluded_tags=[AdvancedTags.from_db(tag) for tag in rec.excluded_tags or []],
             customer=rec.customer,
             user=rec.user,
             create_time=rec.create_time,
@@ -377,6 +412,12 @@ class NotificationRule:
         triggers = kwargs.get('triggers')
         if triggers is not None:
             kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
+        tags = kwargs.get('tags')
+        if tags is not None:
+            kwargs['tags'] = [AdvancedTags.from_document(tag) for tag in tags]
+        excluded = kwargs.get('excludedTags')
+        if excluded is not None:
+            kwargs['excludedTags'] = [AdvancedTags.from_document(tag) for tag in excluded]
         return NotificationRule.from_db(db.update_notification_rule(self.id, **kwargs))
 
     def delete(self) -> bool:

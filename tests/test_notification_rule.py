@@ -288,7 +288,7 @@ class NotificationRuleTestCase(unittest.TestCase):
         update = {
             'environment': 'Development',
             'event': None,
-            'tags': [],
+            'tags': [{'all': []}],
             'endTime': '22:00',
         }
         data = self.update_api_obj('/notificationrules/' + notification_rule_id, update, self.headers)
@@ -371,7 +371,7 @@ class NotificationRuleTestCase(unittest.TestCase):
             'service': ['Core', 'Web', 'Network'],
             'days': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
             'group': 'Network',
-            'tags': ['notification_test', 'network'],
+            'tags': [{'all': ['notification_test', 'network']}],
             'startTime': '00:00',
             'endTime': '23:59',
             'text': 'Hey, this is a test of notification rules',
@@ -492,7 +492,7 @@ class NotificationRuleTestCase(unittest.TestCase):
             'service': ['Core', 'Web', 'Network', 'Notification_service'],
             'days': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             'group': 'Network',
-            'tags': ['notification_test', 'network'],
+            'tags': [{'all': ['notification_test', 'network']}],
             'startTime': '00:00',
             'endTime': '23:59',
             'text': 'Hey, this is a test of notification rules',
@@ -541,8 +541,8 @@ class NotificationRuleTestCase(unittest.TestCase):
         pop_group_rule = {**base_rule}
         pop_group_rule.pop('group')
 
-        more_tags_rule = {**base_rule, 'tags': ['notification_test', 'network', 'More']}
-        less_tags_rule = {**base_rule, 'tags': ['notification_test']}
+        more_tags_rule = {**base_rule, 'tags': [{'all': ['notification_test', 'network', 'More']}]}
+        less_tags_rule = {**base_rule, 'tags': [{'all': ['notification_test']}]}
         none_tags_rule = {**base_rule, 'tags': []}
         pop_tags_rule = {**base_rule}
         pop_tags_rule.pop('tags')
