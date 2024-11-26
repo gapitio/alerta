@@ -1156,11 +1156,11 @@ class Backend(Database):
                 AND ("group" IS NULL OR "group"=%(group)s)
                 AND active=true
             ), alert_tags AS (
-                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers)
+                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers) as foo
                 WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
-                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags)
+                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
                 WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
                     AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
             )
@@ -1201,11 +1201,11 @@ class Backend(Database):
                     AND ("group" IS NULL OR "group"=%(group)s)
                     AND active=true
             ), alert_tags AS (
-                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers)
+                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers) as foo
                 WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
-                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags)
+                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
                 WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
                     AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
             )
