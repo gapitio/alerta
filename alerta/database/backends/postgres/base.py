@@ -126,7 +126,8 @@ class Backend(Database):
         register_composite('notification_triggers', conn, globally=True)
         register_composite('advanced_tags', conn, globally=True)
         from alerta.models.alert import History
-        from alerta.models.notification_rule import NotificationTriggers, AdvancedTags
+        from alerta.models.notification_rule import (AdvancedTags,
+                                                     NotificationTriggers)
         register_adapter(History, HistoryAdapter)
         register_adapter(NotificationTriggers, NotificationTriggersAdapter)
         register_adapter(AdvancedTags, AdvancedTagsAdapter)
