@@ -1138,24 +1138,35 @@ class Backend(Database):
 
     def get_notification_rules_active(self, alert):
         select = """
-            SELECT * from (select *, generate_subscripts(triggers,1) as s, generate_subscripts(tags,1) as t
-            FROM notification_rules) as foo
-            WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
-              AND (days='{}' OR ARRAY[%(day)s] <@ days)
-              AND environment=%(environment)s
-              AND (
-                    (triggers[s].from_severity='{}' OR triggers[s].from_severity IS NULL OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
-                    AND (triggers[s].to_severity='{}' OR triggers[s].to_severity IS NULL OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
-                    AND (triggers[s].status='{}' OR triggers[s].status IS NULL OR ARRAY[%(status)s] <@ triggers[s].status)
-                )
-              AND (resource IS NULL OR resource=%(resource)s)
-              AND (service='{}' OR service <@ %(service)s)
-              AND (event IS NULL OR event=%(event)s)
-              AND ("group" IS NULL OR "group"=%(group)s)
-              AND (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
-              AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
-              AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
-              AND active=true
+            WITH alert_triggers AS (
+                SELECT * from (select *, generate_subscripts(triggers,1) as s
+                FROM notification_rules) as foo
+                WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
+                AND (days='{}' OR ARRAY[%(day)s] <@ days)
+                AND environment=%(environment)s
+                AND (
+                        (triggers[s].from_severity='{}' OR triggers[s].from_severity IS NULL OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
+                        AND (triggers[s].to_severity='{}' OR triggers[s].to_severity IS NULL OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
+                        AND (triggers[s].status='{}' OR triggers[s].status IS NULL OR ARRAY[%(status)s] <@ triggers[s].status)
+                    )
+                AND (resource IS NULL OR resource=%(resource)s)
+                AND (service='{}' OR service <@ %(service)s)
+                AND (event IS NULL OR event=%(event)s)
+                AND ("group" IS NULL OR "group"=%(group)s)
+                AND active=true
+            ), alert_tags AS (
+                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers)
+                WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
+                    AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
+            ), alert_excluded AS (
+                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags)
+                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
+                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+            )
+
+            SELECT * from notification_rules
+            WHERE id IN (SELECT id FROM alert_excluded)
+
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
@@ -1172,24 +1183,34 @@ class Backend(Database):
 
     def get_notification_rules_active_status(self, alert, status):
         select = """
-            SELECT * from (select *, generate_subscripts(triggers,1) as s, generate_subscripts(tags,1) as t
-            FROM notification_rules) as foo
-            WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
-              AND (days='{}' OR ARRAY[%(day)s] <@ days)
-              AND environment=%(environment)s
-              AND (
-                    (triggers[s].from_severity='{}' OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
-                    AND (triggers[s].to_severity='{}' OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
-                    AND (ARRAY[%(status)s] <@ triggers[s].status)
-                )
-              AND (resource IS NULL OR resource=%(resource)s)
-              AND (service='{}' OR service <@ %(service)s)
-              AND (event IS NULL OR event=%(event)s)
-              AND ("group" IS NULL OR "group"=%(group)s)
-              AND (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
-              AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
-              AND (excluded_tags='{}' OR NOT excluded_tags <@ %(tags)s)
-              AND active=true
+            WITH alert_triggers AS (
+                SELECT * from (select *, generate_subscripts(triggers,1) as s
+                FROM notification_rules) as foo
+                WHERE (start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s)
+                    AND (days='{}' OR ARRAY[%(day)s] <@ days)
+                    AND environment=%(environment)s
+                    AND (
+                        (triggers[s].from_severity='{}' OR ARRAY[%(previous_severity)s] <@ triggers[s].from_severity)
+                        AND (triggers[s].to_severity='{}' OR ARRAY[%(severity)s] <@ triggers[s].to_severity)
+                        AND (ARRAY[%(status)s] <@ triggers[s].status)
+                    )
+                    AND (resource IS NULL OR resource=%(resource)s)
+                    AND (service='{}' OR service <@ %(service)s)
+                    AND (event IS NULL OR event=%(event)s)
+                    AND ("group" IS NULL OR "group"=%(group)s)
+                    AND active=true
+            ), alert_tags AS (
+                SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers)
+                WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
+                    AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
+            ), alert_excluded AS (
+                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags)
+                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
+                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+            )
+
+            SELECT * from notification_rules
+            WHERE id IN (SELECT id FROM alert_excluded)
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
@@ -1215,7 +1236,7 @@ class Backend(Database):
         if kwargs.get('tags') is not None:
             update += 'tags=%(tags)s::advanced_tags[], '
         if 'excludedTags' in kwargs:
-            update += 'excluded_tags=%(excludedTags)s, '
+            update += 'excluded_tags=%(excludedTags)s::advanced_tags[], '
         if 'customer' in kwargs:
             update += 'customer=%(customer)s, '
         if 'startTime' in kwargs:

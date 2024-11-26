@@ -246,7 +246,7 @@ DO $$
 BEGIN
     ALTER TABLE notification_rules ADD COLUMN tags_a advanced_tags[];
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "delay_time" already exists in notification_rules.';
+    WHEN duplicate_column THEN RAISE NOTICE 'column "tags_a" already exists in notification_rules.';
 END$$;
 DO $$
 BEGIN
@@ -257,6 +257,23 @@ DO $$
 BEGIN
     ALTER table notification_rules DROP COLUMN "tags";
     ALTER table notification_rules RENAME COLUMN tags_a to tags;
+END$$;
+
+DO $$
+BEGIN
+    ALTER TABLE notification_rules ADD COLUMN excluded_tags_a advanced_tags[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags_a" already exists in notification_rules.';
+END$$;
+DO $$
+BEGIN
+    UPDATE notification_rules SET excluded_tags_a = array[(excluded_tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(excluded_tags) != pg_typeof(excluded_tags_a);
+    UPDATE notification_rules set excluded_tags_a = excluded_tags::advanced_tags[] where pg_typeof(excluded_tags) = pg_typeof(excluded_tags_a);
+END$$;
+DO $$
+BEGIN
+    ALTER table notification_rules DROP COLUMN "excluded_tags";
+    ALTER table notification_rules RENAME COLUMN excluded_tags_a to excluded_tags;
 END$$;
 
 
