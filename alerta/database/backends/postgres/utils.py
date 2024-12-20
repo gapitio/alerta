@@ -18,7 +18,8 @@ Query.__new__.__defaults__ = ('1=1', {}, '(select 1)', 'status')  # type: ignore
 
 EXCLUDE_FROM_QUERY = [
     '_', 'callback', 'token', 'api-key', 'q', 'q.df', 'id', 'from-date', 'to-date',
-    'sort-by', 'group-by', 'page', 'page-size', 'limit', 'show-raw-data', 'show-history'
+    'sort-by', 'group-by', 'page', 'page-size', 'limit', 'show-raw-data', 'show-history',
+    'sent'
 ]
 
 
@@ -391,12 +392,12 @@ class NotificationHistory(QueryBuilder):
     VALID_PARAMS = {
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
+        'sent': ('sent', 'sent', 0),
         'sent_time': ('sent_time', 'sent_time', -1),
     }
 
     @staticmethod
     def from_params(params: MultiDict, customers=None, query_time=None):
-
         if params.get('q', None):
             try:
                 parser = QueryParser()
@@ -410,6 +411,10 @@ class NotificationHistory(QueryBuilder):
         else:
             query = ['1=1']
             qvars = dict()
+
+        if params.get('sent', None):
+            query.append('AND "sent" = ANY (%(sent)s::boolean[])')
+            qvars['sent'] = params.get('sent').split(',')
 
         # customer
         if customers:
