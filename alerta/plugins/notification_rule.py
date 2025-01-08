@@ -123,21 +123,20 @@ def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers
     return requests.post(f'{channel.host}', data, headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
 
 
-def send_smtp_mail(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
-    mails = {*receivers, *[user.email for user in on_call_users]}
+def send_smtp_mail(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, **kwargs):
     server = smtplib.SMTP_SSL(channel.host)
     api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
     server.login(api_sid, api_token)
-    server.sendmail(channel.sender, list(mails), f"From: {channel.sender}\nTo: {','.join(mails)}\nSubject: Alerta\n\n{message}")
+    server.sendmail(channel.sender, list(receivers), f"From: {channel.sender}\nTo: {','.join(receivers)}\nSubject: Alerta\n\n{message}")
     server.quit()
 
 
-def send_email(message: str, channel: NotificationChannel, receivers: list, on_call_users: 'set[NotificationInfo]', fernet: Fernet, **kwargs):
-    mails = {*receivers, *[user.email for user in on_call_users]}
+def send_email(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, **kwargs):
+    print(receivers)
     data = {
         'personalizations': [
-            {'to': [{'email': email} for email in mails]}
+            {'to': [{'email': email} for email in receivers]}
         ],
         'from': {'email': channel.sender},
         'subject': 'Alerta',
@@ -197,32 +196,35 @@ def delay_notification(alert: Alert, notification_rule: NotificationRule):
 
 def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[NotificationInfo]', fernet: Fernet, alert: str):
     notification_type = channel.type
+    phone_numbers = {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users if user.phone_number is not None]}
+    mails = {*notification_rule.receivers, *[user.email.lower() for user in users if user.email is not None]}
+
     if notification_type == 'sendgrid':
         try:
-            response = send_email(message, channel, notification_rule.receivers, users, fernet)
+            response = send_email(message, channel, mails, fernet)
             if response.status_code != 202:
                 data = response.json()['errors'][0]
-                log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, f'Got status code {response.status_code}: {data["message"]}')
+                log_notification(False, message, channel, notification_rule.id, alert, mails, f'Got status code {response.status_code}: {data["message"]}')
                 LOG.error('NotificationRule: %s', f'Got status code {response.status_code}: {data["message"]} for field {data["field"]} With help: {data["help"]}')
             else:
-                log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
+                log_notification(True, message, channel, notification_rule.id, alert, mails)
         except InvalidToken:
-            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt authentication keys')
+            log_notification(False, message, channel, notification_rule.id, alert, mails, 'NotificationChannel: Failed to decrypt authentication keys')
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
 
     elif notification_type == 'smtp':
         try:
-            send_smtp_mail(message, channel, {*notification_rule.receivers, *[user.email for user in users]}, users, fernet)
-            log_notification(True, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]})
+            send_smtp_mail(message, channel, mails, fernet)
+            log_notification(True, message, channel, notification_rule.id, alert, mails)
         except InvalidToken:
-            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, 'NotificationChannel: Failed to decrypt authentication keys')
+            log_notification(False, message, channel, notification_rule.id, alert, mails, 'NotificationChannel: Failed to decrypt authentication keys')
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
         except Exception as err:
-            log_notification(False, message, channel, notification_rule.id, alert, {*notification_rule.receivers, *[user.email for user in users]}, str(err))
+            log_notification(False, message, channel, notification_rule.id, alert, mails, str(err))
             LOG.error('NotificationRule: %s', str(err))
 
     elif 'twilio' in notification_type:
-        for number in {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}:
+        for number in phone_numbers:
             if number is None or number == '':
                 continue
             try:
@@ -244,22 +246,22 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
 
     elif notification_type == 'link_mobility_xml':
         try:
-            response = send_link_mobility_xml(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet, xml=LINK_MOBILITY_XML.copy())
+            response = send_link_mobility_xml(message, channel, phone_numbers, fernet, xml=LINK_MOBILITY_XML.copy())
             if response.content.decode().find('FAIL') != -1:
                 LOG.error(response.content)
-                log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error=response.content)
+                log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error=response.content)
             else:
                 LOG.info(response.content)
                 log_notification(True, message, channel, notification_rule.id, alert, [number])
         except InvalidToken:
-            log_notification(False, message, channel, notification_rule.id, alert, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), error='NotificationChannel: Failed to decrypt authentication keys')
+            log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error='NotificationChannel: Failed to decrypt authentication keys')
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
 
     elif notification_type == 'my_link':
-        response = send_mylink_sms(message, channel, list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}), fernet)
+        response = send_mylink_sms(message, channel, phone_numbers, fernet)
         if response.status_code != 202:
             LOG.error(f'Failed to send myLink message with response: {response.content}')
-            for number in list({*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users]}):
+            for number in phone_numbers:
                 log_notification(False, message, channel, notification_rule.id, alert, [number], error=response.content)
         else:
             LOG.info(f'Successfully Sent message to myLink with response: {response.content}')
