@@ -166,8 +166,7 @@ class NotificationRule:
         users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
         for group in groups:
             for index in range(max(len(group.phone_numbers), len(group.mails))):
-                if index < len(group.phone_numbers) and index < len(group.mails):
-                    users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
+                users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
         for user_list in group_users:
             for user in user_list:
                 if isinstance(user, dict):
