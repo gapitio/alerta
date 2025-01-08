@@ -197,7 +197,7 @@ def delay_notification(alert: Alert, notification_rule: NotificationRule):
 def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[NotificationInfo]', fernet: Fernet, alert: str):
     notification_type = channel.type
     phone_numbers = {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users if user.phone_number is not None]}
-    mails = {*notification_rule.receivers, *[user.email.lower() for user in users if user.email is not None]}
+    mails = {*[receiver.lower() for receiver in notification_rule.receivers], *[user.email.lower() for user in users if user.email is not None]}
 
     if notification_type == 'sendgrid':
         try:
