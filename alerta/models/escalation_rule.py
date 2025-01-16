@@ -5,7 +5,7 @@ from uuid import uuid4
 from alerta.app import db
 from alerta.database.base import Query
 from alerta.models.alert import Alert
-from alerta.models.notification_rule import NotificationTriggers
+from alerta.models.notification_rule import NotificationTriggers, AdvancedTags
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
@@ -42,7 +42,8 @@ class EscalationRule:
         self.resource = kwargs.get('resource', None)
         self.event = kwargs.get('event', None)
         self.group = kwargs.get('group', None)
-        self.tags = kwargs.get('tags', None) or list()
+        self.tags = kwargs.get('tags') or [AdvancedTags([], [])]
+        self.excluded_tags = kwargs.get('excluded_tags', None) or [AdvancedTags([], [])]
         self.customer = kwargs.get('customer', None)
         self.days = kwargs.get('days', None) or list()
         self.triggers = kwargs.get('triggers') or [NotificationTriggers([], [], [])]
@@ -73,6 +74,8 @@ class EscalationRule:
             raise ValueError('service must be a list')
         if not isinstance(json.get('tags', []), list):
             raise ValueError('tags must be a list')
+        if not isinstance(json.get('excludedTags', []), list):
+            raise ValueError('excluded tags must be a list')
         escalation_rule = EscalationRule(
             id=json.get('id', None),
             active=json.get('active', True),
@@ -83,7 +86,8 @@ class EscalationRule:
             resource=json.get('resource', None),
             event=json.get('event', None),
             group=json.get('group', None),
-            tags=json.get('tags', list()),
+            tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('tags', [])],
+            excluded_tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('excludedTags', [])],
             customer=json.get('customer', None),
             start_time=(
                 datetime.strptime(json['startTime'], '%H:%M').time()
@@ -118,7 +122,8 @@ class EscalationRule:
             'resource': self.resource,
             'event': self.event,
             'group': self.group,
-            'tags': self.tags,
+            'tags': [tag.serialize for tag in self.tags],
+            'excludedTags': [tag.serialize for tag in self.excluded_tags],
             'customer': self.customer,
             'user': self.user,
             'createTime': self.create_time,
@@ -141,8 +146,6 @@ class EscalationRule:
             more += 'event=%r, ' % self.event
         if self.group:
             more += 'group=%r, ' % self.group
-        if self.tags:
-            more += 'tags=%r, ' % self.tags
         if self.customer:
             more += 'customer=%r, ' % self.customer
         if self.triggers:
@@ -169,7 +172,8 @@ class EscalationRule:
             resource=doc.get('resource', None),
             event=doc.get('event', None),
             group=doc.get('group', None),
-            tags=doc.get('tags', list()),
+            tags=[AdvancedTags.from_db(tag) for tag in doc.get('tags', [])],
+            excluded_tags=[AdvancedTags.from_db(tag) for tag in doc.get('excludedTags', [])],
             customer=doc.get('customer', None),
             user=doc.get('user', None),
             create_time=doc.get('createTime', None),
@@ -208,7 +212,8 @@ class EscalationRule:
             resource=rec.resource,
             event=rec.event,
             group=rec.group,
-            tags=rec.tags,
+            tags=[AdvancedTags.from_db(tag) for tag in rec.tags or []],
+            excluded_tags=[AdvancedTags.from_db(tag) for tag in rec.excluded_tags or []],
             customer=rec.customer,
             user=rec.user,
             create_time=rec.create_time,
@@ -257,6 +262,12 @@ class EscalationRule:
         triggers = kwargs.get('triggers')
         if triggers is not None:
             kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
+        tags = kwargs.get('tags')
+        if tags is not None:
+            kwargs['tags'] = [AdvancedTags.from_document(tag) for tag in tags]
+        excluded = kwargs.get('excludedTags')
+        if excluded is not None:
+            kwargs['excludedTags'] = [AdvancedTags.from_document(tag) for tag in excluded]
         return EscalationRule.from_db(db.update_escalation_rule(self.id, **kwargs))
 
     def delete(self) -> bool:

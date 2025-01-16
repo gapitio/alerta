@@ -1414,9 +1414,9 @@ class Backend(Database):
     def create_escalation_rule(self, escalation_rule):
         insert = """
             INSERT INTO escalation_rules (id, active, "time", priority, environment, service, resource, event, "group", tags,
-                customer, "user", create_time, start_time, end_time, days, triggers)
+                customer, "user", create_time, start_time, end_time, days, triggers, excluded_tags)
             VALUES (%(id)s, %(active)s, %(time)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(triggers)s::notification_triggers[] )
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(triggers)s::notification_triggers[], %(excluded_tags)s )
             RETURNING *
         """
         test = self._insert(insert, vars(escalation_rule))
@@ -1455,18 +1455,29 @@ class Backend(Database):
 
     def get_escalation_alerts(self):
         select = """
+            WITH alert_triggers as (
+                SELECT DISTINCT a.*
+                FROM public.alerts as a, public.escalation_rules as e, generate_subscripts(e.triggers,1) as s
+                WHERE e.active
+                    AND a.status = 'open'
+                    AND a.environment=e.environment
+                    AND (e.resource IS NULL OR e.resource=a.resource OR e.resource = '')
+                    AND (e.service='{}' OR e.service <@ a.service)
+                    AND (e.event IS NULL OR e.event=a.event or e.event = '')
+                    AND (e.group IS NULL OR e.group=a.group)
+                    AND (((e.triggers[s].from_severity='{}' OR ARRAY[a.previous_severity] <@ e.triggers[s].from_severity) AND (e.triggers[s].to_severity='{}' OR ARRAY[a.severity] <@ e.triggers[s].to_severity)))
+            ),
+            alert_tags AS (
+                SELECT DISTINCT a.* from alert_triggers as a, public.escalation_rules as e, generate_subscripts(e.tags,1) as t
+                WHERE (e.tags[t].all='{}' OR e.tags[t].all <@ a.tags)
+                    AND (e.tags[t].any='{}' OR e.tags[t].any && a.tags)
+            )
+
             SELECT DISTINCT a.id, a.resource, a.event, a.severity, a.environment, a.service, a.text, a.value, a.timeout
-            FROM public.alerts as a, public.escalation_rules as e, generate_subscripts(e.triggers,1) as s
-            WHERE e.active
-                AND a.status = 'open'
-                AND (%(now)s - a.last_receive_time > e.time)
-                AND a.environment=e.environment
-                AND (e.resource IS NULL OR e.resource=a.resource OR e.resource = '')
-                AND (e.service='{}' OR e.service <@ a.service)
-                AND (e.event IS NULL OR e.event=a.event or e.event = '')
-                AND (e.group IS NULL OR e.group=a.group)
-                AND (e.tags='{}' OR e.tags <@ a.tags)
-                AND (((e.triggers[s].from_severity='{}' OR ARRAY[a.previous_severity] <@ e.triggers[s].from_severity) AND (e.triggers[s].to_severity='{}' OR ARRAY[a.severity] <@ e.triggers[s].to_severity)))
+            from alert_tags as a, public.escalation_rules as e, generate_subscripts(e.excluded_tags,1) as t
+            WHERE NOT ((e.excluded_tags[t].all='{}' OR e.excluded_tags[t].all <@ a.tags)
+                AND (e.excluded_tags[t].any='{}' OR (e.excluded_tags[t].any && a.tags)))
+
         """
         return self._fetchall(select, {'now': datetime.utcnow()}, limit='ALL')
 
@@ -1488,7 +1499,9 @@ class Backend(Database):
         if 'group' in kwargs:
             update += '"group"=%(group)s, '
         if 'tags' in kwargs:
-            update += 'tags=%(tags)s, '
+            update += 'tags=%(tags)s::advanced_tags[], '
+        if 'excludedTags' in kwargs:
+            update += 'excluded_tags=%(excludedTags)s::advanced_tags[], '
         if 'customer' in kwargs:
             update += 'customer=%(customer)s, '
         if 'startTime' in kwargs:
