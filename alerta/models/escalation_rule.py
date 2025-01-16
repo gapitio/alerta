@@ -81,13 +81,26 @@ class EscalationRule:
             active=json.get('active', True),
             environment=json['environment'],
             ttime=json['time'],
-            triggers=[NotificationTriggers(trigger['from_severity'], trigger['to_severity']) for trigger in json.get('triggers', [])],
+            triggers=[
+                NotificationTriggers(trigger['from_severity'], trigger['to_severity'])
+                for trigger in json.get('triggers', [])
+            ],
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
             group=json.get('group', None),
-            tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('tags', [])],
-            excluded_tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('excludedTags', [])],
+            tags=(
+                [
+                    AdvancedTags(tag.get('all', []), tag.get('any', []))
+                    for tag in json.get('tags', [])
+                ]
+                if len(json.get('tags')) and type(json.get('tags')[-1]) is not str
+                else [AdvancedTags(json.get('tags'), [])]
+            ),
+            excluded_tags=[
+                AdvancedTags(tag.get('all', []), tag.get('any', []))
+                for tag in json.get('excludedTags', [])
+            ],
             customer=json.get('customer', None),
             start_time=(
                 datetime.strptime(json['startTime'], '%H:%M').time()
