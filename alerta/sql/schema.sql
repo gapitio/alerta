@@ -165,6 +165,17 @@ BEGIN
     END IF;
 END$$;
 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_triggers') THEN
+        ALTER TYPE severity_advanced RENAME TO notification_triggers;
+        ALTER TYPE notification_triggers RENAME ATTRIBUTE "from_" TO from_severity;
+        ALTER TYPE notification_triggers RENAME ATTRIBUTE "to" TO to_severity;
+        ALTER TYPE notification_triggers ADD ATTRIBUTE "status" text[];
+        ALTER TYPE notification_triggers ADD ATTRIBUTE "text" text;
+    END IF;
+END$$;
+
 CREATE TABLE IF NOT EXISTS escalation_rules (
     id text PRIMARY KEY,
     priority integer NOT NULL,
@@ -183,19 +194,33 @@ CREATE TABLE IF NOT EXISTS escalation_rules (
     days text[],
     severity text[],
     use_advanced_severity boolean,
-    advanced_severity severity_advanced[],
+    advanced_severity notification_triggers[],
     active boolean
 );
 
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_triggers') THEN
-        ALTER TYPE severity_advanced RENAME TO notification_triggers;
-        ALTER TYPE notification_triggers RENAME ATTRIBUTE "from_" TO from_severity;
-        ALTER TYPE notification_triggers RENAME ATTRIBUTE "to" TO to_severity;
-        ALTER TYPE notification_triggers ADD ATTRIBUTE "status" text[];
-        ALTER TYPE notification_triggers ADD ATTRIBUTE "text" text;
-    END IF;
+    ALTER TABLE escalation_rules ADD COLUMN tags_a advanced_tags[];
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "tags_a" already exists in escalation_rules.';
+END$$;
+DO $$
+BEGIN
+    UPDATE escalation_rules SET tags_a = array[(tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(tags) != pg_typeof(tags_a);
+    UPDATE escalation_rules set tags_a = tags::advanced_tags[] where pg_typeof(tags) = pg_typeof(tags_a);
+END$$;
+DO $$
+BEGIN
+    ALTER table escalation_rules DROP COLUMN "tags";
+    ALTER table escalation_rules RENAME COLUMN tags_a to tags;
+END$$;
+
+DO $$
+BEGIN
+    ALTER TABLE escalation_rules ADD COLUMN excluded_tags advanced_tags[];
+    UPDATE escalation_rules set excluded_tags = '{"({},{})"}';
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags" already exists in notification_rules.';
 END$$;
 
 DO $$

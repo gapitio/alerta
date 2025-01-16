@@ -133,7 +133,6 @@ def send_smtp_mail(message: str, channel: NotificationChannel, receivers: set, f
 
 
 def send_email(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, **kwargs):
-    print(receivers)
     data = {
         'personalizations': [
             {'to': [{'email': email} for email in receivers]}
