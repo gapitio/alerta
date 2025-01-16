@@ -5,7 +5,7 @@ from uuid import uuid4
 from alerta.app import db
 from alerta.database.base import Query
 from alerta.models.alert import Alert
-from alerta.models.notification_rule import NotificationTriggers, AdvancedTags
+from alerta.models.notification_rule import AdvancedTags, NotificationTriggers
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
