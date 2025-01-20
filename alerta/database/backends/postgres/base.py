@@ -1161,8 +1161,8 @@ class Backend(Database):
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
                 SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
-                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
-                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+                WHERE NOT ((excluded_tags[ex].all='{}' OR excluded_tags[ex].all <@ %(tags)s)
+                    AND (excluded_tags[ex].any='{}' OR excluded_tags[ex].any && %(tags)s))
             )
 
             SELECT * from notification_rules
@@ -1206,8 +1206,8 @@ class Backend(Database):
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
                 SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
-                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
-                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+                WHERE NOT ((excluded_tags[ex].all='{}' OR excluded_tags[ex].all <@ %(tags)s)
+                    AND (excluded_tags[ex].any='{}' OR excluded_tags[ex].any && %(tags)s))
             )
 
             SELECT * from notification_rules
