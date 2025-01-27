@@ -91,6 +91,24 @@ def get_notification_rules_active():
     return jsonify(status='ok', total=total, notificationRules=notification_rules)
 
 
+@api.route('/notificationrules/activestatus', methods=['OPTIONS', 'POST'])
+@cross_origin()
+@permission(Scope.read_on_calls)
+@jsonp
+def get_notification_rules_activestatus():
+    alert_json = request.json
+    if alert_json is None or alert_json.get('id') is None:
+        return jsonify(status='ok', total=0, notificationRules=[])
+    try:
+        alert = Alert.find_by_id(alert_json.get('id'))
+    except Exception as e:
+        raise ApiError(str(e), 400)
+
+    notification_rules = [notification_rule.serialize for notification_rule in NotificationRule.find_all_active_status(alert, alert.status)]
+    total = len(notification_rules)
+    return jsonify(status='ok', total=total, notificationRules=notification_rules)
+
+
 @api.route('/notificationrules', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_notification_rules)

@@ -1001,3 +1001,263 @@ class NotificationRuleTestCase(unittest.TestCase):
         self.assertIn(to_critical_major_from_all_rule, active_notification_rules)
         self.assertNotIn(to_normal_from_critical_major_rule, active_notification_rules)
         self.assertIn(simple_rule, active_notification_rules)
+
+    def test_escluded_tags(self):
+        empty_array = {
+            'environment': 'Production',
+            'channelId': 'SMS_Channel',
+            'receivers': [],
+            'excludedTags': [],
+        }
+        exclude_all = {
+            **empty_array,
+            'excludedTags': [{'all': ['test', 'dev']}]
+        }
+        exclude_any = {
+            **empty_array,
+            'excludedTags': [{'any': ['test', 'dev']}]
+        }
+        exclude_full = {
+            **empty_array,
+            'excludedTags': [{'all': ['test', 'dev'], 'any': ['a', 'b']}],
+        }
+        exclude_two = {
+            **empty_array,
+            'excludedTags': [
+                {'all': ['test', 'dev'], 'any': ['a', 'b']},
+                {'all': ['a', 'b'], 'any': ['c', 'd']}
+            ],
+        }
+
+        alert_base = {
+            'environment': 'Production',
+            'resource': 'notification_net',
+            'event': 'notification_down',
+            'severity': 'minor',
+            'service': ['Core', 'Web', 'Network'],
+            'group': 'Network',
+            'tags': [],
+        }
+
+        channel_data = self.create_api_obj('/notificationchannels', self.sms_channel, self.headers)
+        data = self.get_api_obj('/notificationchannels', self.headers)
+        self.assertIn(channel_data['notificationChannel'], data['notificationChannels'])
+
+        data = self.create_api_obj('/notificationrules', empty_array, self.headers)
+        empty_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_all, self.headers)
+        exclude_all_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_any, self.headers)
+        exclude_any_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_full, self.headers)
+        exclude_full_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_two, self.headers)
+        exclude_two_rule = data['notificationRule']
+
+        all_notifications_rules = self.get_api_obj('/notificationrules', self.headers)['notificationRules']
+        self.assertIn(empty_rule, all_notifications_rules)
+        self.assertIn(exclude_all_rule, all_notifications_rules)
+        self.assertIn(exclude_any_rule, all_notifications_rules)
+        self.assertIn(exclude_full_rule, all_notifications_rules)
+        self.assertIn(exclude_two_rule, all_notifications_rules)
+
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test']
+        alert_base['resource'] = 'exclude_any'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'dev']
+        alert_base['resource'] = 'exclude_any_all'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertNotIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'a', 'b']
+        alert_base['resource'] = 'do_not_exclude_full'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['a', 'b', 'c', 'd']
+        alert_base['resource'] = 'exclude_full_d'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertNotIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'dev', 'a', 'b']
+        alert_base['resource'] = 'exclude_full_test'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertNotIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertNotIn(exclude_full_rule, active_notification_rules)
+        self.assertNotIn(exclude_two_rule, active_notification_rules)
+
+    def test_escluded_tags_ack(self):
+        empty_array = {
+            'environment': 'Production',
+            'channelId': 'SMS_Channel',
+            'receivers': [],
+            'triggers': [{'status': ['ack']}],
+            'excludedTags': [],
+        }
+        exclude_all = {
+            **empty_array,
+            'excludedTags': [{'all': ['test', 'dev']}]
+        }
+        exclude_any = {
+            **empty_array,
+            'excludedTags': [{'any': ['test', 'dev']}]
+        }
+        exclude_full = {
+            **empty_array,
+            'excludedTags': [{'all': ['test', 'dev'], 'any': ['a', 'b']}],
+        }
+        exclude_two = {
+            **empty_array,
+            'excludedTags': [
+                {'all': ['test', 'dev'], 'any': ['a', 'b']},
+                {'all': ['a', 'b'], 'any': ['c', 'd']}
+            ],
+        }
+
+        alert_base = {
+            'environment': 'Production',
+            'resource': 'notification_net',
+            'event': 'notification_down',
+            'severity': 'minor',
+            'service': ['Core', 'Web', 'Network'],
+            'group': 'Network',
+            'tags': [],
+        }
+
+        channel_data = self.create_api_obj('/notificationchannels', self.sms_channel, self.headers)
+        data = self.get_api_obj('/notificationchannels', self.headers)
+        self.assertIn(channel_data['notificationChannel'], data['notificationChannels'])
+        data = self.create_api_obj('/notificationrules', empty_array, self.headers)
+        empty_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_all, self.headers)
+        exclude_all_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_any, self.headers)
+        exclude_any_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_full, self.headers)
+        exclude_full_rule = data['notificationRule']
+        data = self.create_api_obj('/notificationrules', exclude_two, self.headers)
+        exclude_two_rule = data['notificationRule']
+
+        all_notifications_rules = self.get_api_obj('/notificationrules', self.headers)['notificationRules']
+        self.assertIn(empty_rule, all_notifications_rules)
+        self.assertIn(exclude_all_rule, all_notifications_rules)
+        self.assertIn(exclude_any_rule, all_notifications_rules)
+        self.assertIn(exclude_full_rule, all_notifications_rules)
+        self.assertIn(exclude_two_rule, all_notifications_rules)
+
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        active_notification_rules = self.create_api_obj('/notificationrules/active', alert, self.headers, 200)['notificationRules']
+
+        self.assertNotIn(empty_rule, active_notification_rules)
+        self.assertNotIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertNotIn(exclude_full_rule, active_notification_rules)
+        self.assertNotIn(exclude_two_rule, active_notification_rules)
+
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test']
+        alert_base['resource'] = 'exclude_any'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'dev']
+        alert_base['resource'] = 'exclude_any_all'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertNotIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'a', 'b']
+        alert_base['resource'] = 'do_not_exclude_full'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['a', 'b', 'c', 'd']
+        alert_base['resource'] = 'exclude_full_d'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertIn(exclude_all_rule, active_notification_rules)
+        self.assertIn(exclude_any_rule, active_notification_rules)
+        self.assertIn(exclude_full_rule, active_notification_rules)
+        self.assertNotIn(exclude_two_rule, active_notification_rules)
+
+        alert_base['tags'] = ['test', 'dev', 'a', 'b']
+        alert_base['resource'] = 'exclude_full_test'
+        alert = self.create_api_obj('/alert', alert_base, self.headers)['alert']
+        self.update_api_obj(f'/alert/{alert["id"]}/action',{'action': 'ack'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/activestatus', alert, self.headers, 200)['notificationRules']
+
+        self.assertIn(empty_rule, active_notification_rules)
+        self.assertNotIn(exclude_all_rule, active_notification_rules)
+        self.assertNotIn(exclude_any_rule, active_notification_rules)
+        self.assertNotIn(exclude_full_rule, active_notification_rules)
+        self.assertNotIn(exclude_two_rule, active_notification_rules)
