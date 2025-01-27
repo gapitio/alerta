@@ -190,7 +190,7 @@ class Backend(Database):
     def destroy(self):
         conn = self.connect()
         cursor = conn.cursor()
-        for table in ['alerts', 'blackouts', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'users', 'delayed_notifications']:
+        for table in ['alerts', 'blackouts', 'escalation_rules', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'users', 'delayed_notifications']:
             cursor.execute(f'DROP TABLE IF EXISTS {table}')
         conn.commit()
         conn.close()
@@ -1160,14 +1160,17 @@ class Backend(Database):
                 WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
-                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
-                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
-                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+                SELECT id FROM (select * FROM alert_tags, unnest(excluded_tags) as t("e_all","e_any")) as foo
+                WHERE NOT ("e_all"='{}' AND "e_any"='{}')
+                AND (
+                    ("e_all"='{}' AND %(tags)s && "e_any")
+                    OR ("e_any"='{}' AND %(tags)s @> "e_all")
+                    OR (%(tags)s @> "e_all" AND %(tags)s && "e_any")
+                )
             )
 
-            SELECT * from notification_rules
-            WHERE id IN (SELECT id FROM alert_excluded)
-
+            SELECT * from alert_tags
+            WHERE alert_tags.id NOT IN (SELECT DISTINCT alert_excluded.id FROM alert_excluded)
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
@@ -1205,13 +1208,17 @@ class Backend(Database):
                 WHERE (tags[t].all='{}' OR tags[t].all <@ %(tags)s)
                     AND (tags[t].any='{}' OR tags[t].any && %(tags)s)
             ), alert_excluded AS (
-                SELECT * FROM (select *, generate_subscripts(excluded_tags,1) as ex FROM alert_tags) as foo
-                WHERE (excluded_tags[ex].all='{}' OR NOT excluded_tags[ex].all <@ %(tags)s)
-                    AND (excluded_tags[ex].any='{}' OR NOT excluded_tags[ex].any && %(tags)s)
+                SELECT id FROM (select * FROM alert_tags, unnest(excluded_tags) as t("e_all","e_any")) as foo
+                WHERE NOT ("e_all"='{}' AND "e_any"='{}')
+                AND (
+                    ("e_all"='{}' AND %(tags)s && "e_any")
+                    OR ("e_any"='{}' AND %(tags)s @> "e_all")
+                    OR (%(tags)s @> "e_all" AND %(tags)s && "e_any")
+                )
             )
 
-            SELECT * from notification_rules
-            WHERE id IN (SELECT id FROM alert_excluded)
+            SELECT * from alert_tags
+            WHERE alert_tags.id NOT IN (SELECT DISTINCT alert_excluded.id FROM alert_excluded)
         """
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
@@ -1460,6 +1467,7 @@ class Backend(Database):
                 FROM public.alerts as a, public.escalation_rules as e, generate_subscripts(e.triggers,1) as s
                 WHERE e.active
                     AND a.status = 'open'
+                    AND (%(now)s - a.last_receive_time > e.time)
                     AND a.environment=e.environment
                     AND (e.resource IS NULL OR e.resource=a.resource OR e.resource = '')
                     AND (e.service='{}' OR e.service <@ a.service)
@@ -1471,13 +1479,18 @@ class Backend(Database):
                 SELECT DISTINCT a.* from alert_triggers as a, public.escalation_rules as e, generate_subscripts(e.tags,1) as t
                 WHERE (e.tags[t].all='{}' OR e.tags[t].all <@ a.tags)
                     AND (e.tags[t].any='{}' OR e.tags[t].any && a.tags)
+            ), alert_excluded AS (
+                SELECT a.id FROM alert_tags as a, public.escalation_rules as e, unnest(e.excluded_tags) as t("e_all","e_any")
+                WHERE NOT ("e_all"='{}' AND "e_any"='{}')
+                AND (
+                    ("e_all"='{}' AND a.tags && "e_any")
+                    OR ("e_any"='{}' AND a.tags @> "e_all")
+                    OR (a.tags @> "e_all" AND a.tags && "e_any")
+                )
             )
 
-            SELECT DISTINCT a.id, a.resource, a.event, a.severity, a.environment, a.service, a.text, a.value, a.timeout
-            from alert_tags as a, public.escalation_rules as e, generate_subscripts(e.excluded_tags,1) as t
-            WHERE NOT ((e.excluded_tags[t].all='{}' OR e.excluded_tags[t].all <@ a.tags)
-                AND (e.excluded_tags[t].any='{}' OR (e.excluded_tags[t].any && a.tags)))
-
+            SELECT * from alert_tags
+            WHERE alert_tags.id NOT IN (SELECT DISTINCT alert_excluded.id FROM alert_excluded)
         """
         return self._fetchall(select, {'now': datetime.utcnow()}, limit='ALL')
 
