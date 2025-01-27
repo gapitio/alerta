@@ -100,8 +100,8 @@ class EscalationRuleTestCase(unittest.TestCase):
         self.assertTrue(datetime.now() - start >= timedelta(seconds=1))
         self.assertIn(alert['id'], map(get_id, escalated_alerts))
         new_data = self.get_api_obj(f"/alert/{alert['id']}", self.headers)['alert']
-        self.assertEqual(alert['severity'], "minor")
-        self.assertEqual(new_data['severity'], "major")
+        self.assertEqual(alert['severity'], 'minor')
+        self.assertEqual(new_data['severity'], 'major')
 
     def test_detail(self):
 
@@ -134,8 +134,8 @@ class EscalationRuleTestCase(unittest.TestCase):
         self.assertNotIn(wrong_environment_alert['id'], map(get_id, escalated_alerts))
         self.assertNotIn(wrong_group_alert['id'], map(get_id, escalated_alerts))
         new_data = self.get_api_obj(f"/alert/{alert['id']}", self.headers)['alert']
-        self.assertEqual(alert['severity'], "minor")
-        self.assertEqual(new_data['severity'], "major")
+        self.assertEqual(alert['severity'], 'minor')
+        self.assertEqual(new_data['severity'], 'major')
 
     def test_event(self):
 
@@ -158,8 +158,8 @@ class EscalationRuleTestCase(unittest.TestCase):
         self.assertIn(alert['id'], map(get_id, escalated_alerts))
         self.assertNotIn(wrong_event_alert['id'], map(get_id, escalated_alerts))
         new_data = self.get_api_obj(f"/alert/{alert['id']}", self.headers)['alert']
-        self.assertEqual(alert['severity'], "minor")
-        self.assertEqual(new_data['severity'], "major")
+        self.assertEqual(alert['severity'], 'minor')
+        self.assertEqual(new_data['severity'], 'major')
 
     def test_tags(self):
 
