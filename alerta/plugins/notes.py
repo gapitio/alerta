@@ -1,6 +1,6 @@
 import logging
-from alerta.app import alarm_model
 
+from alerta.app import alarm_model
 from alerta.plugins import PluginBase
 
 LOG = logging.getLogger('alerta.plugins')
