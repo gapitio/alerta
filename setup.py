@@ -53,6 +53,7 @@ setuptools.setup(
             'heartbeat = alerta.plugins.heartbeat:HeartbeatReceiver',
             'blackout = alerta.plugins.blackout:BlackoutHandler',
             'notification_rule = alerta.plugins.notification_rule:NotificationRulesHandler',
+            'notes = alerta.plugins.notes:NotesHandler',
             'acked_by = alerta.plugins.acked_by:AckedBy',
             'escalate = alerta.plugins.escalate:EscalateSeverity',
             'forwarder = alerta.plugins.forwarder:Forwarder',
