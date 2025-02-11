@@ -37,6 +37,9 @@ class Alert:
         for attr in ['create_time', 'receive_time', 'last_receive_time']:
             if not isinstance(kwargs.get(attr), (datetime, NoneType)):  # type: ignore
                 raise ValueError(f"Attribute '{attr}' must be datetime type")
+        if kwargs.get('status') is not None:
+            if kwargs['status'] not in alarm_model.Status.keys():
+                raise ValueError(f'Status must be one of: {", ".join(alarm_model.Status.keys())}')
 
         timeout = kwargs.get('timeout') if kwargs.get('timeout') is not None else current_app.config['ALERT_TIMEOUT']
         try:

@@ -124,6 +124,8 @@ class StateMachine(AlarmModel):
             return severity, status
 
         if not action and alert.status != StateMachine.DEFAULT_STATUS:
+            statuses = StateMachine.Status.keys()
+            assert alert.status in statuses, f"Status is not one of {', '.join(statuses)}"
             return next_state('External State Change, Any (*) -> Any (*)', current_severity, alert.status)
 
         if action == ACTION_SHELVE:
