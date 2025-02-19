@@ -270,7 +270,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
 
 def handle_test(channel: NotificationChannel, info: NotificationRule, config):
     message = info.text if info.text != '' else 'this is a test message for testing a notification_channel in alerta'
-    handle_channel(message, channel, info, [], Fernet(config['NOTIFICATION_KEY']), 'Test Notification Channel')
+    handle_channel(message, channel, info, info.users, Fernet(config['NOTIFICATION_KEY']), 'Test Notification Channel')
 
 
 def get_notification_trigger_text(rule: NotificationRule, alert: Alert, status: str):
@@ -306,7 +306,6 @@ def handle_alert(alert: Alert, config, stat: str = ''):
             delay_notification(alert, rule)
         else:
             notifications.append([rule, update_bearer(rule.channel, fernet), rule.users])
-
     on_users = set()
     for on_call in OnCall.find_all_active(alert):
         on_users.update(on_call.users)
