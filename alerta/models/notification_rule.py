@@ -116,7 +116,11 @@ class NotificationRule:
         self.environment = environment
         self.channel_id = channel_id
         self.receivers = receivers
-        self.user_ids = kwargs.get('user_ids') or []
+        self.user_names = kwargs.get('user_names') or []
+        for user_id in kwargs.get('user_ids') or []:
+            user = User.find_by_id(user_id)
+            if user is not None:
+                self.user_names.append(user.name)
         self.group_ids = kwargs.get('group_ids') or []
         self.use_oncall = use_oncall
         self.start_time: time = kwargs.get('start_time') or None
@@ -163,7 +167,7 @@ class NotificationRule:
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
         group_users = [db.get_notification_group_users(group.id) for group in groups]
-        users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
+        users = {(User.find_by_name(user_name)).notification_info for user_name in self.user_names}
         for group in groups:
             for index in range(max(len(group.phone_numbers), len(group.mails))):
                 users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
@@ -191,6 +195,7 @@ class NotificationRule:
             delay_time=json.get('delayTime', None),
             channel_id=json['channelId'],
             receivers=json['receivers'],
+            user_names=json.get('userNames'),
             user_ids=json.get('userIds'),
             group_ids=json.get('groupIds'),
             use_oncall=json.get('useOnCall', False),
@@ -235,7 +240,7 @@ class NotificationRule:
             'delayTime': self.delay_time,
             'channelId': self.channel_id,
             'receivers': self.receivers,
-            'userIds': self.user_ids,
+            'userNames': self.user_names,
             'groupIds': self.group_ids,
             'useOnCall': self.use_oncall,
             'service': self.service,
@@ -293,7 +298,7 @@ class NotificationRule:
             delay_time=doc.get('delayTime', None),
             channel_id=doc['channelId'],
             receivers=doc.get('receivers') or list(),
-            user_ids=doc.get('userIds'),
+            users=doc.get('users'),
             group_ids=doc.get('groupIds'),
             use_oncall=doc.get('useOnCall', False),
             service=doc.get('service', list()),
@@ -340,7 +345,7 @@ class NotificationRule:
             delay_time=rec.delay_time,
             channel_id=rec.channel_id,
             receivers=rec.receivers,
-            user_ids=rec.user_ids,
+            user_names=rec.users,
             group_ids=rec.group_ids,
             use_oncall=rec.use_oncall,
             service=rec.service,

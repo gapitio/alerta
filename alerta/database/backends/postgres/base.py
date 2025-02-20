@@ -1099,9 +1099,9 @@ class Backend(Database):
     def create_notification_rule(self, notification_rule):
         insert = """
             INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, reactivate, excluded_tags, delay_time,
-                customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, text, channel_id, triggers)
+                customer, "user", create_time, start_time, end_time, days, receivers, users, group_ids, use_oncall, text, channel_id, triggers)
             VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_names)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
         return self._insert(insert, vars(notification_rule))
@@ -1273,8 +1273,8 @@ class Backend(Database):
             update += 'active=%(active)s,'
         if 'reactivate' in kwargs:
             update += 'reactivate=%(reactivate)s,'
-        if 'userIds' in kwargs:
-            update += 'user_ids=%(userIds)s, '
+        if 'userNames' in kwargs:
+            update += 'users=%(userNames)s, '
         if 'groupIds' in kwargs:
             update += 'group_ids=%(groupIds)s, '
         update += """
@@ -1865,6 +1865,14 @@ class Backend(Database):
     def get_user_by_username(self, username):
         select = """SELECT * FROM users WHERE login=%s OR email=%s"""
         return self._fetchone(select, (username, username))
+
+    def get_user_by_name(self, name):
+        select = """SELECT * FROM users WHERE name=%s"""
+        return self._fetchone(select, (name,))
+
+    def get_users_name(self):
+        select = """SELECT name FROM users"""
+        return self._fetchall(select, ())
 
     def get_user_by_email(self, email):
         select = """SELECT * FROM users WHERE email=%s"""

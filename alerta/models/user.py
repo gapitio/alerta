@@ -184,6 +184,16 @@ class User:
         return User.from_db(db.get_user_by_username(username))
 
     @staticmethod
+    def find_by_name(name: str) -> Optional['User']:
+        """A username may be a login id or an email address."""
+        return User.from_db(db.get_user_by_name(name))
+
+    @staticmethod
+    def find_names() -> Optional['User']:
+        """A username may be a login id or an email address."""
+        return db.get_users_name()
+
+    @staticmethod
     def find_by_email(email: str) -> Optional['User']:
         return User.from_db(db.get_user_by_email(email))
 

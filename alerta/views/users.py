@@ -125,6 +125,27 @@ def get_me_attributes():
         raise ApiError('not found', 404)
 
 
+@api.route('/users/name', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_users)
+@jsonp
+def list_users_name():
+    users = User.find_names()
+    if users:
+        return jsonify(
+            status='ok',
+            users=[user['name'] if isinstance(user, dict) else user.name for user in users],
+            total=len(users)
+        )
+    else:
+        return jsonify(
+            status='ok',
+            message='not found',
+            users=[],
+            total=0
+        )
+
+
 @api.route('/users', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.admin_users)

@@ -85,6 +85,7 @@ class Scope(str):
     read_heartbeats = 'read:heartbeats'
     write_heartbeats = 'write:heartbeats'
     admin_heartbeats = 'admin:heartbeats'
+    read_users = 'read:users'
     write_users = 'write:users'
     admin_users = 'admin:users'
     read_groups = 'read:groups'

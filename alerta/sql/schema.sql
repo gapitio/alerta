@@ -412,6 +412,22 @@ END$$;
 
 DO $$
 BEGIN
+    ALTER TABLE notification_rules ADD COLUMN users text[];
+    UPDATE notification_rules SET users = '{}';
+    UPDATE notification_rules AS nr
+    SET users = ARRAY(
+        SELECT u.name
+        FROM users AS u
+        WHERE u.id = ANY(nr.user_ids)
+    );
+    ALTER TABLE notification_rules DROP COLUMN user_ids;
+    ALTER TABLE notification_rules ALTER COLUMN users SET NOT NULL;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "users" already exists in notification_rules.';
+END$$;
+
+DO $$
+BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
     UPDATE public.notification_rules SET event=NULL WHERE event='';
     UPDATE public.notification_rules SET "group"=NULL WHERE "group"='';
