@@ -559,6 +559,15 @@ EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "phone_number" already exists in users.';
 END$$;
 
+CREATE TABLE IF NOT EXISTS notification_sends(
+    id TEXT PRIMARY KEY,
+    user_name TEXT,
+    user_email TEXT REFERENCES users(email) ON DELETE CASCADE,
+    group_name text REFERENCES notification_groups(name) ON DELETE CASCADE,
+    mail BOOLEAN,
+    sms BOOLEAN
+);
+
 CREATE TABLE IF NOT EXISTS groups (
     id text PRIMARY KEY,
     name text UNIQUE NOT NULL,
