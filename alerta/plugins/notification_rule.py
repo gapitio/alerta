@@ -274,8 +274,14 @@ def handle_test(channel: NotificationChannel, info: NotificationRule, config):
 
 
 def get_notification_trigger_text(rule: NotificationRule, alert: Alert, status: str):
+    not_status = status == ''
     for trigger in rule.triggers:
-        if ((alert.previous_severity in trigger.from_severity or trigger.from_severity == []) and (alert.severity in trigger.to_severity or trigger.to_severity == []) and status == '') or (status in trigger.status):
+        status_trigger = trigger.status != [] and trigger.from_severity == [] and trigger.to_severity == []
+        if not_status and status_trigger:
+            continue
+        from_check = trigger.from_severity == [] or alert.previous_severity in trigger.from_severity
+        to_check = trigger.to_severity == [] or alert.severity in trigger.to_severity
+        if (from_check and to_check and not_status) or (status_trigger and status in trigger.status):
             return trigger.text.replace('%(default)s', rule.text) if trigger.text != '' and trigger.text is not None else rule.text
 
 
