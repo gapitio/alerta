@@ -346,6 +346,13 @@ class Database(Base):
     def delete_notification_group(self, id):
         raise NotImplementedError
 
+    # NOTIFICATION SEND
+    def get_notification_sends(self):
+        raise NotImplementedError
+
+    def update_notification_send(self, id, **kwargs):
+        raise NotImplementedError
+
     # NOTIFICATION HISTORY
 
     def create_notification_history(self, notification_history):

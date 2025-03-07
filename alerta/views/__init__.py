@@ -6,7 +6,7 @@ from alerta.utils.response import absolute_url
 
 api = Blueprint('api', __name__)
 
-from . import alerts, blackouts, config, customers, groups, heartbeats, keys, oembed, permissions, users, notification_rules, notification_channels, notification_history, on_call, escalation_rules, notification_groups, notification_delays  # noqa isort:skip
+from . import alerts, blackouts, config, customers, groups, heartbeats, keys, oembed, permissions, users, notification_rules, notification_channels, notification_history, on_call, escalation_rules, notification_groups, notification_delays, notification_sends  # noqa isort:skip
 
 try:
     from . import bulk  # noqa

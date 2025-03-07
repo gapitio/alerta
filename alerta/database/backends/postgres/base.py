@@ -2,6 +2,7 @@ import threading
 import time
 from collections import defaultdict, namedtuple
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 import psycopg2
 from flask import current_app
@@ -190,7 +191,7 @@ class Backend(Database):
     def destroy(self):
         conn = self.connect()
         cursor = conn.cursor()
-        for table in ['alerts', 'blackouts', 'escalation_rules', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'users', 'delayed_notifications']:
+        for table in ['alerts', 'blackouts', 'escalation_rules', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'notification_sends', 'users', 'delayed_notifications']:
             cursor.execute(f'DROP TABLE IF EXISTS {table}')
         conn.commit()
         conn.close()
@@ -1368,6 +1369,52 @@ class Backend(Database):
             RETURNING id
         """
         return self._deleteone(delete, (id,), returning=True)
+
+# NOTIFICATION SEND
+    def get_notification_sends(self):
+        select_users = """
+            SELECT name, email FROM users
+            WHERE email NOT IN (select user_email from notification_sends where user_email is not null)
+        """
+        users = self._fetchall(select_users, [])
+        if len(users):
+            insert_users = 'INSERT INTO notification_sends (id, user_name, user_email, mail, sms) VALUES'
+            users_data = {}
+            for user in users:
+                index = users.index(user)
+                insert_users += f'(%(email_{index})s, %(name_{index})s, %(email_{index})s, false, false),'
+                users_data = {**users_data, **{f'email_{index}': user.email, f'name_{index}': user.name, f'id_{index}': str(uuid4())}}
+            insert_users = insert_users[:-1]
+            self._insert(insert_users, users_data)
+
+        insert_groups = """
+            INSERT INTO notification_sends (id, group_name, mail, sms)
+            SELECT id, name, false, false from notification_groups
+            ON CONFLICT DO NOTHING
+        """
+        try:
+            self._insert(insert_groups, [])
+        except psycopg2.ProgrammingError:
+            pass
+        select = 'SELECT * FROM notification_sends'
+        return self._fetchall(select, [])
+
+    def update_notification_send(self, id, **kwargs):
+        update = """
+            UPDATE notification_sends
+            SET
+        """
+        if 'mail' in kwargs:
+            update += 'mail=%(mail)s, '
+        if 'sms' in kwargs:
+            update += 'sms=%(sms)s, '
+        update = update[0:-2]
+        update += """
+            WHERE id=%(id)s
+            RETURNING *
+        """
+        kwargs['id'] = id
+        return self._updateone(update, kwargs, returning=True)
 
 # NOTIFICATION SENT
 

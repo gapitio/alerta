@@ -76,6 +76,7 @@ class Scope(str):
     read_notification_groups = 'read:notification_groups'
     write_notification_groups = 'write:notification_groups'
     admin_notification_groups = 'admin:notification_groups'
+    write_notification_sends = 'write:notification_sends'
     read_escalation_rules = 'read:escalation_rules'
     write_escalation_rules = 'write:escalation_rules'
     admin_escalation_rules = 'admin:escalation_rules'
