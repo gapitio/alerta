@@ -17,8 +17,8 @@ JSON = Dict[str, Any]
 
 class AdvancedTags:
     def __init__(self, all: 'list[str]', any: 'list[str]') -> None:
-        self.all = all or []
-        self.any = any or []
+        self.all = list({a.strip() for a in all})
+        self.any = list({a.strip() for a in any})
 
     @property
     def serialize(self):
