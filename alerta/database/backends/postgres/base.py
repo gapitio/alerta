@@ -1225,6 +1225,24 @@ class Backend(Database):
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
         return self._fetchall(select, {**vars(alert), 'status': status})
 
+    def create_notification_rule_history(self, update_type: str, notification_rule):
+        insert = """
+            INSERT INTO notification_rules_history (rule_id, "user", type, create_time, rule_data)
+            VALUES (%(id)s, %(user)s, %(type)s, %(create_time)s, %(data)s)
+            returning *
+        """
+        data = (notification_rule.serialize)
+        data['reactivate'] = data['reactivate'].isoformat() if data.get('reactivate') is not None else None
+        data['createTime'] = data['createTime'].isoformat() if data.get('createTime') is not None else None
+        return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.utcnow()})
+
+    def get_notification_rule_history(self, rule_id: str):
+        select = """
+            SELECT * FROM notification_rules_history
+            WHERE rule_id=%(id)s
+        """
+        return self._fetchall(select, {'id': rule_id})
+
     def update_notification_rule(self, id, **kwargs):
         update = """
             UPDATE notification_rules
