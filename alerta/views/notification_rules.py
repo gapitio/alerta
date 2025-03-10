@@ -35,6 +35,7 @@ def create_notification_rule():
 
     try:
         notification_rule = notification_rule.create()
+        notification_rule.create_notification_rule_history()
     except Exception as e:
         raise ApiError(str(e), 500)
 
@@ -69,6 +70,19 @@ def get_notification_rule(notification_rule_id):
 
     if notification_rule:
         return jsonify(status='ok', total=1, notificationRule=notification_rule.serialize)
+    else:
+        raise ApiError('not found', 404)
+
+
+@api.route('/notificationrules/<notification_rule_id>/history', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_notification_rules)
+@jsonp
+def get_notification_rule_history(notification_rule_id):
+    notification_rule = NotificationRule.find_by_id(notification_rule_id)
+
+    if notification_rule:
+        return jsonify(status='ok', total=1, notificationRuleHistory=[h.serialize for h in notification_rule.get_notification_rule_history()])
     else:
         raise ApiError('not found', 404)
 
@@ -182,6 +196,8 @@ def update_notification_rule(notification_rule_id):
     )
 
     updated = notification_rule.update(**update)
+    updated.create_notification_rule_history()
+
     if updated:
         return jsonify(status='ok', notificationRule=updated.serialize)
     else:
@@ -226,6 +242,7 @@ def reactivate_notification_rules():
     for rule in notification_rules:
         try:
             rule.update(active=True, reactivate=None)
+            rule.create_notification_rule_history('reactivate')
         except Exception as e:
             raise ApiError(str(e), 500)
     return jsonify(status='ok', notificationRules=[rule.serialize for rule in notification_rules]), 200

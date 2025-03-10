@@ -295,6 +295,11 @@ class Database(Base):
         raise NotImplementedError
 
     # NOTIFICATION RULES
+    def create_notification_rule_history(self, change_type: str, notification_rule):
+        raise NotImplementedError
+
+    def get_notification_rule_history(self, rule_id: str):
+        raise NotImplementedError
 
     def create_notification_rule(self, notification_rule):
         raise NotImplementedError
