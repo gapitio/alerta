@@ -420,6 +420,18 @@ BEGIN
 
 END$$;
 
+CREATE TABLE IF NOT EXISTS notification_rules_history (
+    id SERIAL PRIMARY KEY,
+    rule_id TEXT REFERENCES notification_rules(id) ON DELETE CASCADE,
+    "user" TEXT,
+    "type" TEXT,
+    create_time timestamp without time zone,
+    rule_data JSON
+);
+
+CREATE INDEX IF NOT EXISTS nrhi
+ON notification_rules_history(rule_id);
+
 CREATE TABLE IF NOT EXISTS on_calls(
     id text PRIMARY KEY,
     customer text,

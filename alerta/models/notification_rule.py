@@ -29,7 +29,7 @@ class AdvancedTags:
 
     def __repr__(self):
         return 'AdvancedTags(all={!r}, any={!r})'.format(
-            self.from_severity, self.to_severity)
+            self.all, self.any)
 
     @classmethod
     def from_document(cls, doc):
@@ -89,6 +89,60 @@ class NotificationTriggers:
             to_severity=rec.to_severity,
             status=rec.status,
             text=rec.text
+        )
+
+    @classmethod
+    def from_db(cls, r):
+        if isinstance(r, dict):
+            return cls.from_document(r)
+        elif isinstance(r, tuple):
+            return cls.from_record(r)
+
+
+class NotificationRuleHistory:
+    def __init__(self, id: 'str', rule_id: 'str', user: 'str', update_type: 'str', create_time, data) -> None:
+        self.id = id
+        self.rule_id = rule_id
+        self.user = user
+        self.type = update_type
+        self.create_time = create_time
+        self.data = data
+
+    @property
+    def serialize(self):
+        return {
+            'id':self.id,
+            'ruleId':self.rule_id,
+            'user':self.user,
+            'type':self.type,
+            'createTime':self.create_time,
+            'data':self.data,
+        }
+
+    def __repr__(self):
+        return 'NotificationRuleHistory(id={!r}, type={!r}, rule={!r})'.format(
+            self.id, self.type, self.rule_id)
+
+    @classmethod
+    def from_document(cls, doc):
+        return NotificationRuleHistory(
+            id=doc.get('id'),
+            rule_id=doc.get('rule_id'),
+            user=doc.get('user'),
+            update_type=doc.get('type'),
+            create_time=doc.get('create_time'),
+            data=doc.get('data')
+        )
+
+    @classmethod
+    def from_record(cls, rec):
+        return NotificationRuleHistory(
+            id=rec.id,
+            rule_id=rec.rule_id,
+            user=rec.user,
+            update_type=rec.type,
+            create_time=rec.create_time,
+            data=rec.rule_data
         )
 
     @classmethod
@@ -392,20 +446,29 @@ class NotificationRule:
     def count(query: Query = None) -> int:
         return db.get_notification_rules_count(query)
 
-    @ staticmethod
+    @staticmethod
     def find_all_active(alert: 'Alert') -> 'list[NotificationRule]':
         if alert.duplicate_count:
             return []
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_active(alert)]
 
-    @ staticmethod
+    @staticmethod
     def find_all_active_status(alert: 'Alert', status: str) -> 'list[NotificationRule]':
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_active_status(alert, status)]
 
-    @ staticmethod
+    @staticmethod
     def find_all_reactivate(**kwargs) -> 'list[NotificationRule]':
         now = datetime.utcnow()
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_reactivate(now)]
+
+    def create_notification_rule_history(self, update_type='update'):
+        db.create_notification_rule_history(update_type, self)
+
+    def get_notification_rule_history(self, page, page_size):
+        return [NotificationRuleHistory.from_db(h) for h in db.get_notification_rule_history(self.id, page, page_size)]
+
+    def history_count(self) -> int:
+        return db.get_notification_rule_history_count(self.id)
 
     def update(self, **kwargs) -> 'NotificationRule':
         triggers = kwargs.get('triggers')
@@ -417,7 +480,8 @@ class NotificationRule:
         excluded = kwargs.get('excludedTags')
         if excluded is not None:
             kwargs['excludedTags'] = [AdvancedTags.from_document(tag) for tag in excluded]
-        return NotificationRule.from_db(db.update_notification_rule(self.id, **kwargs))
+        rule = NotificationRule.from_db(db.update_notification_rule(self.id, **kwargs))
+        return rule
 
     def delete(self) -> bool:
         return db.delete_notification_rule(self.id)

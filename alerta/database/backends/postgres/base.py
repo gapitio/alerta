@@ -191,7 +191,7 @@ class Backend(Database):
     def destroy(self):
         conn = self.connect()
         cursor = conn.cursor()
-        for table in ['alerts', 'blackouts', 'escalation_rules', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'notification_sends', 'users', 'delayed_notifications']:
+        for table in ['alerts', 'blackouts', 'escalation_rules', 'notification_rules_history', 'notification_rules', 'notification_history', 'notification_channels', 'on_calls', 'customers', 'groups', 'heartbeats', 'keys', 'metrics', 'perms', 'notification_sends', 'users', 'delayed_notifications']:
             cursor.execute(f'DROP TABLE IF EXISTS {table}')
         conn.commit()
         conn.close()
@@ -1224,6 +1224,33 @@ class Backend(Database):
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
         return self._fetchall(select, {**vars(alert), 'status': status})
+
+    def create_notification_rule_history(self, update_type: str, notification_rule):
+        insert = """
+            INSERT INTO notification_rules_history (rule_id, "user", type, create_time, rule_data)
+            VALUES (%(id)s, %(user)s, %(type)s, %(create_time)s, %(data)s)
+            returning *
+        """
+        data = (notification_rule.serialize)
+        data['reactivate'] = data['reactivate'].isoformat() if data.get('reactivate') is not None else None
+        data['createTime'] = data['createTime'].isoformat() if data.get('createTime') is not None else None
+        data['delayTime'] = str(data['delayTime']) if data.get('delayTime') is not None else None
+        return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.utcnow()})
+
+    def get_notification_rule_history(self, rule_id: str, page, page_size):
+        select = """
+            SELECT * FROM notification_rules_history
+            WHERE rule_id=%(id)s
+            ORDER BY create_time
+        """
+        return self._fetchall(select, {'id': rule_id}, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_notification_rule_history_count(self, rule_id: str):
+        select = """
+            SELECT COUNT(1) FROM notification_rules_history
+            WHERE rule_id=%(id)s
+        """
+        return self._fetchone(select, {'id': rule_id}).count
 
     def update_notification_rule(self, id, **kwargs):
         update = """
