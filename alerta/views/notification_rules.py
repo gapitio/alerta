@@ -35,7 +35,7 @@ def create_notification_rule():
 
     try:
         notification_rule = notification_rule.create()
-        notification_rule.create_notification_rule_history()
+        notification_rule.create_notification_rule_history('create')
     except Exception as e:
         raise ApiError(str(e), 500)
 
@@ -241,7 +241,7 @@ def reactivate_notification_rules():
     notification_rules: 'list[NotificationRule]' = NotificationRule.find_all_reactivate()
     for rule in notification_rules:
         try:
-            rule.update(active=True, reactivate=None)
+            rule = rule.update(active=True, reactivate=None)
             rule.create_notification_rule_history('reactivate')
         except Exception as e:
             raise ApiError(str(e), 500)
