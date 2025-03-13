@@ -246,18 +246,6 @@ CREATE TABLE IF NOT EXISTS delayed_notifications (
     delay_time timestamp without time zone
 );
 
-CREATE TABLE IF NOT EXISTS notification_rules_history (
-    id SERIAL PRIMARY KEY,
-    rule_id TEXT REFERENCES notification_rules(id) ON DELETE CASCADE,
-    "user" TEXT,
-    "type" TEXT,
-    create_time timestamp without time zone,
-    rule_data JSON
-);
-
-CREATE INDEX IF NOT EXISTS nrhi
-ON notification_rules_history(rule_id);
-
 CREATE TABLE IF NOT EXISTS notification_rules (
     id text PRIMARY KEY,
     priority integer NOT NULL,
@@ -431,6 +419,18 @@ BEGIN
     UPDATE notification_rules set triggers = ARRAY[('{}', '{}', '{}', null)::notification_triggers] WHERE triggers = '{}';
 
 END$$;
+
+CREATE TABLE IF NOT EXISTS notification_rules_history (
+    id SERIAL PRIMARY KEY,
+    rule_id TEXT REFERENCES notification_rules(id) ON DELETE CASCADE,
+    "user" TEXT,
+    "type" TEXT,
+    create_time timestamp without time zone,
+    rule_data JSON
+);
+
+CREATE INDEX IF NOT EXISTS nrhi
+ON notification_rules_history(rule_id);
 
 CREATE TABLE IF NOT EXISTS on_calls(
     id text PRIMARY KEY,
