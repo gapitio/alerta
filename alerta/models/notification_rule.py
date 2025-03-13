@@ -464,8 +464,11 @@ class NotificationRule:
     def create_notification_rule_history(self, update_type='update'):
         db.create_notification_rule_history(update_type, self)
 
-    def get_notification_rule_history(self):
-        return [NotificationRuleHistory.from_db(h) for h in db.get_notification_rule_history(self.id)]
+    def get_notification_rule_history(self, page, page_size):
+        return [NotificationRuleHistory.from_db(h) for h in db.get_notification_rule_history(self.id, page, page_size)]
+
+    def history_count(self) -> int:
+        return db.get_notification_rule_history_count(self.id)
 
     def update(self, **kwargs) -> 'NotificationRule':
         triggers = kwargs.get('triggers')

@@ -1236,12 +1236,20 @@ class Backend(Database):
         data['createTime'] = data['createTime'].isoformat() if data.get('createTime') is not None else None
         return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.utcnow()})
 
-    def get_notification_rule_history(self, rule_id: str):
+    def get_notification_rule_history(self, rule_id: str, page, page_size):
         select = """
             SELECT * FROM notification_rules_history
             WHERE rule_id=%(id)s
+            ORDER BY create_time
         """
-        return self._fetchall(select, {'id': rule_id})
+        return self._fetchall(select, {'id': rule_id}, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_notification_rule_history_count(self, rule_id: str):
+        select = """
+            SELECT COUNT(1) FROM notification_rules_history
+            WHERE rule_id=%(id)s
+        """
+        return self._fetchone(select, {'id': rule_id}).count
 
     def update_notification_rule(self, id, **kwargs):
         update = """

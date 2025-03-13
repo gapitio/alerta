@@ -67,7 +67,6 @@ def create_notification_rule():
 @jsonp
 def get_notification_rule(notification_rule_id):
     notification_rule = NotificationRule.find_by_id(notification_rule_id)
-
     if notification_rule:
         return jsonify(status='ok', total=1, notificationRule=notification_rule.serialize)
     else:
@@ -80,9 +79,19 @@ def get_notification_rule(notification_rule_id):
 @jsonp
 def get_notification_rule_history(notification_rule_id):
     notification_rule = NotificationRule.find_by_id(notification_rule_id)
-
+    total = notification_rule.history_count()
+    paging = Page.from_params(request.args, total)
     if notification_rule:
-        return jsonify(status='ok', total=1, notificationRuleHistory=[h.serialize for h in notification_rule.get_notification_rule_history()])
+        notification_rule_history = [h.serialize for h in notification_rule.get_notification_rule_history(page=paging.page, page_size=paging.page_size)]
+        return jsonify(
+            status='ok',
+            page=paging.page,
+            pageSize=paging.page_size,
+            pages=paging.pages,
+            more=paging.has_more,
+            notificationRuleHistory=notification_rule_history,
+            total=total,
+        )
     else:
         raise ApiError('not found', 404)
 

@@ -301,6 +301,9 @@ class Database(Base):
     def get_notification_rule_history(self, rule_id: str):
         raise NotImplementedError
 
+    def get_notification_rule_history_count(self, rule_id: str):
+        raise NotImplementedError
+
     def create_notification_rule(self, notification_rule):
         raise NotImplementedError
 
