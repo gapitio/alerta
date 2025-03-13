@@ -1234,6 +1234,7 @@ class Backend(Database):
         data = (notification_rule.serialize)
         data['reactivate'] = data['reactivate'].isoformat() if data.get('reactivate') is not None else None
         data['createTime'] = data['createTime'].isoformat() if data.get('createTime') is not None else None
+        data['delayTime'] = str(data['delayTime']) if data.get('delayTime') is not None else None
         return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.utcnow()})
 
     def get_notification_rule_history(self, rule_id: str, page, page_size):
