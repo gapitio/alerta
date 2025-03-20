@@ -580,6 +580,21 @@ CREATE TABLE IF NOT EXISTS notification_sends(
     sms BOOLEAN
 );
 
+DO $$
+BEGIN
+    ALTER TABLE notification_sends DROP CONSTRAINT notification_sends_user_email_fkey;
+    ALTER TABLE notification_sends ADD CONSTRAINT notification_sends_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) ON UPDATE CASCADE ON DELETE CASCADE;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "phone_number" already exists in users.';
+END$$;
+DO $$
+BEGIN
+    ALTER TABLE notification_sends DROP CONSTRAINT notification_sends_group_name_fkey;
+    ALTER TABLE notification_sends ADD CONSTRAINT notification_sends_group_name_fkey FOREIGN KEY (group_name) REFERENCES notification_groups(name) ON UPDATE CASCADE ON DELETE CASCADE;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "phone_number" already exists in users.';
+END$$;
+
 CREATE TABLE IF NOT EXISTS groups (
     id text PRIMARY KEY,
     name text UNIQUE NOT NULL,
