@@ -80,7 +80,7 @@ class EscalationRule:
             id=json.get('id', None),
             active=json.get('active', True),
             environment=json['environment'],
-            ttime=json['time'],
+            ttime=f'{json["time"]} second' if type(json['time']) is int else json['time'],
             triggers=[
                 NotificationTriggers(trigger['from_severity'], trigger['to_severity'])
                 for trigger in json.get('triggers', [])
@@ -97,6 +97,55 @@ class EscalationRule:
                 if len(json.get('tags')) and type(json.get('tags')[-1]) is not str
                 else [AdvancedTags(json.get('tags'), [])]
             ),
+            excluded_tags=[
+                AdvancedTags(tag.get('all', []), tag.get('any', []))
+                for tag in json.get('excludedTags', [])
+            ],
+            customer=json.get('customer', None),
+            start_time=(
+                datetime.strptime(json['startTime'], '%H:%M').time()
+                if json['startTime'] is not None and json['startTime'] != ''
+                else None
+            )
+            if 'startTime' in json
+            else None,
+            end_time=(
+                datetime.strptime(json['endTime'], '%H:%M').time()
+                if json['endTime'] is not None and json['endTime'] != ''
+                else None
+            )
+            if 'endTime' in json
+            else None,
+            user=json.get('user', None),
+            days=json.get('days', None),
+        )
+        return escalation_rule
+
+    @classmethod
+    def _import(cls, json: JSON) -> 'EscalationRule':
+        if not isinstance(json.get('service', []), list):
+            raise ValueError('service must be a list')
+        if not isinstance(json.get('tags', []), list):
+            raise ValueError('tags must be a list')
+        if not isinstance(json.get('excludedTags', []), list):
+            raise ValueError('excluded tags must be a list')
+        escalation_rule = EscalationRule(
+            id=json.get('id', None),
+            active=json.get('active', True),
+            environment=json['environment'],
+            ttime=json['time'],
+            triggers=[
+                NotificationTriggers(trigger['from_severity'], trigger['to_severity'])
+                for trigger in json.get('triggers', [])
+            ],
+            service=json.get('service', list()),
+            resource=json.get('resource', None),
+            event=json.get('event', None),
+            group=json.get('group', None),
+            tags=[
+                AdvancedTags(tag.get('all', []), tag.get('any', []))
+                for tag in json.get('tags', [])
+            ],
             excluded_tags=[
                 AdvancedTags(tag.get('all', []), tag.get('any', []))
                 for tag in json.get('excludedTags', [])
