@@ -267,7 +267,7 @@ PLUGINS_RAISE_ON_ERROR = True  # raise RuntimeError exception on first failure
 # reject plugin settings
 ORIGIN_BLACKLIST = []  # type: List[str]
 # ORIGIN_BLACKLIST = ['foo/bar$', '.*/qux']  # reject all foo alerts from bar, and everything from qux
-ALLOWED_ENVIRONMENTS = ['Production', 'Development']  # reject alerts without allowed environments
+ALLOWED_ENVIRONMENTS = ['Production', 'Development', 'Heartbeats']  # reject alerts without allowed environments
 
 # blackout settings
 BLACKOUT_DURATION = 3600  # default period = 1 hour
