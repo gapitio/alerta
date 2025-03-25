@@ -59,6 +59,7 @@ class Scope(str):
     read = 'read'
     write = 'write'
     admin = 'admin'
+    admin_alerta = 'admin:alerta'
     read_alerts = 'read:alerts'
     write_alerts = 'write:alerts'
     delete_alerts = 'delete:alerts'
