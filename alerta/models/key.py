@@ -60,6 +60,22 @@ class ApiKey:
 
         return api_key
 
+    @classmethod
+    def _import(cls, json: JSON) -> 'ApiKey':
+        if not isinstance(json.get('scopes', []), list):
+            raise ValueError('scopes must be a list')
+
+        api_key = ApiKey(
+            id=json.get('id', None),
+            user=json.get('user', None),
+            scopes=[Scope(s) for s in json.get('scopes', [])],
+            text=json.get('text', None),
+            expire_time=DateTime.parse(json['expireTime']) if 'expireTime' in json else None,
+            customer=json.get('customer', None),
+            key=json.get('key')
+        )
+        return api_key
+
     @property
     def serialize(self) -> Dict[str, Any]:
         return {

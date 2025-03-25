@@ -60,6 +60,37 @@ class NotificationChannel:
             'verify': self.verify
         }
 
+    @classmethod
+    def _import(cls, json: JSON) -> 'NotificationChannel':
+        return NotificationChannel(
+            id=json.get('id', None),
+            _type=json['type'],
+            api_token=json['apiToken'],
+            api_sid=json['apiSid'],
+            sender=json['sender'],
+            host=json.get('host', None),
+            platform_id=json.get('platfromId', None),
+            platform_partner_id=json.get('platfromPartnerId', None),
+            customer=json.get('customer', None),
+            verify=json.get('verify', None),
+        )
+
+    @property
+    def export(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'href': absolute_url('/notificationchannel/' + self.id),
+            'type': self.type,
+            'sender': self.sender,
+            'customer': self.customer,
+            'host': self.host,
+            'platformId': self.platform_id,
+            'platformPartnerId': self.platform_partner_id,
+            'verify': self.verify,
+            'apiSid': self.api_sid,
+            'apiToken': self.api_token
+        }
+
     def __repr__(self) -> str:
         more = ''
         if self.customer:
