@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
+UPDATE alerts SET environment='Heartbeats' WHERE environment != 'Heartbeats' AND 'Alerta' = ANY(service) AND "event" = ANY(ARRAY['HeartbeatFail', 'HeartbeatSlow', 'HeartbeatOK']);
 
 
 CREATE TABLE IF NOT EXISTS notes (
