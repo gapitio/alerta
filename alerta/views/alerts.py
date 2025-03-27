@@ -387,6 +387,21 @@ def history():
         )
 
 
+@api.route('/alerts/history/count', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_alerts)
+@timer(gets_timer)
+@jsonp
+def history_count():
+    query = qb.alerts.from_params(request.args, customers=g.customers)
+    total = Alert.get_history_count(query)
+
+    return jsonify(
+        status='ok',
+        total=total
+    )
+
+
 # severity counts
 # status counts
 @api.route('/alerts/count', methods=['OPTIONS', 'GET'])
