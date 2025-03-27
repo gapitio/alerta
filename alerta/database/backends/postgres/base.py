@@ -566,10 +566,19 @@ class Backend(Database):
             ) for h in self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
         ]
 
-    def get_history_count(self):
-        query = Query()
-        select = f"SELECT count(*) FROM alerts, unnest(history[1:{current_app.config['HISTORY_LIMIT']}]) h"
+    def get_history_count(self, query=None):
+        query = query or Query()
+        select = f"SELECT count(*) FROM alerts, unnest(history[1:{current_app.config['HISTORY_LIMIT']}]) h WHERE {query.where}"
         return self._fetchone(select, query.vars)
+
+    def get_history_environment_count(self, query=None):
+        query = query or Query()
+        select = f"""
+            SELECT environment, count(1) FROM alerts, unnest(history[1:{current_app.config['HISTORY_LIMIT']}]) h
+            WHERE {query.where}
+            GROUP BY environment
+        """
+        return self._fetchall(select, query.vars)
 
     # COUNTS
 

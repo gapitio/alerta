@@ -363,7 +363,7 @@ def search_alerts():
 @jsonp
 def history():
     query = qb.alerts.from_params(request.args, customers=g.customers)
-    total = Alert.get_history_count()
+    total = Alert.get_history_count(query)
     paging = Page.from_params(request.args, total)
     try:
         history = Alert.get_history(query, paging.page, paging.page_size)
@@ -385,6 +385,23 @@ def history():
             history=[],
             total=0
         )
+
+
+@api.route('/alerts/history/count', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_alerts)
+@timer(gets_timer)
+@jsonp
+def history_count():
+    query = qb.alerts.from_params(request.args, customers=g.customers)
+    total = Alert.get_history_count(query)
+    environments = Alert.get_history_environment_count(query)
+
+    return jsonify(
+        status='ok',
+        total=total,
+        environments={key:value for key,value in environments}
+    )
 
 
 # severity counts

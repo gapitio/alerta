@@ -508,8 +508,11 @@ class Alert:
     def get_history(query: Query = None, page=1, page_size=1000) -> List[RichHistory]:
         return [RichHistory.from_db(hist) for hist in db.get_history(query, page, page_size)]
 
-    def get_history_count():
-        return db.get_history_count().count
+    def get_history_count(query=None):
+        return db.get_history_count(query).count
+
+    def get_history_environment_count(query=None):
+        return db.get_history_environment_count(query)
 
     # get total count
     @staticmethod
