@@ -395,10 +395,12 @@ def history():
 def history_count():
     query = qb.alerts.from_params(request.args, customers=g.customers)
     total = Alert.get_history_count(query)
+    environments = Alert.get_history_environment_count(query)
 
     return jsonify(
         status='ok',
-        total=total
+        total=total,
+        environments={key:value for key,value in environments}
     )
 
 

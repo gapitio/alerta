@@ -511,6 +511,9 @@ class Alert:
     def get_history_count(query=None):
         return db.get_history_count(query).count
 
+    def get_history_environment_count(query=None):
+        return db.get_history_environment_count(query)
+
     # get total count
     @staticmethod
     def get_count(query: Query = None) -> Dict[str, Any]:
