@@ -62,7 +62,7 @@ class Alert:
         self.group = kwargs.get('group', None) or 'Misc'
         self.value = kwargs.get('value', None)
         self.text = kwargs.get('text', None) or ''
-        self.tags = kwargs.get('tags', None) or list()
+        self.tags = [tag.strip() for tag in kwargs.get('tags', None) or list()]
         self.attributes = kwargs.get('attributes', None) or dict()
         self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'exceptionAlert'
