@@ -82,7 +82,7 @@ class QueryBuilder:
                     query.append(f'AND attributes @> %(attr_{column})s')
                     qvars['attr_' + column] = {column: value}
             elif len(value) == 1:
-                value = value[0]
+                value = value[0] if not field.endswith('!') else f'!{value[0]}' if not value[0].startswith('~') else f'{value[0][:1]}!{value[0][1:]}'
                 if value.startswith('>'):
                     query.append('AND "{0}">%({0})s'.format(column))
                     qvars[column] = value[1:]
