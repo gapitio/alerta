@@ -107,7 +107,7 @@ class SearchTestCase(unittest.TestCase):
             ('status', 'open'),
             ('status', 'ack'),
             ('environment', '~DEV'),
-            ('group!', 'Network'),
+            ('group', '!Network'),
             ('sort-by', '-severity'),
             ('sort-by', '-lastReceiveTime'),
         ])
