@@ -54,7 +54,6 @@ class QueryBuilder:
 
     @staticmethod
     def filter_query(params, valid_params, query, qvars):
-
         for field in params.keys():
             if field.replace('!', '').split('.')[0] in EXCLUDE_FROM_QUERY:  # eg. "attributes.foo!=bar" => 'attributes'
                 continue
@@ -64,29 +63,44 @@ class QueryBuilder:
             column, _, _ = valid_params[field.replace('!', '').split('.')[0]]
             value = params.getlist(field)
 
-            if field in ['service', 'tags', 'roles', 'scopes']:
+            if field in ['tag']:
+                query.append('AND {0} @> %({0})s'.format(column))
+                qvars[column] = value
+            elif field in ['service', 'tags', 'roles', 'scopes']:
                 query.append('AND {0} && %({0})s'.format(column))
                 qvars[column] = value
             elif field.startswith('attributes.'):
                 column = field.replace('attributes.', '')
-                query.append(f'AND attributes @> %(attr_{column})s')
-                qvars['attr_' + column] = {column: value[0]}
+                value = value[0]
+                if value.startswith('~!'):
+                    query.append(f'AND "attributes"::jsonb ->> \'{column}\' NOT ILIKE %(attr_{column})s')
+                    qvars['attr_' + column] = '%' + value[2:] + '%'
+                elif value.startswith('~'):
+                    query.append(f'AND "attributes"::jsonb ->> \'{column}\' ILIKE %(attr_{column})s')
+                    qvars['attr_' + column] = '%' + value[1:] + '%'
+                else:
+                    query.append(f'AND attributes @> %(attr_{column})s')
+                    qvars['attr_' + column] = {column: value}
             elif len(value) == 1:
                 value = value[0]
-                if field.endswith('!'):
-                    if value.startswith('~'):
-                        query.append('AND NOT "{0}" ILIKE %(not_{0})s'.format(column))
-                        qvars['not_' + column] = '%' + value[1:] + '%'
-                    else:
-                        query.append('AND "{0}"!=%(not_{0})s'.format(column))
-                        qvars['not_' + column] = value
+                if value.startswith('>'):
+                    query.append('AND "{0}">%({0})s'.format(column))
+                    qvars[column] = value[1:]
+                elif value.startswith('<'):
+                    query.append('AND "{0}"<%({0})s'.format(column))
+                    qvars[column] = value[1:]
+                elif value.startswith('~!'):
+                    query.append('AND NOT "{0}" ILIKE %(not_{0})s'.format(column))
+                    qvars['not_' + column] = '%' + value[2:] + '%'
+                elif value.startswith('!'):
+                    query.append('AND "{0}"!=%(not_{0})s'.format(column))
+                    qvars['not_' + column] = value[1:]
+                elif value.startswith('~'):
+                    query.append('AND "{0}" ILIKE %({0})s'.format(column))
+                    qvars[column] = '%' + value[1:] + '%'
                 else:
-                    if value.startswith('~'):
-                        query.append('AND "{0}" ILIKE %({0})s'.format(column))
-                        qvars[column] = '%' + value[1:] + '%'
-                    else:
-                        query.append('AND "{0}"=%({0})s'.format(column))
-                        qvars[column] = value
+                    query.append('AND "{0}"=%({0})s'.format(column))
+                    qvars[column] = value
             else:
                 if field.endswith('!'):
                     if '~' in [v[0] for v in value]:
@@ -173,10 +187,6 @@ class Alerts(QueryBuilder):
             query.append('AND last_receive_time <= %(to_date)s')
             qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
 
-        # duplicateCount, repeat
-        if params.get('duplicateCount', None):
-            query.append('AND duplicate_count=%(duplicate_count)s')
-            qvars['duplicate_count'] = params.get('duplicateCount', int)
         if params.get('repeat', None):
             query.append('AND repeat=%(repeat)s')
             qvars['repeat'] = params.get('repeat', default=True, type=lambda x: x.lower()
