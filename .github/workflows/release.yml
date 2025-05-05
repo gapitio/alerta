@@ -75,28 +75,19 @@ jobs:
           python3 -m build
           zip alerta-api.zip -r dist/*
           tar cvfz alerta-api.tar.gz dist/*
-      - name: Create Release
+      - name: Release
         id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        if: ${{ !contains(github.ref_name, '-') }}
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref }}
           draft: false
-          prerelease: false
-      - name: Upload Zip File
-        id: upload-zip-file
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./alerta-api.zip
-      - name: Upload Compressed TAR File
-        id: upload-tarball
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./alerta-api.tar.gz
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            ./alerta-api.zip
+            ./alerta-api.tar.gz
 
       - uses: act10ns/slack@v2
         with:
