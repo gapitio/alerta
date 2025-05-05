@@ -78,7 +78,6 @@ jobs:
       - name: Release
         id: create-release
         uses: softprops/action-gh-release@v2
-        if: ${{ !contains(github.ref_name, '-') }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
