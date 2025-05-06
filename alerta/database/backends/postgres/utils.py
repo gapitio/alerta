@@ -64,11 +64,32 @@ class QueryBuilder:
             value = params.getlist(field)
 
             if field in ['tag']:
-                query.append('AND {0} @> %({0})s'.format(column))
-                qvars[column] = value
+                values = [[], []]
+                for v in value:
+                    if v.startswith('!'):
+                        values[1].append(v[1::])
+                    else:
+                        values[0].append(v)
+                if len(values[0]):
+                    query.append('AND {0} @> %({0})s'.format(column))
+                    qvars[column] = values[0]
+                if len(values[1]):
+                    query.append('AND NOT {0} @> %({0})s'.format(column))
+                    qvars[column] = values[1]
             elif field in ['service', 'tags', 'roles', 'scopes']:
-                query.append('AND {0} && %({0})s'.format(column))
-                qvars[column] = value
+                values = [[], []]
+                for v in value:
+                    if v.startswith('!'):
+                        values[1 * v.startswith('!')].append(v[1::])
+                    else:
+                        values[0].append(v)
+                if len(values[0]):
+                    query.append('AND {0} && %({0})s'.format(column))
+                    qvars[column] = values[0]
+                if len(values[1]):
+                    column = f'!{column}'
+                    query.append('AND NOT {} && %({})s'.format(column[1::], column))
+                    qvars[column] = values[1]
             elif field.startswith('attributes.'):
                 column = field.replace('attributes.', '')
                 value = value[0]
