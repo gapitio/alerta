@@ -61,6 +61,12 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
 
+-- remove alerts with status set to null
+DO $$
+BEGIN
+    UPDATE alerts SET "status" = 'closed' where "status" is null;
+END$$;
+
 
 CREATE TABLE IF NOT EXISTS notes (
     id text PRIMARY KEY,
