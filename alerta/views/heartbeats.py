@@ -26,13 +26,13 @@ def create_heartbeat():
 
     heartbeat.customer = assign_customer(wanted=heartbeat.customer, permission=Scope.admin_heartbeats)
 
-    try:
-        heartbeat = heartbeat.create()
-    except Exception as e:
-        raise ApiError(str(e), 500)
+    # try:
+    #     heartbeat = heartbeat.create()
+    # except Exception as e:
+    #     raise ApiError(str(e), 500)
 
-    write_audit_trail.send(current_app._get_current_object(), event='heartbeat-created', message='', user=g.login,
-                           customers=g.customers, scopes=g.scopes, resource_id=heartbeat.id, type='heartbeat', request=request)
+    # write_audit_trail.send(current_app._get_current_object(), event='heartbeat-created', message='', user=g.login,
+    #                        customers=g.customers, scopes=g.scopes, resource_id=heartbeat.id, type='heartbeat', request=request)
 
     if heartbeat:
         return jsonify(status='ok', id=heartbeat.id, heartbeat=heartbeat.serialize), 201
