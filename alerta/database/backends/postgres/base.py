@@ -266,7 +266,7 @@ class Backend(Database):
                SET status=%(status)s, service=%(service)s, value=%(value)s, text=%(text)s,
                    timeout=%(timeout)s, raw_data=%(raw_data)s, repeat=%(repeat)s,
                    last_receive_id=%(last_receive_id)s, last_receive_time=%(last_receive_time)s,
-                   tags=ARRAY(SELECT DISTINCT UNNEST(tags || %(tags)s)), attributes=attributes || %(attributes)s,
+                   tags=%(tags)s, attributes=attributes || %(attributes)s,
                    duplicate_count=duplicate_count + 1, {update_time}, history=(%(history)s || history)[1:{limit}]
              WHERE environment=%(environment)s
                AND resource=%(resource)s
@@ -289,7 +289,7 @@ class Backend(Database):
                    text=%(text)s, create_time=%(create_time)s, timeout=%(timeout)s, raw_data=%(raw_data)s,
                    duplicate_count=%(duplicate_count)s, repeat=%(repeat)s, previous_severity=%(previous_severity)s,
                    trend_indication=%(trend_indication)s, receive_time=%(receive_time)s, last_receive_id=%(last_receive_id)s,
-                   last_receive_time=%(last_receive_time)s, tags=ARRAY(SELECT DISTINCT UNNEST(tags || %(tags)s)),
+                   last_receive_time=%(last_receive_time)s, tags=%(tags)s,
                    attributes=attributes || %(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}]
              WHERE environment=%(environment)s
                AND resource=%(resource)s
@@ -321,7 +321,7 @@ class Backend(Database):
     def set_alert(self, id, severity, status, tags, attributes, timeout, previous_severity, update_time, history=None):
         update = """
             UPDATE alerts
-               SET severity=%(severity)s, status=%(status)s, tags=ARRAY(SELECT DISTINCT UNNEST(tags || %(tags)s)),
+               SET severity=%(severity)s, status=%(status)s, tags=%(tags)s,
                    attributes=%(attributes)s, timeout=%(timeout)s, previous_severity=%(previous_severity)s,
                    update_time=%(update_time)s, history=(%(change)s || history)[1:{limit}]
              WHERE id=%(id)s OR id LIKE %(like_id)s
@@ -354,7 +354,7 @@ class Backend(Database):
     def tag_alert(self, id, tags):
         update = """
             UPDATE alerts
-            SET tags=ARRAY(SELECT DISTINCT UNNEST(tags || %(tags)s))
+            SET tags=%(tags)s
             WHERE id=%(id)s OR id LIKE %(like_id)s
             RETURNING *
         """
