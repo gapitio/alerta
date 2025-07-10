@@ -14,6 +14,7 @@ from alerta.database.base import Database
 from alerta.exceptions import NoCustomerMatch
 from alerta.models.enums import ADMIN_SCOPES
 from alerta.models.heartbeat import HeartbeatStatus
+from alerta.models.notification_rule import NotificationRule
 from alerta.utils.format import DateTime
 from alerta.utils.response import absolute_url
 
@@ -1185,6 +1186,69 @@ class Backend(Database):
         if current_app.config['CUSTOMER_VIEWS']:
             select += ' AND (customer IS NULL OR customer=%(customer)s)'
         return self._fetchall(select, vars(alert))
+
+    def get_notification_rule_alerts_count(self, notification_rule: NotificationRule):
+        select = """
+            with tag_alerts as (
+                SELECT alerts.*
+                FROM alerts,
+                    LATERAL (
+                    SELECT %(tags)s AS t
+                    ),
+                    LATERAL generate_subscripts(t, 1) AS s
+                WHERE t[s].all <@ alerts.tags
+                  AND (t[s].any = '{}' OR t[s].any && alerts.tags)
+            ), excluded_alerts as (
+                SELECT tag_alerts.*
+                FROM tag_alerts,
+                    LATERAL (
+                    SELECT  %(excluded_tags)s AS t
+                    ),
+                    LATERAL generate_subscripts(t, 1) AS s
+                WHERE (t[s].all = '{}' OR NOT (t[s].all <@ tag_alerts.tags))
+                    AND NOT t[s].any && tag_alerts.tags
+            )
+            SELECT COUNT(*) FROM excluded_alerts
+            WHERE environment = %(environment)s
+                AND (%(resource)s is NULL OR resource = %(resource)s)
+                AND (%(event)s is NULL OR event = %(event)s)
+                AND (%(service)s = '{}' OR service <@ %(service)s)
+                AND (%(group)s is NULL OR "group" = %(group)s)
+        """
+
+        return self._fetchone(select, vars(notification_rule))
+
+    def get_notification_rule_alerts(self, notification_rule: NotificationRule, page=None, page_size=None):
+        select = """
+            with tag_alerts as (
+                SELECT alerts.*
+                FROM alerts,
+                    LATERAL (
+                    SELECT %(tags)s AS t
+                    ),
+                    LATERAL generate_subscripts(t, 1) AS s
+                WHERE t[s].all <@ alerts.tags
+                  AND (t[s].any = '{}' OR t[s].any && alerts.tags)
+            ), excluded_alerts as (
+                SELECT tag_alerts.*
+                FROM tag_alerts,
+                    LATERAL (
+                    SELECT  %(excluded_tags)s AS t
+                    ),
+                    LATERAL generate_subscripts(t, 1) AS s
+                WHERE (t[s].all = '{}' OR NOT (t[s].all <@ tag_alerts.tags))
+                    AND NOT t[s].any && tag_alerts.tags
+            )
+            SELECT * from excluded_alerts
+            WHERE environment = %(environment)s
+                AND (%(resource)s is NULL OR resource = %(resource)s)
+                AND (%(event)s is NULL OR event = %(event)s)
+                AND (%(service)s = '{}' OR service <@ %(service)s)
+                AND (%(group)s is NULL OR "group" = %(group)s)
+            ORDER BY event, resource
+        """
+
+        return self._fetchall(select, vars(notification_rule), limit=page_size, offset=(page - 1) * page_size)
 
     def get_notification_rules_reactivate(self, time):
         select = """
