@@ -1,16 +1,14 @@
 from datetime import datetime, time, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
 from alerta.app import db
 from alerta.database.base import Query
+from alerta.models.alert import Alert
 from alerta.models.notification_channel import NotificationChannel
 from alerta.models.notification_group import NotificationGroup
 from alerta.models.user import NotificationInfo, User
 from alerta.utils.response import absolute_url
-
-if TYPE_CHECKING:
-    from alerta.models.alert import Alert
 
 JSON = Dict[str, Any]
 
@@ -460,6 +458,13 @@ class NotificationRule:
     def find_all_reactivate(**kwargs) -> 'list[NotificationRule]':
         now = datetime.utcnow()
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_reactivate(now)]
+
+    def get_notification_rule_alerts(self, page=None, page_size=None):
+        dbRes = db.get_notification_rule_alerts(self, page, page_size)
+        return ([Alert.from_db(alert) for alert in dbRes])
+
+    def get_notification_rule_alerts_count(self):
+        return db.get_notification_rule_alerts_count(self).count
 
     def create_notification_rule_history(self, update_type='update'):
         db.create_notification_rule_history(update_type, self)

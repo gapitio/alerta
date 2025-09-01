@@ -16,6 +16,31 @@ from alerta.utils.response import absolute_url, jsonp
 from . import api
 
 
+@api.route('/notificationrule/alerts', methods=['OPTIONS', 'POST'])
+@cross_origin()
+@permission(Scope.write_notification_rules)
+@jsonp
+def get_new_notification_rule_alerts():
+    try:
+        notification_rule = NotificationRule.parse(request.json)
+        total = notification_rule.get_notification_rule_alerts_count()
+        paging = Page.from_params(request.args, total)
+        alerts = notification_rule.get_notification_rule_alerts(page=paging.page, page_size=paging.page_size)
+
+    except Exception as e:
+        raise ApiError(str(e), 400)
+
+    return jsonify(
+        status='ok',
+        page=paging.page,
+        pageSize=paging.page_size,
+        pages=paging.pages,
+        more=paging.has_more,
+        total=total,
+        alerts=[alert.serialize for alert in alerts]
+    )
+
+
 @api.route('/notificationrules', methods=['OPTIONS', 'POST'])
 @cross_origin()
 @permission(Scope.write_notification_rules)
@@ -91,6 +116,23 @@ def get_notification_rule_history(notification_rule_id):
             more=paging.has_more,
             notificationRuleHistory=notification_rule_history,
             total=total,
+        )
+    else:
+        raise ApiError('not found', 404)
+
+
+@api.route('/notificationrules/<notification_rule_id>/alerts', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_notification_rules)
+@jsonp
+def get_notification_rule_alerts(notification_rule_id):
+    notification_rule = NotificationRule.find_by_id(notification_rule_id)
+    if notification_rule:
+        alerts = notification_rule.get_notification_rule_alerts()
+        return jsonify(
+            status='ok',
+            alerts=alerts,
+            total=len(alerts),
         )
     else:
         raise ApiError('not found', 404)

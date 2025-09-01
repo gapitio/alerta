@@ -328,6 +328,12 @@ class Database(Base):
     def get_notification_rules_active_status(self, alert):
         raise NotImplementedError
 
+    def get_notification_rule_alerts_count(self, notification_rule):
+        raise NotImplementedError
+
+    def get_notification_rule_alerts(self, notification_rule, page=None, page_size=None):
+        raise NotImplementedError
+
     def get_notification_rules_reactivate(self, time):
         raise NotImplementedError
 
