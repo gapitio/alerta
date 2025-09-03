@@ -354,7 +354,10 @@ class Backend(Database):
     def tag_alert(self, id, tags):
         update = """
             UPDATE alerts
-            SET tags=%(tags)s
+            SET custom_tags=(
+                SELECT array_agg(DISTINCT element)
+                from unnest(custom_tags || %(tags)s) as element
+            )
             WHERE id=%(id)s OR id LIKE %(like_id)s
             RETURNING *
         """
@@ -363,7 +366,7 @@ class Backend(Database):
     def untag_alert(self, id, tags):
         update = """
             UPDATE alerts
-            SET tags=(select array_agg(t) FROM unnest(tags) AS t WHERE NOT t=ANY(%(tags)s) )
+            SET custom_tags=(select array_agg(t) FROM unnest(custom_tags) AS t WHERE NOT t=ANY(%(tags)s) )
             WHERE id=%(id)s OR id LIKE %(like_id)s
             RETURNING *
         """
@@ -456,7 +459,7 @@ class Backend(Database):
         else:
             select = (
                 'id, resource, event, environment, severity, correlate, status, service, "group", value, "text",'
-                + 'tags, attributes, origin, type, create_time, timeout, {raw_data}, customer, duplicate_count, repeat,'
+                + 'tags, custom_tags, attributes, origin, type, create_time, timeout, {raw_data}, customer, duplicate_count, repeat,'
                 + 'previous_severity, trend_indication, receive_time, last_receive_id, last_receive_time, update_time,'
                 + '{history}'
             ).format(

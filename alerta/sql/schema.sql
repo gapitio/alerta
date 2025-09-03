@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS custom_tags text[];
 
 -- remove alerts with status set to null
 DO $$
