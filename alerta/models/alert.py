@@ -63,6 +63,7 @@ class Alert:
         self.value = kwargs.get('value', None)
         self.text = kwargs.get('text', None) or ''
         self.tags = kwargs.get('tags', None) or list()
+        self.tags = list(set(self.tags))
         self.custom_tags = kwargs.get('custom_tags', None) or list()
         self.attributes = kwargs.get('attributes', None) or dict()
         self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
