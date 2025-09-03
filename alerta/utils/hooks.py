@@ -41,7 +41,7 @@ class HookTrigger:
         except Exception as e:
             raise ApiError(str(e), 500)
 
-        alert.tag(alert.tags)
+        # alert.tag(alert.tags)
         alert.attributes = alert.update_attributes(alert.attributes)
 
         return alert, status, text
