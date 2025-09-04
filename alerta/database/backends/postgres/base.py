@@ -1138,6 +1138,13 @@ class Backend(Database):
         )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
+    def get_notification_rules_by_notification_group(self, group_id):
+        select = """
+            SELECT id, name FROM notification_rules
+            WHERE %(group_id)s = ANY(group_ids)
+        """
+        return self._fetchall(select, {'group_id': group_id})
+
     def get_notification_rules_count(self, query=None):
         query = query or Query()
         select = """
@@ -1468,6 +1475,12 @@ class Backend(Database):
             WHERE id=%s
             RETURNING id
         """
+        update = """
+            UPDATE notification_rules
+            SET group_ids = ARRAY_REMOVE(group_ids, %(id)s)
+            WHERE %(id)s = ANY(group_ids)
+        """
+        self._updateall(update, {'id': id}, returning=False)
         return self._deleteone(delete, (id,), returning=True)
 
 # NOTIFICATION SEND

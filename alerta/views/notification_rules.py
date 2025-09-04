@@ -174,6 +174,32 @@ def get_notification_rules_activestatus():
     return jsonify(status='ok', total=total, notificationRules=notification_rules)
 
 
+@api.route('/notificationrules/group/<group_id>', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_notification_rules)
+@jsonp
+def list_notification_rules_by_notification_group(group_id):
+    try:
+        notification_rules = NotificationRule.find_all_by_notification_group(group_id)
+    except (UndefinedColumn, CannotCoerce) as e:
+        e.cursor.connection.rollback()
+        current_app.logger.info(f'Notification rule search failed with message: {e.diag.message_primary}. HINT: {e.diag.message_hint}')
+        return jsonify(status='error', name='Notification Search', message=f'{e.diag.message_primary}. HINT: {e.diag.message_hint}'), 400
+
+    if notification_rules:
+        return jsonify(
+            status='ok',
+            notificationRules=notification_rules,
+        )
+    else:
+        return jsonify(
+            status='ok',
+            message='not found',
+            notificationRules=[],
+            total=0,
+        )
+
+
 @api.route('/notificationrules', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_notification_rules)
