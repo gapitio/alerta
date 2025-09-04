@@ -48,7 +48,7 @@ class Blackout:
         self.resource = kwargs.get('resource', None)
         self.event = kwargs.get('event', None)
         self.group = kwargs.get('group', None)
-        self.tags = kwargs.get('tags', None) or list()
+        self.tags = list({tag.strip() for tag in kwargs.get('tags', None) or list()})
         self.origin = kwargs.get('origin', None)
         self.customer = kwargs.get('customer', None)
         self.start_time = start_time
@@ -124,7 +124,7 @@ class Blackout:
             'resource': self.resource,
             'event': self.event,
             'group': self.group,
-            'tags': self.tags,
+            'tags': list(self.tags),
             'origin': self.origin,
             'customer': self.customer,
             'startTime': self.start_time,
