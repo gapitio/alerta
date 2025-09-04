@@ -16,7 +16,7 @@ class NotificationGroup:
         self.phone_numbers = kwargs.get('phone_numbers', [])
         self.mails = kwargs.get('mails', [])
 
-    @ classmethod
+    @classmethod
     def parse(cls, json: JSON) -> 'NotificationGroup':
         if not isinstance(json.get('users', []), list):
             raise ValueError('users must be a list')
@@ -32,7 +32,7 @@ class NotificationGroup:
         )
         return notification_group
 
-    @ property
+    @property
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
@@ -51,7 +51,7 @@ class NotificationGroup:
             self.mails,
         )
 
-    @ classmethod
+    @classmethod
     def from_document(cls, doc: Dict[str, Any]) -> 'NotificationGroup':
         return NotificationGroup(
             id=doc.get('id', None) or doc.get('_id'),
@@ -61,7 +61,7 @@ class NotificationGroup:
             mails=doc.get('mails'),
         )
 
-    @ classmethod
+    @classmethod
     def from_record(cls, rec) -> 'NotificationGroup':
         return NotificationGroup(
             id=rec.id,
@@ -71,7 +71,7 @@ class NotificationGroup:
             mails=rec.mails,
         )
 
-    @ classmethod
+    @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationGroup':
         if isinstance(r, dict):
             return cls.from_document(r)
@@ -83,15 +83,15 @@ class NotificationGroup:
         return NotificationGroup.from_db(db.create_notification_group(self))
 
     # get a notification rule
-    @ staticmethod
+    @staticmethod
     def find_by_id(id: str, customers: List[str] = None) -> Optional['NotificationGroup']:
         return NotificationGroup.from_db(db.get_notification_group(id))
 
-    @ staticmethod
+    @staticmethod
     def find_all(query: Query = None, page: int = 1, page_size: int = 1000) -> List['NotificationGroup']:
         return [NotificationGroup.from_db(notification_group) for notification_group in db.get_notification_groups(query, page, page_size)]
 
-    @ staticmethod
+    @staticmethod
     def count(query: Query = None) -> int:
         return db.get_notification_groups_count(query)
 

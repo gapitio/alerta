@@ -319,6 +319,9 @@ class Database(Base):
     def get_notification_rules(self, query=None, page=None, page_size=None):
         raise NotImplementedError
 
+    def get_notification_rules_by_notification_group(self, group_id: str):
+        raise NotImplementedError
+
     def get_notification_rules_count(self, query=None):
         raise NotImplementedError
 

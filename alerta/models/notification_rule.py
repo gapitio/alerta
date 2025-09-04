@@ -214,9 +214,11 @@ class NotificationRule:
     @property
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
-        group_users = [db.get_notification_group_users(group.id) for group in groups]
+        group_users = [db.get_notification_group_users(group.id) for group in groups if group is not None]
         users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
         for group in groups:
+            if group is None:
+                continue
             for index in range(max(len(group.phone_numbers), len(group.mails))):
                 users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
         for user_list in group_users:
@@ -438,6 +440,12 @@ class NotificationRule:
         return [
             NotificationRule.from_db(notification_rule)
             for notification_rule in db.get_notification_rules(query, page, page_size)
+        ]
+
+    @staticmethod
+    def find_all_by_notification_group(group_id: str) -> List['NotificationRule']:
+        return [
+            {'id': notification_rule.id, 'name': notification_rule.name}for notification_rule in db.get_notification_rules_by_notification_group(group_id)
         ]
 
     @staticmethod
