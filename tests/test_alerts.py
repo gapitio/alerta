@@ -503,14 +503,15 @@ class AlertsTestCase(unittest.TestCase):
 
         alert_id = data['id']
 
-        # append tag to existing
+        # append tag to customTags
         response = self.client.put('/alert/' + alert_id + '/tag',
                                    data=json.dumps({'tags': ['bar']}), headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/alert/' + alert_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(sorted(data['alert']['tags']), ['bar', 'foo'])
+        # added tag is the only tag in customTags
+        self.assertEqual(sorted(data['alert']['customTags']), ['bar'])
 
         # duplicate tag is a no-op
         response = self.client.put('/alert/' + alert_id + '/tag',
@@ -519,16 +520,16 @@ class AlertsTestCase(unittest.TestCase):
         response = self.client.get('/alert/' + alert_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(sorted(data['alert']['tags']), ['bar', 'foo'])
+        self.assertEqual(sorted(data['alert']['customTags']), ['bar'])
 
         # delete tag
         response = self.client.put('/alert/' + alert_id + '/untag',
-                                   data=json.dumps({'tags': ['foo']}), headers=self.headers)
+                                   data=json.dumps({'tags': ['bar']}), headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = self.client.get('/alert/' + alert_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['tags'], ['bar'])
+        self.assertEqual(data['alert']['customTags'], [])
 
     def test_alert_no_attributes(self):
 

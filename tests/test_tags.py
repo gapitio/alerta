@@ -72,10 +72,11 @@ class TagsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
-        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo', 'bar', 'baz']))
+        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo']))
+        self.assertEqual(sorted(data['alert']['customTags']), sorted(['bar', 'baz']))
         self.assertEqual(data['alert']['duplicateCount'], 1)
 
-        # tag alert
+        # add customTag alert
         response = self.client.put('/alert/%s/tag' %
                                    alert_id, data=json.dumps({'tags': ['quux']}), headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -92,6 +93,7 @@ class TagsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn('tagged', sorted(data['alert']['tags']))
+        self.assertNotIn('tagged', sorted(data['alert']['customTags']))
 
         # untag user operator action
         response = self.client.put('/alert/' + alert_id + '/action', json=payload, headers=self.headers)
@@ -107,7 +109,8 @@ class TagsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
-        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo', 'bar', 'baz', 'quux']))
+        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo']))
+        self.assertEqual(sorted(data['alert']['customTags']), sorted(['bar', 'baz', 'quux']))
 
         # untag alert
         response = self.client.put('/alert/%s/untag' %
@@ -119,7 +122,8 @@ class TagsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
-        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo', 'bar', 'baz']))
+        self.assertEqual(sorted(data['alert']['tags']), sorted(['foo']))
+        self.assertEqual(sorted(data['alert']['customTags']), sorted(['bar', 'baz']))
 
         del plugins.plugins['tag']
 

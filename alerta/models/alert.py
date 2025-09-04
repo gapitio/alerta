@@ -63,6 +63,8 @@ class Alert:
         self.value = kwargs.get('value', None)
         self.text = kwargs.get('text', None) or ''
         self.tags = kwargs.get('tags', None) or list()
+        self.tags = list(set(self.tags))
+        self.custom_tags = kwargs.get('custom_tags', None) or list()
         self.attributes = kwargs.get('attributes', None) or dict()
         self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'exceptionAlert'
@@ -136,6 +138,7 @@ class Alert:
             'value': self.value,
             'text': self.text,
             'tags': self.tags,
+            'customTags': self.custom_tags,
             'attributes': self.attributes,
             'origin': self.origin,
             'type': self.event_type,
@@ -186,6 +189,7 @@ class Alert:
             value=doc.get('value', None),
             text=doc.get('text', None),
             tags=doc.get('tags', list()),
+            custom_tags=doc.get('custom_tags', list()),
             attributes=doc.get('attributes', dict()),
             origin=doc.get('origin', None),
             event_type=doc.get('type', None),
@@ -219,6 +223,7 @@ class Alert:
             value=rec.value,
             text=rec.text,
             tags=rec.tags,
+            custom_tags=rec.custom_tags,
             attributes=dict(rec.attributes),
             origin=rec.origin,
             event_type=rec.type,

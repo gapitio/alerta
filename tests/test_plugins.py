@@ -132,7 +132,7 @@ class PluginsTestCase(unittest.TestCase):
         response = self.client.post('/alert', json=self.critical_alert, headers=self.headers)
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['tags'], ['Production', 'Staging', 'Development'])
+        self.assertEqual(sorted(data['alert']['tags']), sorted(['Production', 'Staging', 'Development']))
         self.assertEqual(data['alert']['attributes'], {'aaa': 'post1', 'ip': '127.0.0.1', 'old': 'post1'})
 
         alert_id = data['id']
