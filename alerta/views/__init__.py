@@ -2,11 +2,16 @@ from flask import Blueprint, current_app, jsonify, request
 
 from alerta.app import custom_webhooks
 from alerta.exceptions import ApiError
+from alerta.utils.config import get_config
 from alerta.utils.response import absolute_url
 
 api = Blueprint('api', __name__)
 
-from . import alerts, blackouts, config, customers, groups, heartbeats, keys, oembed, permissions, users, notification_rules, notification_channels, notification_history, on_call, escalation_rules, notification_groups, notification_delays, notification_sends  # noqa isort:skip
+from . import alerts, blackouts, config, customers, groups, keys, oembed, permissions, users, notification_rules, notification_channels, notification_history, on_call, escalation_rules, notification_groups, notification_delays, notification_sends  # noqa isort:skip
+if get_config('HEARTBEAT_URL') is None:
+    from . import heartbeats  # noqa
+else:
+    from . import heartbeats_external  # noqa
 
 try:
     from . import bulk  # noqa
