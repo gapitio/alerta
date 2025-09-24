@@ -73,6 +73,10 @@ class Config:
 
         config['CORS_ORIGINS'] = get_config('CORS_ORIGINS', default=[], type=list, config=config)
 
+        config['HEARTBEAT_URL'] = get_config('HEARTBEAT_URL', default=None, type=str, config=config)
+        config['HEARTBEAT_KEY'] = get_config('HEARTBEAT_KEY', default=None, type=str, config=config)
+        config['HEARTBEAT_VERIFY'] = get_config('HEARTBEAT_VERIFY', default=None, type=str, config=config)
+
         config['MAIL_FROM'] = get_config('MAIL_FROM', default=None, type=str, config=config)
         config['SMTP_PASSWORD'] = get_config('SMTP_PASSWORD', default=None, type=str, config=config)
 

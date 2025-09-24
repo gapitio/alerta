@@ -137,7 +137,8 @@ def good_to_go():
 @mgmt.route('/management/healthcheck', methods=['OPTIONS', 'GET'])
 @cross_origin()
 def health_check():
-
+    if current_app.config['HEARTBEAT_URL'] is not None:
+        return 'OK'
     try:
         heartbeats = Heartbeat.find_all()
         for heartbeat in heartbeats:
