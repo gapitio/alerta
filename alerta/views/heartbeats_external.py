@@ -22,7 +22,7 @@ def get_heartbeat(heartbeat_id):
     res = requests.get(
         f'{current_app.config["HEARTBEAT_URL"]}/heartbeat/{heartbeat_id}',
         headers={'Authorization': f'Key {current_app.config["HEARTBEAT_KEY"]}'},
-        verify=verify if verify.lower() != 'false' else False
+        verify=verify if verify is None or verify.lower() != 'false' else False
     )
 
     return res.text
@@ -37,7 +37,7 @@ def list_heartbeats():
     res = requests.get(
         f'{current_app.config["HEARTBEAT_URL"]}/heartbeats',
         headers={'Authorization': f'Key {current_app.config["HEARTBEAT_KEY"]}'},
-        verify=verify if verify.lower() != 'false' else False
+        verify=verify if verify is None or verify.lower() != 'false' else False
     )
     if res.status_code != 200:
         current_app.logger.error(f'failed to get heartbeat with status code: {res.status_code}')
@@ -54,7 +54,7 @@ def delete_heartbeat(heartbeat_id):
     res = requests.delete(
         f'{current_app.config["HEARTBEAT_URL"]}/heartbeat/{heartbeat_id}',
         headers={'Authorization': f'Key {current_app.config["HEARTBEAT_KEY"]}'},
-        verify=verify if verify.lower() != 'false' else False
+        verify=verify if verify is None or verify.lower() != 'false' else False
     )
     if res.status_code != 200:
         current_app.logger.error(f'failed to delete heartbeat with status code: {res.status_code}')
