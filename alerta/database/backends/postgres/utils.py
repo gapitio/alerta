@@ -62,20 +62,20 @@ class QueryBuilder:
                 raise ApiError(f'Invalid filter parameter: {field}', 400)
             column, _, _ = valid_params[field.replace('!', '').split('.')[0]]
             value = params.getlist(field)
-
-            if field in ['tag']:
+            if field in ['tag', 'customTags']:
                 values = [[], []]
                 for v in value:
                     if v.startswith('!'):
                         values[1].append(v[1::])
                     else:
                         values[0].append(v)
+                var_name = column if column not in qvars else column + '_1'
                 if len(values[0]):
-                    query.append('AND {0} @> %({0})s'.format(column))
-                    qvars[column] = values[0]
+                    query.append('AND {0} @> %({1})s'.format(column, var_name))
+                    qvars[var_name] = values[0]
                 if len(values[1]):
-                    query.append('AND NOT {0} @> %({0})s'.format(column))
-                    qvars[column] = values[1]
+                    query.append('AND NOT {0} @> %({1})s'.format(column, var_name))
+                    qvars[var_name] = values[1]
             elif field in ['service', 'tags', 'roles', 'scopes']:
                 values = [[], []]
                 for v in value:
@@ -156,7 +156,8 @@ class Alerts(QueryBuilder):
         'value': ('value', 'value', 1),
         'text': ('text', 'text', 1),
         'tag': ('tags', None, 0),  # filter
-        'tags': (None, 'tags', 1),  # sort-by
+        'tags': ('tags', 'tags', 1),  # sort-by
+        'customTags': ('custom_tags', 'custom_tags', 1),  # sort-by
         'attributes': ('attributes', 'attributes', 1),
         'origin': ('origin', 'origin', 1),
         'type': ('event_type', 'event_type', 1),
@@ -368,6 +369,7 @@ class NotificationRules(QueryBuilder):
     VALID_PARAMS = {
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
+        'active': ('active', None, 0),
         'priority': ('priority', 'priority', 1),
         'name': ('name', 'name', 1),
         'environment': ('environment', 'environment', 1),
@@ -464,6 +466,7 @@ class EscalationRules(QueryBuilder):
     VALID_PARAMS = {
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
+        'active': ('active', None, 0),
         'priority': ('priority', 'priority', 1),
         'environment': ('environment', 'environment', 1),
         'service': ('service', 'service', 1),

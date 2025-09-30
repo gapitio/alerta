@@ -248,7 +248,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
             response = send_link_mobility_xml(message, channel, phone_numbers, fernet, xml=LINK_MOBILITY_XML.copy())
             if response.content.decode().find('FAIL') != -1:
                 LOG.error(response.content)
-                log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error=response.content)
+                log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error=response.content.decode())
             else:
                 LOG.info(response.content)
                 log_notification(True, message, channel, notification_rule.id, alert, [number])
@@ -261,7 +261,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
         if response.status_code != 202:
             LOG.error(f'Failed to send myLink message with response: {response.content}')
             for number in phone_numbers:
-                log_notification(False, message, channel, notification_rule.id, alert, [number], error=response.content)
+                log_notification(False, message, channel, notification_rule.id, alert, [number], error=response.content.decode())
         else:
             LOG.info(f'Successfully Sent message to myLink with response: {response.content}')
             for msg in response.json()['messages']:

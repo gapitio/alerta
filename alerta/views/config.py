@@ -42,8 +42,6 @@ def config():
         'keycloak_realm': current_app.config['KEYCLOAK_REALM'],
         'oidc_auth_url': current_app.config['OIDC_AUTH_URL'],
         'site_logo_url': current_app.config['SITE_LOGO_URL'],
-        'severity': alarm_model.Severity,  # FIXME - moved to alarm model
-        'colors': alarm_model.Colors,  # FIXME - moved to alarm model
         'timeouts': {
             'alert': current_app.config['ALERT_TIMEOUT'],
             'heartbeat': current_app.config['HEARTBEAT_TIMEOUT'],
