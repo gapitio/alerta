@@ -192,7 +192,7 @@ class EscalationRule:
             create_time=doc.get('createTime', None),
             start_time=(
                 datetime.strptime(
-                    f'{doc["startTime"] :.2f}'.replace('.', ':'), '%H:%M'
+                    f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M'
                 ).time()
                 if doc['startTime'] is not None
                 else None
@@ -201,7 +201,7 @@ class EscalationRule:
             else None,
             end_time=(
                 datetime.strptime(
-                    f'{doc["endTime"] :.2f}'.replace('.', ':'), '%H:%M'
+                    f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M'
                 ).time()
                 if doc['endTime'] is not None
                 else None

@@ -79,6 +79,7 @@ class Config:
 
         config['MAIL_FROM'] = get_config('MAIL_FROM', default=None, type=str, config=config)
         config['SMTP_PASSWORD'] = get_config('SMTP_PASSWORD', default=None, type=str, config=config)
+        config['SMTP_ACTIVE'] = get_config('SMTP_ACTIVE', default=False, type=str, config=config)
 
         config['GOOGLE_TRACKING_ID'] = get_config('GOOGLE_TRACKING_ID', default=None, type=str, config=config)
 

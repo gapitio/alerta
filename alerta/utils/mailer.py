@@ -1,5 +1,7 @@
 from flask import Flask, current_app
 
+from alerta.exceptions import ApiError
+
 try:
     import smtplib
     import socket
@@ -19,7 +21,6 @@ class Mailer:
             self.register(app)
 
     def register(self, app: Flask) -> None:
-
         self.smtp_host = app.config['SMTP_HOST']
         self.smtp_port = app.config['SMTP_PORT']
         self.mail_localhost = app.config['MAIL_LOCALHOST']
@@ -34,6 +35,8 @@ class Mailer:
         self.smtp_starttls = app.config['SMTP_STARTTLS']
 
     def send_email(self, email: str, subject: str, body: str, mime: str = 'plain') -> None:
+        if self.smtp_host == '' or self.smtp_host is None:
+            raise ApiError('Missing SMTP host', 500)
 
         msg = MIMEMultipart('related')
         msg['Subject'] = subject

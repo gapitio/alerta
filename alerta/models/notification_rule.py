@@ -364,7 +364,7 @@ class NotificationRule:
             text=doc.get('text', None),
             start_time=(
                 datetime.strptime(
-                    f'{doc["startTime"] :.2f}'.replace('.', ':'), '%H:%M'
+                    f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M'
                 ).time()
                 if doc['startTime'] is not None
                 else None
@@ -373,7 +373,7 @@ class NotificationRule:
             else None,
             end_time=(
                 datetime.strptime(
-                    f'{doc["endTime"] :.2f}'.replace('.', ':'), '%H:%M'
+                    f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M'
                 ).time()
                 if doc['endTime'] is not None
                 else None
