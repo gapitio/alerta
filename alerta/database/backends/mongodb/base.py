@@ -1151,8 +1151,8 @@ class Backend(Database):
             data['tags'] = notification_rule.tags
         if notification_rule.customer:
             data['customer'] = notification_rule.customer
-        if notification_rule.user_ids:
-            data['userIds'] = notification_rule.user_ids
+        if notification_rule.users_emails:
+            data['usersEmails'] = notification_rule.users_emails
         if notification_rule.group_ids:
             data['groupIds'] = notification_rule.group_ids
 
@@ -1222,8 +1222,8 @@ class Backend(Database):
         data = {
             '_id': on_call.id
         }
-        if on_call.user_ids:
-            data['userIds'] = on_call.user_ids
+        if on_call.users_emails:
+            data['usersEmails'] = on_call.users_emails
         if on_call.group_ids:
             data['groupIds'] = on_call.group_ids
         if on_call.user:

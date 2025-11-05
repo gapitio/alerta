@@ -760,7 +760,7 @@ class NotificationRuleTestCase(unittest.TestCase):
             'text': 'added to circle of trust'
         }
         user_data = self.create_api_obj('/user', user, self.headers)
-        user_id = user_data['id']
+        user_email = user_data['user']['email']
         group = {
             'name': 'Group 1',
             'text': 'Test group #1'
@@ -787,7 +787,7 @@ class NotificationRuleTestCase(unittest.TestCase):
             'channelId': 'SMS_Channel',
             'service': ['Network'],
             'receivers': [],
-            'userIds': [user_id]
+            'usersEmails': [user_email]
         }
 
         notification_rule_group = {
@@ -805,7 +805,7 @@ class NotificationRuleTestCase(unittest.TestCase):
         data = self.create_api_obj('/notificationrules', notification_rule_mail, self.headers)['notificationRule']
         self.assertEqual(data['receivers'], ['napoleon@bonaparte.fr'])
         data = self.create_api_obj('/notificationrules', notification_rule_user, self.headers)['notificationRule']
-        self.assertEqual(data['userIds'], [user_id])
+        self.assertEqual(data['usersEmails'], [user_email])
         data = self.create_api_obj('/notificationrules', notification_rule_group, self.headers)['notificationRule']
         self.assertEqual(data['groupIds'], [group_id])
 

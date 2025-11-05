@@ -168,7 +168,7 @@ class NotificationRule:
         self.environment = environment
         self.channel_id = channel_id
         self.receivers = receivers
-        self.user_ids = kwargs.get('user_ids') or []
+        self.users_emails = kwargs.get('users_emails') or []
         self.group_ids = kwargs.get('group_ids') or []
         self.use_oncall = use_oncall
         self.start_time: time = kwargs.get('start_time') or None
@@ -215,18 +215,18 @@ class NotificationRule:
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
         group_users = [db.get_notification_group_users(group.id) for group in groups if group is not None]
-        users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
+        users = {User.find_by_email(user_id).notification_info for user_id in self.users_emails}
         for group in groups:
             if group is None:
                 continue
             for index in range(max(len(group.phone_numbers), len(group.mails))):
                 users.add(NotificationInfo(phone_number=group.phone_numbers[index] if index < len(group.phone_numbers) else None, email=group.mails[index] if index < len(group.mails) else None))
         for user_list in group_users:
-            for user in user_list:
-                if isinstance(user, dict):
-                    users.add(User.find_by_id(user.get('id')).notification_info)
+            for email in user_list:
+                if isinstance(email, dict):
+                    users.add(User.find_by_email(email.get('email')).notification_info)
                 else:
-                    users.add(User.find_by_id(user.id).notification_info)
+                    users.add(User.find_by_email(email.email).notification_info)
         return users
 
     @classmethod
@@ -245,7 +245,7 @@ class NotificationRule:
             delay_time=json.get('delayTime', None),
             channel_id=json['channelId'],
             receivers=json['receivers'],
-            user_ids=json.get('userIds'),
+            users_emails=json.get('usersEmails'),
             group_ids=json.get('groupIds'),
             use_oncall=json.get('useOnCall', False),
             triggers=[NotificationTriggers(trigger.get('from_severity', []), trigger.get('to_severity', []), trigger.get('status'), trigger.get('text', '')) for trigger in json.get('triggers', [])],
@@ -289,7 +289,7 @@ class NotificationRule:
             'delayTime': self.delay_time,
             'channelId': self.channel_id,
             'receivers': self.receivers,
-            'userIds': self.user_ids,
+            'usersEmails': self.users_emails,
             'groupIds': self.group_ids,
             'useOnCall': self.use_oncall,
             'service': self.service,
@@ -347,7 +347,7 @@ class NotificationRule:
             delay_time=doc.get('delayTime', None),
             channel_id=doc['channelId'],
             receivers=doc.get('receivers') or list(),
-            user_ids=doc.get('userIds'),
+            users_emails=doc.get('usersEmails'),
             group_ids=doc.get('groupIds'),
             use_oncall=doc.get('useOnCall', False),
             service=doc.get('service', list()),
@@ -394,7 +394,7 @@ class NotificationRule:
             delay_time=rec.delay_time,
             channel_id=rec.channel_id,
             receivers=rec.receivers,
-            user_ids=rec.user_ids,
+            users_emails=rec.users_emails,
             group_ids=rec.group_ids,
             use_oncall=rec.use_oncall,
             service=rec.service,

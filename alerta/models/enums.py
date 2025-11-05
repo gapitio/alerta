@@ -88,6 +88,7 @@ class Scope(str):
     admin_heartbeats = 'admin:heartbeats'
     write_users = 'write:users'
     admin_users = 'admin:users'
+    read_users = 'read:users'  # Only for reading all emails from users
     read_groups = 'read:groups'
     admin_groups = 'admin:groups'
     read_perms = 'read:perms'

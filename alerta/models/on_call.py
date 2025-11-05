@@ -18,7 +18,7 @@ class OnCall:
     def __init__(self, **kwargs) -> None:
 
         self.id = kwargs.get('id') or str(uuid4())
-        self.user_ids = kwargs.get('user_ids') or []
+        self.users_emails = kwargs.get('users_emails') or []
         self.group_ids = kwargs.get('group_ids') or []
         self.start_date = kwargs.get('start_date')
         self.end_date = kwargs.get('end_date')
@@ -38,7 +38,7 @@ class OnCall:
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
         group_users = [db.get_notification_group_users(group.id) for group in groups]
-        users = {User.find_by_id(user_id).notification_info for user_id in self.user_ids}
+        users = {User.find_by_id(user_id).notification_info for user_id in self.users_emails}
         for group in groups:
             for index in range(max(len(group.phone_numbers), len(group.mails))):
                 if index < len(group.phone_numbers) and index < len(group.mails):
@@ -50,18 +50,18 @@ class OnCall:
 
     @ classmethod
     def parse(cls, json: JSON) -> 'OnCall':
-        user_ids = json.get('userIds', [])
+        users_emails = json.get('usersEmails', [])
         group_ids = json.get('groupIds', [])
-        if not isinstance(user_ids, list):
-            raise ValueError('userIds must be a list')
+        if not isinstance(users_emails, list):
+            raise ValueError('usersEmails must be a list')
         if not isinstance(group_ids, list):
             raise ValueError('groupIds must be a list')
-        if len(user_ids) == 0 and len(group_ids) == 0:
-            raise ValueError('missing userIds to alert')
+        if len(users_emails) == 0 and len(group_ids) == 0:
+            raise ValueError('missing usersEmails to alert')
 
         on_call = OnCall(
             id=json.get('id'),
-            user_ids=json.get('userIds'),
+            users_emails=json.get('usersEmails'),
             group_ids=json.get('groupIds'),
             start_date=json.get('startDate'),
             end_date=json.get('endDate'),
@@ -93,7 +93,7 @@ class OnCall:
         return {
             'id': self.id,
             'href': absolute_url('/oncalls/' + self.id),
-            'userIds': self.user_ids,
+            'usersEmails': self.users_emails,
             'groupIds': self.group_ids,
             'startDate': self.start_date,
             'endDate': self.end_date,
@@ -109,8 +109,8 @@ class OnCall:
 
     def __repr__(self) -> str:
         more = ''
-        if self.user_ids:
-            more += 'user_ids=%r, ' % self.user_ids
+        if self.users_emails:
+            more += 'users_emails=%r, ' % self.users_emails
         if self.group_ids:
             more += 'group_ids=%r, ' % self.group_ids
         if self.customer:
@@ -125,7 +125,7 @@ class OnCall:
     def from_document(cls, doc: Dict[str, Any]) -> 'OnCall':
         return OnCall(
             id=doc.get('id', None) or doc.get('_id'),
-            user_ids=doc.get('userIds'),
+            users_emails=doc.get('usersEmails'),
             group_ids=doc.get('groupIds'),
             start_date=doc['startDate'].date().isoformat() if doc.get('startDate') is not None else None,
             end_date=doc['endDate'].date().isoformat() if doc.get('endDate') is not None else None,
@@ -159,7 +159,7 @@ class OnCall:
     def from_record(cls, rec) -> 'OnCall':
         return OnCall(
             id=rec.id,
-            user_ids=rec.user_ids,
+            users_emails=rec.users_emails,
             group_ids=rec.group_ids,
             start_date=rec.start_date.strftime('%Y-%m-%d') if rec.start_date is not None else rec.start_date,
             end_date=rec.end_date.strftime('%Y-%m-%d') if rec.end_date is not None else rec.end_date,

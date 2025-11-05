@@ -1113,9 +1113,9 @@ class Backend(Database):
     def create_notification_rule(self, notification_rule):
         insert = """
             INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, reactivate, excluded_tags, delay_time,
-                customer, "user", create_time, start_time, end_time, days, receivers, user_ids, group_ids, use_oncall, text, channel_id, triggers)
+                customer, "user", create_time, start_time, end_time, days, receivers, users_emails, group_ids, use_oncall, text, channel_id, triggers)
             VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(user_ids)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(users_emails)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
         return self._insert(insert, vars(notification_rule))
@@ -1384,8 +1384,8 @@ class Backend(Database):
             update += 'active=%(active)s,'
         if 'reactivate' in kwargs:
             update += 'reactivate=%(reactivate)s,'
-        if 'userIds' in kwargs:
-            update += 'user_ids=%(userIds)s, '
+        if 'usersEmails' in kwargs:
+            update += 'users_emails=%(usersEmails)s, '
         if 'groupIds' in kwargs:
             update += 'group_ids=%(groupIds)s, '
         update += """
@@ -1436,8 +1436,8 @@ class Backend(Database):
     def get_notification_group_users(self, id):
         select = """
             SELECT u.id, u.login, u.email, u.name, u.status
-            FROM (SELECT id, UNNEST(users) as uid FROM notification_groups) g
-            INNER JOIN users u on g.uid = u.id
+            FROM (SELECT id, UNNEST(users_emails) as email FROM notification_groups) g
+            INNER JOIN users u on g.email = u.email
             WHERE g.id = %s
         """
         return self._fetchall(select, (id,))
@@ -1715,9 +1715,9 @@ class Backend(Database):
 
     def create_on_call(self, on_call):
         insert = """
-            INSERT INTO on_calls (id, user_ids, group_ids, "start_date", end_date, start_time, end_time, "user", customer,
+            INSERT INTO on_calls (id, users_emails, group_ids, "start_date", end_date, start_time, end_time, "user", customer,
                 repeat_type, repeat_days, repeat_weeks, repeat_months)
-            VALUES (%(id)s, %(user_ids)s, %(group_ids)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s, %(user)s, %(customer)s,
+            VALUES (%(id)s, %(users_emails)s, %(group_ids)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s, %(user)s, %(customer)s,
                 %(repeat_type)s, %(repeat_days)s, %(repeat_weeks)s, %(repeat_months)s)
             RETURNING *
         """
@@ -1785,8 +1785,8 @@ class Backend(Database):
             UPDATE on_calls
             SET
         """
-        if 'userIds' in kwargs:
-            update += 'user_ids=%(userIds)s, '
+        if 'usersEmails' in kwargs:
+            update += 'users_emails=%(usersEmails)s, '
         if 'groupIds' in kwargs:
             update += 'group_ids=%(groupIds)s, '
         if 'startDate' in kwargs:
@@ -2018,6 +2018,13 @@ class Backend(Database):
           ORDER BY {query.sort}
         """
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+
+    def get_users_emails(self):
+        select = """
+            SELECT email, name FROM users
+        """
+        se = self._fetchall(select, {})
+        return se
 
     def get_users_count(self, query=None):
         query = query or Query()

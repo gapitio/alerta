@@ -8,7 +8,6 @@ from alerta.models.enums import Scope
 from alerta.models.notification_channel import NotificationChannel
 from alerta.models.notification_rule import NotificationRule
 from alerta.models.notification_send import NotificationSend
-from alerta.models.user import User
 from alerta.plugins.notification_rule import handle_test
 from alerta.utils.response import jsonp
 
@@ -61,10 +60,10 @@ def update_notification_send(notification_send_id):
 def notification_send(notification_channel_id):
     notification_channel = NotificationChannel.find_by_id(notification_channel_id)
     data = request.json
-    users = [User.find_by_email(notification['id']).id for notification in data['notifications'] if notification['type'] == 'User']
+    users = [notification['id'] for notification in data['notifications'] if notification['type'] == 'User']
     groups = [notification['id'] for notification in data['notifications'] if notification['type'] == 'Group']
     try:
-        notification_rule = NotificationRule.parse({'userIds': users, 'groupIds': groups, 'receivers': [], 'text': data['text'], 'channelId': notification_channel_id, 'environment': plugins.config.get('DEFAULT_ENVIRONMENT')})
+        notification_rule = NotificationRule.parse({'usersEmails': users, 'groupIds': groups, 'receivers': [], 'text': data['text'], 'channelId': notification_channel_id, 'environment': plugins.config.get('DEFAULT_ENVIRONMENT')})
     except Exception as e:
         raise ApiError(str(e), 400)
     try:

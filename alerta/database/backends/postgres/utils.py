@@ -76,7 +76,7 @@ class QueryBuilder:
                 if len(values[1]):
                     query.append('AND NOT {} @> %({})s'.format(column, var_name))
                     qvars[var_name] = values[1]
-            elif field in ['service', 'tags', 'roles', 'scopes', 'role', 'scope', 'users']:
+            elif field in ['service', 'tags', 'roles', 'scopes', 'role', 'scope', 'users', 'usersEmails']:
                 values = [[], []]
                 for v in value:
                     if v.startswith('!'):
@@ -627,7 +627,7 @@ class NotificationGroups(QueryBuilder):
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
         'name': ('name', 'name', 1),
-        'users': ('users', 'users', 1),
+        'usersEmails': ('users_emails', 'users_emails', 1),
         'phoneNumbers': ('pn', None, 1),
         'mails': ('m', None, 1),
     }
