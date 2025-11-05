@@ -16,8 +16,6 @@ from . import api
 
 @api.route('/notificationsends', methods=['OPTIONS', 'GET'])
 @cross_origin()
-@permission(Scope.read_notification_groups)
-@permission(Scope.admin_users)
 @permission(Scope.write_notification_sends)
 @jsonp
 def list_notification_sends():

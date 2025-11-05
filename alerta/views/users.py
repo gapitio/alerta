@@ -162,7 +162,7 @@ def list_users():
 
 @api.route('/users/emails', methods=['OPTIONS', 'GET'])
 @cross_origin()
-@permission(Scope.read_users)
+@permission(Scope.read_emails)
 @jsonp
 def list_emails():
     emails = User.get_emails()
