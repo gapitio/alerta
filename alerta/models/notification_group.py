@@ -12,21 +12,21 @@ class NotificationGroup:
 
         self.id = kwargs.get('id') or str(uuid4())
         self.name = kwargs.get('name')
-        self.users = kwargs.get('users') or []
+        self.users_emails = kwargs.get('users_emails') or []
         self.phone_numbers = kwargs.get('phone_numbers', [])
         self.mails = kwargs.get('mails', [])
 
     @classmethod
     def parse(cls, json: JSON) -> 'NotificationGroup':
-        if not isinstance(json.get('users', []), list):
-            raise ValueError('users must be a list')
+        if not isinstance(json.get('users_emails', []), list):
+            raise ValueError('users_emails must be a list')
         if 'name' not in json:
             raise ValueError('Missing required key: "name"')
 
         notification_group = NotificationGroup(
             id=json.get('id'),
             name=json.get('name'),
-            users=json.get('users'),
+            users_emails=json.get('users_emails'),
             phone_numbers=json.get('phoneNumbers'),
             mails=json.get('mails')
         )
@@ -37,16 +37,16 @@ class NotificationGroup:
         return {
             'id': self.id,
             'name': self.name,
-            'users': self.users,
+            'usersEmails': self.users_emails,
             'phoneNumbers': self.phone_numbers,
             'mails': self.mails,
         }
 
     def __repr__(self) -> str:
-        return 'NotificationGroup(id={!r}, name={!r}, users={!r}, phone_numbers={!r}, mails={!r})'.format(
+        return 'NotificationGroup(id={!r}, name={!r}, users_emails={!r}, phone_numbers={!r}, mails={!r})'.format(
             self.id,
             self.name,
-            self.users,
+            self.users_emails,
             self.phone_numbers,
             self.mails,
         )
@@ -56,7 +56,7 @@ class NotificationGroup:
         return NotificationGroup(
             id=doc.get('id', None) or doc.get('_id'),
             name=doc.get('name'),
-            users=doc.get('users'),
+            users_emails=doc.get('users_emails'),
             phone_numbers=doc.get('phone_numbers'),
             mails=doc.get('mails'),
         )
@@ -66,7 +66,7 @@ class NotificationGroup:
         return NotificationGroup(
             id=rec.id,
             name=rec.name,
-            users=rec.users,
+            users_emails=rec.users_emails,
             phone_numbers=rec.phone_numbers,
             mails=rec.mails,
         )

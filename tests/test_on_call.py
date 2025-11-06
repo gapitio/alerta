@@ -94,7 +94,7 @@ class OnCallTestCase(unittest.TestCase):
     def test_on_calls(self):
 
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': datetime.now().strftime('%Y-%m-%d'),
             'endDate': datetime.now().strftime('%Y-%m-%d'),
         }
@@ -169,7 +169,7 @@ class OnCallTestCase(unittest.TestCase):
         self.create_api_obj('/alert', self.prod_alert, self.headers)
         now = datetime.now()
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': now.date().isoformat(),
             'endDate': now.date().isoformat(),
             'repeatType': 'list',
@@ -188,7 +188,7 @@ class OnCallTestCase(unittest.TestCase):
         )
         now_1 = now + timedelta(days=1)  # datetime(now.year, now.month, (now.day + 1))
         update = {
-            'userIds': ['test_2'],
+            'usersEmails': ['test_2'],
             'endDate': now_1.date().isoformat(),
             'endTime': '22:00',
             'repeatType': None
@@ -197,7 +197,7 @@ class OnCallTestCase(unittest.TestCase):
         self.assertEqual(data['status'], 'ok')
 
         data = self.get_api_obj('/oncalls/' + on_call_id, self.headers)
-        self.assertEqual(data['onCall']['userIds'], ['test_2'])
+        self.assertEqual(data['onCall']['usersEmails'], ['test_2'])
         self.assertEqual(data['onCall']['startDate'], now.date().isoformat())
         self.assertEqual(data['onCall']['endDate'], now_1.date().isoformat())
         self.assertEqual(data['onCall']['startTime'], None)
@@ -218,7 +218,7 @@ class OnCallTestCase(unittest.TestCase):
         now_minus_fail = now - timedelta(days=1)
         now_plus_fail = now + timedelta(days=1)
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': now.date().isoformat(),
             'endDate': now.date().isoformat(),
         }
@@ -282,7 +282,7 @@ class OnCallTestCase(unittest.TestCase):
         now_minus_fail_week = now_week - 1 if now_week > 1 else 52
         now_plus_fail_week = now_week + 1 if now_week < 52 else 1
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'repeatType': 'list',
             'repeatDays': None,
             'repeatWeeks': None,
@@ -344,7 +344,7 @@ class OnCallTestCase(unittest.TestCase):
     def test_delete_on_call(self):
         now = datetime.now()
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': now.date().isoformat(),
             'endDate': now.date().isoformat(),
         }
@@ -362,7 +362,7 @@ class OnCallTestCase(unittest.TestCase):
     def test_user_info(self):
         now = datetime.now()
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': now.date().isoformat(),
             'endDate': now.date().isoformat(),
         }
@@ -374,7 +374,7 @@ class OnCallTestCase(unittest.TestCase):
     def test_status_codes(self):
         now = datetime.now()
         on_call = {
-            'userIds': ['test'],
+            'usersEmails': ['test'],
             'startDate': now.date().isoformat(),
             'endDate': now.date().isoformat(),
         }

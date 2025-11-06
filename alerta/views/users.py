@@ -160,6 +160,28 @@ def list_users():
         )
 
 
+@api.route('/users/emails', methods=['OPTIONS', 'GET'])
+@cross_origin()
+@permission(Scope.read_emails)
+@jsonp
+def list_emails():
+    emails = User.get_emails()
+
+    if emails:
+        return jsonify(
+            status='ok',
+            emails=emails,
+            total=len(emails)
+        )
+    else:
+        return jsonify(
+            status='ok',
+            message='not found',
+            emails=[],
+            total=0
+        )
+
+
 @api.route('/user/<user_id>', methods=['OPTIONS', 'PUT'])
 @cross_origin()
 @permission(Scope.admin_users)

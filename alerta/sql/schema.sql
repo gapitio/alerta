@@ -417,6 +417,17 @@ EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "user_ids" and "gruop_ids" already exists in notification_rules.';
 END$$;
 
+ALTER TABLE notification_rules ADD COLUMN IF NOT EXISTS users_emails text[];
+DO $$
+BEGIN
+    UPDATE notification_rules as g SET users_emails=(SELECT ARRAY_AGG(u.email) from users as u where u.id = ANY(g.user_ids));
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "users" already replaced by users_emails.';
+    WHEN undefined_table THEN RAISE NOTICE 'table "users" not made yet';
+END$$;
+
+ALTER TABLE notification_rules DROP COLUMN IF EXISTS user_ids;
+
 DO $$
 BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
@@ -456,6 +467,17 @@ CREATE TABLE IF NOT EXISTS on_calls(
     CONSTRAINT check_user_length CHECK (cardinality(user_ids) > 0 OR cardinality(group_ids) > 0)
 );
 
+ALTER TABLE on_calls ADD COLUMN IF NOT EXISTS users_emails text[];
+DO $$
+BEGIN
+    UPDATE on_calls as g SET users_emails=(SELECT ARRAY_AGG(u.email) from users as u where u.id = ANY(g.user_ids));
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "users" already replaced by users_emails.';
+    WHEN undefined_table THEN RAISE NOTICE 'table "users" not made yet';
+END$$;
+UPDATE on_calls SET users_emails='{}' WHERE users_emails IS NULL;
+ALTER TABLE on_calls DROP COLUMN IF EXISTS user_ids;
+
 
 CREATE TABLE IF NOT EXISTS notification_groups(
     id text PRIMARY KEY,
@@ -466,9 +488,19 @@ CREATE TABLE IF NOT EXISTS notification_groups(
 
 ALTER TABLE notification_groups ADD COLUMN IF NOT EXISTS phone_numbers text[];
 ALTER TABLE notification_groups ADD COLUMN IF NOT EXISTS mails text[];
+ALTER TABLE notification_groups ADD COLUMN IF NOT EXISTS users_emails text[];
+DO $$
+BEGIN
+    UPDATE notification_groups as g SET users_emails=(SELECT ARRAY_AGG(u.email) from users as u where u.id = ANY(g.users));
+EXCEPTION
+    WHEN undefined_column THEN RAISE NOTICE 'column "users" already replaced by users_emails.';
+    WHEN undefined_table THEN RAISE NOTICE 'table "users" not made yet';
+END$$;
 
 UPDATE notification_groups SET phone_numbers='{}' WHERE phone_numbers IS NULL;
 UPDATE notification_groups SET mails='{}' WHERE mails IS NULL;
+UPDATE notification_groups SET users_emails='{}' WHERE users_emails IS NULL;
+ALTER TABLE notification_groups DROP COLUMN IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS notification_history(
     id text PRIMARY KEY,

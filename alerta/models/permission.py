@@ -95,7 +95,7 @@ class Permission:
         """
         if not want_scope:
             return True
-        if want_scope in have_scopes or want_scope.split(':')[0] in have_scopes:
+        if want_scope in have_scopes or want_scope.split(':')[0] in have_scopes or want_scope.split('.')[0] in have_scopes:
             return True
         elif want_scope.startswith('read'):
             return cls.is_in_scope(want_scope.replace('read', 'write'), have_scopes)

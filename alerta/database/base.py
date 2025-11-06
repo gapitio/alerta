@@ -505,6 +505,9 @@ class Database(Base):
     def get_user_by_email(self, email):
         raise NotImplementedError
 
+    def get_users_emails(self):
+        raise NotImplementedError
+
     def get_user_by_hash(self, hash):
         raise NotImplementedError
 
