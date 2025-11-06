@@ -362,7 +362,7 @@ def search_alerts():
 @timer(gets_timer)
 @jsonp
 def history():
-    query = qb.alerts.from_params(request.args, customers=g.customers)
+    query = qb.history.from_params(request.args, customers=g.customers)
     total = Alert.get_history_count(query)
     paging = Page.from_params(request.args, total)
     try:
@@ -393,7 +393,7 @@ def history():
 @timer(gets_timer)
 @jsonp
 def history_count():
-    query = qb.alerts.from_params(request.args, customers=g.customers)
+    query = qb.history.from_params(request.args, customers=g.customers)
     total = Alert.get_history_count(query)
     environments = Alert.get_history_environment_count(query)
 

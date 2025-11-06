@@ -662,6 +662,7 @@ class QueryBuilder(Base):
         cls = load_backend(backend)
 
         self.__class__.alerts = type('AlertsQueryBuilder', (cls.Alerts, self.Alerts, QueryBuilder), {})
+        self.__class__.history = type('HistoryQueryBuilder', (cls.History, self.History, QueryBuilder), {})
         self.__class__.blackouts = type('BlackoutsQueryBuilder', (cls.Blackouts, self.Blackouts, QueryBuilder), {})
         self.__class__.notification_channels = type('NotificationChannelsQueryBuilder', (cls.NotificationChannels, self.NotificationChannels, QueryBuilder), {})
         self.__class__.notification_delay = type('NotificationDelaysQueryBuilder', (cls.NotificationDelays, self.NotificationDelays, QueryBuilder), {})
@@ -682,6 +683,12 @@ class QueryBuilder(Base):
         @staticmethod
         def from_params(params, customers=None, query_time=None):
             raise NotImplementedError('AlertsQueryBuilder has no from_params() method for alerts')
+
+    class History:
+
+        @staticmethod
+        def from_params(params, customers=None, query_time=None):
+            raise NotImplementedError('AlertsQueryBuilder has no from_params() method for history')
 
     class Blackouts:
 

@@ -227,7 +227,7 @@ COLUMNS = [
     'severity', 'status', 'lastReceiveTime', 'timeoutLeft', 'duplicateCount',
     'customer', 'environment', 'service', 'resource', 'event', 'value', 'text'
 ]
-SORT_LIST_BY = ['severity', 'lastReceiveTime']  # eg. newest='lastReceiveTime' or oldest='-createTime' (Note: minus means reverse)
+SORT_LIST_BY = ['-severity', 'lastReceiveTime']  # eg. newest='lastReceiveTime' or oldest='-createTime' (Note: minus means reverse)
 DEFAULT_FILTER = {'status': ['open', 'ack']}
 CLIPBOARD_TEMPLATE = ''
 

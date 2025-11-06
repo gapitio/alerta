@@ -86,8 +86,8 @@ def list_perms():
     )
 
     # add system-defined roles 'admin', 'user' and 'guest
-    if 'scopes' in request.args:
-        want_scopes = request.args.getlist('scopes')
+    if 'scope' in request.args:
+        want_scopes = request.args.getlist('scope')
         if set(admin_perm.scopes) & set(want_scopes):
             perms.append(admin_perm)
             total += 1

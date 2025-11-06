@@ -40,6 +40,10 @@ def get_notification_delays():
     else:
         return jsonify(
             status='ok',
+            page=paging.page,
+            pageSize=paging.page_size,
+            pages=paging.pages,
+            more=paging.has_more,
             notificationDelays=[],
             total=0,
         )

@@ -39,5 +39,9 @@ def list_notification_history():
         return jsonify(
             status='ok',
             notificationHistory=[],
-            total=0,
+            page=paging.page,
+            pageSize=paging.page_size,
+            pages=paging.pages,
+            more=paging.has_more,
+            total=0
         )

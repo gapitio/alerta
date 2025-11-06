@@ -136,7 +136,10 @@ def forgot():
     if user:
         if not user.is_active:
             raise ApiError('user not active', 403)
-        user.send_password_reset()
+        try:
+            user.send_password_reset()
+        except ApiError:
+            raise ApiError('Password reset is not possible', 401)
 
         auth_audit_trail.send(current_app._get_current_object(), event='basic-auth-password-forgot',
                               message='user requested password reset', user=user.email, customers=[], scopes=[],

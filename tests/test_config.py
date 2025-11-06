@@ -51,7 +51,7 @@ class ConfigTestCase(unittest.TestCase):
 
             self.assertTrue(data['auth_required'])
             self.assertTrue(data['customer_views'])
-            self.assertListEqual(data['sort_by'], ['severity', 'lastReceiveTime'])
+            self.assertListEqual(data['sort_by'], ['-severity', 'lastReceiveTime'])
             self.assertEqual(data['environments'], self.allowed_environments)
             self.assertEqual(data['clipboard_template'], self.clipboard_template)
 

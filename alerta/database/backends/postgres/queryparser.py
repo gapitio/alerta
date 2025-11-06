@@ -61,7 +61,10 @@ class SearchTerm:
                 return f'\'{self.tokens.singleterm}\'=ANY("{self.tokens.field[0]}")'
             elif self.tokens.attr:
                 tokens_attr = self.tokens.attr.replace('_', 'attributes')
-                return f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\' ILIKE \'%%{self.tokens.singleterm}%%\''
+                if tokens_attr == 'attributes':
+                    return f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\' ILIKE \'%%{self.tokens.singleterm}%%\''
+                else:
+                    return f'"{tokens_attr}"."{self.tokens.fieldname}" ILIKE \'%%{self.tokens.singleterm}%%\''
             else:
                 return f'"{self.tokens.field[0]}" ILIKE \'%%{self.tokens.singleterm}%%\''
         if 'phrase' in self.tokens:
@@ -71,7 +74,10 @@ class SearchTerm:
                 return f'\'{self.tokens.phrase}\'=ANY("{self.tokens.field[0]}")'
             elif self.tokens.attr:
                 tokens_attr = self.tokens.attr.replace('_', 'attributes')
-                return f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\' ~* \'\\y{self.tokens.phrase}\\y\''
+                if tokens_attr == 'attributes':
+                    return f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\' ~* \'\\y{self.tokens.phrase}\\y\''
+                else:
+                    return f'"{tokens_attr}"."{self.tokens.fieldname}" ~* \'\\y{self.tokens.phrase}\\y\''
             else:
                 return f'"{self.tokens.field[0]}" ~* \'\\y{self.tokens.phrase}\\y\''
         if 'wildcard' in self.tokens:
@@ -106,7 +112,10 @@ class SearchTerm:
         if 'subquery' in self.tokens:
             if self.tokens.attr:
                 tokens_attr = 'attributes' if self.tokens.attr == '_' else self.tokens.attr
-                tokens_fieldname = f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\''
+                if tokens_attr == 'attributes':
+                    tokens_fieldname = f'"{tokens_attr}"::jsonb ->>\'{self.tokens.fieldname}\''
+                else:
+                    tokens_fieldname = f'"{tokens_attr}" = \'{self.tokens.fieldname}\''
             else:
                 tokens_fieldname = f'"{self.tokens.fieldname or self.tokens.field[0]}"'
             return f'{self.tokens.subquery[0]}'.replace('"__default_field__"', tokens_fieldname)

@@ -534,8 +534,8 @@ class SearchTestCase(unittest.TestCase):
             query = qb.perms.from_params(search_params)  # noqa
 
         if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND "scopes"=%(scopes)s')
-            self.assertEqual(query.vars, {'scopes': 'read'})
+            self.assertEqual(query.where, '1=1\nAND scopes && %(scopes)s')
+            self.assertEqual(query.vars, {'scopes': ['read']})
             self.assertEqual(query.sort, 'match ASC')
         else:
             self.assertEqual(query.where, {'scopes': 'read'})

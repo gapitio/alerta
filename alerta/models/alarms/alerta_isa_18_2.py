@@ -35,22 +35,23 @@ DEFAULT_PREVIOUS_SEVERITY = Severity.Normal
 COLOR_MAP = {
     'severity': {
         Severity.Security: 'blue',
-        Severity.Critical: 'red',
-        Severity.Major: 'orange',
-        Severity.Minor: 'yellow',
-        Severity.Warning: 'dodgerblue',
+        Severity.Critical: '#F97066',
+        Severity.Major: '#FEB273',
+        Severity.Minor: '#FFEC9F',
+        Severity.Warning: '#D1E9FF',
         Severity.Indeterminate: 'lightblue',
-        Severity.Cleared: '#00CC00',  # lime green
-        Severity.Normal: '#00CC00',
-        Severity.Ok: '#00CC00',
+        Severity.Cleared: '#D1FADF',  # lime green
+        Severity.Normal: '#D1FADF',
+        Severity.Ok: '#D1FADF',
         Severity.Informational: '#00CC00',
         Severity.Debug: '#9D006D',  # purple
         Severity.Trace: '#7554BF',  # violet
         Severity.Unknown: 'silver'
     },
     'status': {
-        Status.Ack: 'skyblue',
-        Status.Unack: 'skyblue'
+        Status.Ack: '#F2F4F7',
+        Status.Unack: '#F2F4F7',
+        Status.Closed: '#F2F4F7'
     },
     'text': 'black'
 }

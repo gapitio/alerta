@@ -130,14 +130,14 @@ class OnCall:
             start_date=doc['startDate'].date().isoformat() if doc.get('startDate') is not None else None,
             end_date=doc['endDate'].date().isoformat() if doc.get('endDate') is not None else None,
             start_time=(
-                datetime.strptime(f'{doc["startTime"] :.2f}'.replace('.', ':'), '%H:%M').time()
+                datetime.strptime(f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M').time()
                 if doc['startTime'] is not None
                 else None
             )
             if 'startTime' in doc
             else None,
             end_time=(
-                datetime.strptime(f'{doc["endTime"] :.2f}'.replace('.', ':'), '%H:%M').time()
+                datetime.strptime(f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M').time()
                 if doc['endTime'] is not None
                 else None
             )

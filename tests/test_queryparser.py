@@ -74,9 +74,9 @@ class PostgresQueryTestCase(unittest.TestCase):
         self.assertEqual(r, '"attributes"::jsonb ? \'title\'')
 
         # attribute contains word
-        string = r'''foo.vendor:cisco'''
+        string = r'''attributes.vendor:cisco'''
         r = self.parser.parse(string)
-        self.assertEqual(r, '"foo"::jsonb ->>\'vendor\' ILIKE \'%%cisco%%\'')
+        self.assertEqual(r, '"attributes"::jsonb ->>\'vendor\' ILIKE \'%%cisco%%\'')
 
         # attribute contains word ("_" shortcut)
         string = r'''_.vendor:cisco'''
@@ -99,9 +99,9 @@ class PostgresQueryTestCase(unittest.TestCase):
         self.assertEqual(r, '("attributes"::jsonb ->>\'vendor\' ILIKE \'%%cisco%%\' OR "attributes"::jsonb ->>\'vendor\' ILIKE \'%%juniper%%\')')
 
         # attribute contains exact phrase
-        string = r'''foo.vendor:"quick brown"'''
+        string = r'''attributes.vendor:"quick brown"'''
         r = self.parser.parse(string)
-        self.assertEqual(r, '"foo"::jsonb ->>\'vendor\' ~* \'\\yquick brown\\y\'')
+        self.assertEqual(r, '"attributes"::jsonb ->>\'vendor\' ~* \'\\yquick brown\\y\'')
 
         # attribute contains exact phrase ("_" shortcut)
         string = r'''_.vendor:"quick brown"'''

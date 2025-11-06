@@ -985,7 +985,7 @@ class Backend(Database):
     def get_notification_channels(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM notification_channels
+            SELECT * FROM (SELECT id as name, * FROM notification_channels) as ch
              WHERE {where}
           ORDER BY {order}
         """.format(
@@ -996,7 +996,7 @@ class Backend(Database):
     def get_notification_channels_count(self, query=None):
         query = query or Query()
         select = """
-            SELECT COUNT(1) FROM notification_channels
+            SELECT COUNT(1) FROM (select id as name, * from notification_channels) as ch
              WHERE {where}
         """.format(
             where=query.where
@@ -1424,7 +1424,8 @@ class Backend(Database):
     def get_notification_groups(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM notification_groups
+            SELECT ng.* FROM notification_groups ng,
+                UNNEST(ng.phone_numbers) as pn, UNNEST(ng.mails) as m
              WHERE {where}
           ORDER BY {order}
         """.format(
@@ -1444,7 +1445,8 @@ class Backend(Database):
     def get_notification_groups_count(self, query=None):
         query = query or Query()
         select = """
-            SELECT COUNT(1) FROM notification_groups
+            SELECT COUNT(1) FROM notification_groups ng,
+                UNNEST(ng.phone_numbers) as pn, UNNEST(ng.mails) as m
              WHERE {where}
         """.format(
             where=query.where
@@ -1500,7 +1502,7 @@ class Backend(Database):
                 index = users.index(user)
                 insert_users += f'(%(email_{index})s, %(name_{index})s, %(email_{index})s, false, false),'
                 users_data = {**users_data, **{f'email_{index}': user.email, f'name_{index}': user.name, f'id_{index}': str(uuid4())}}
-            insert_users = insert_users[:-1]
+            insert_users = insert_users[:-1] + 'RETURNING *'
             self._insert(insert_users, users_data)
 
         insert_groups = """
@@ -1605,7 +1607,7 @@ class Backend(Database):
     def get_escalation_rules(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT * FROM escalation_rules
+            SELECT * FROM escalation_rules, unnest(tags) t
              WHERE {where}
           ORDER BY {order}
         """.format(
@@ -1616,7 +1618,7 @@ class Backend(Database):
     def get_escalation_rules_count(self, query=None):
         query = query or Query()
         select = """
-            SELECT COUNT(1) FROM escalation_rules
+            SELECT COUNT(1) FROM escalation_rules, unnest(tags) t
              WHERE {where}
         """.format(
             where=query.where
