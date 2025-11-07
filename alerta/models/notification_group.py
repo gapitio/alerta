@@ -26,7 +26,7 @@ class NotificationGroup:
         notification_group = NotificationGroup(
             id=json.get('id'),
             name=json.get('name'),
-            users_emails=json.get('users_emails'),
+            users_emails=json.get('usersEmails'),
             phone_numbers=json.get('phoneNumbers'),
             mails=json.get('mails')
         )

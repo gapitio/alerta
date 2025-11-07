@@ -1408,8 +1408,8 @@ class Backend(Database):
 # NOTIFICATION GROUPS
     def create_notification_group(self, notification_group):
         insert = """
-            INSERT INTO notification_groups (id, name, users, phone_numbers, mails)
-            VALUES (%(id)s, %(name)s, %(users)s, %(phone_numbers)s, %(mails)s)
+            INSERT INTO notification_groups (id, name, users_emails, phone_numbers, mails)
+            VALUES (%(id)s, %(name)s, %(users_emails)s, %(phone_numbers)s, %(mails)s)
             RETURNING *
         """
         return self._insert(insert, vars(notification_group))
@@ -1460,8 +1460,8 @@ class Backend(Database):
         """
         if 'name' in kwargs:
             update += 'name=%(name)s, '
-        if 'users' in kwargs:
-            update += 'users=%(users)s, '
+        if 'usersEmails' in kwargs:
+            update += 'users_emails=%(users)s, '
         if 'phoneNumbers' in kwargs:
             update += 'phone_numbers=%(phoneNumbers)s, '
         if 'mails' in kwargs:
