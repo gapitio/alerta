@@ -1462,7 +1462,7 @@ class Backend(Database):
         if 'name' in kwargs:
             update += 'name=%(name)s, '
         if 'usersEmails' in kwargs:
-            update += 'users_emails=%(users)s, '
+            update += 'users_emails=%(usersEmails)s, '
         if 'phoneNumbers' in kwargs:
             update += 'phone_numbers=%(phoneNumbers)s, '
         if 'mails' in kwargs:
