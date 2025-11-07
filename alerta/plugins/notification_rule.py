@@ -139,7 +139,7 @@ def send_email(message: str, channel: NotificationChannel, receivers: set, ferne
         ],
         'from': {'email': channel.sender},
         'subject': 'Alerta',
-        'content': [{'type': 'text/html', 'value': message}],
+        'content': [{'type': 'text/html', 'value': message.replace('\n', '<br>')}],
     }
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
     headers = {
