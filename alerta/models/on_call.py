@@ -38,7 +38,7 @@ class OnCall:
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
         group_users = [db.get_notification_group_users(group.id) for group in groups]
-        users = {User.find_by_id(user_id).notification_info for user_id in self.users_emails}
+        users = {User.find_by_email(user_id).notification_info for user_id in self.users_emails}
         for group in groups:
             for index in range(max(len(group.phone_numbers), len(group.mails))):
                 if index < len(group.phone_numbers) and index < len(group.mails):
