@@ -65,3 +65,24 @@ class NotificationSend:
     @staticmethod
     def update(id, **kwargs) -> 'NotificationSend':
         return NotificationSend.from_db(db.update_notification_send(id, **kwargs))
+
+
+class NotificationSendInfo(NotificationSend):
+    def __init__(self, **kwargs):
+        NotificationSend.__init__(self, **kwargs)
+        self.email = kwargs.get('email')
+
+    @classmethod
+    def from_db(cls, r: Tuple):
+        return NotificationSendInfo(
+            id=r.id,
+            user_name=r.user_name,
+            group_name=r.group_name,
+            mail=r.mail,
+            sms=r.sms,
+            email=r.user_email
+        )
+
+    @staticmethod
+    def find_by_id(id: str) -> 'NotificationSendInfo':
+        return NotificationSendInfo.from_db(db.get_notification_send(id))

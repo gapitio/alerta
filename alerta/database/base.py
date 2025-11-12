@@ -373,6 +373,9 @@ class Database(Base):
     def get_notification_sends(self):
         raise NotImplementedError
 
+    def get_notification_send(self, id: str):
+        raise NotImplementedError
+
     def update_notification_send(self, id, **kwargs):
         raise NotImplementedError
 
