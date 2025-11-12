@@ -1518,6 +1518,10 @@ class Backend(Database):
         select = 'SELECT * FROM notification_sends'
         return self._fetchall(select, [])
 
+    def get_notification_send(self, id: str):
+        select = """SELECT * from notification_sends WHERE id=%(id)s"""
+        return self._fetchone(select, {'id': id})
+
     def update_notification_send(self, id, **kwargs):
         update = """
             UPDATE notification_sends
