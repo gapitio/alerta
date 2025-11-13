@@ -2079,6 +2079,7 @@ class Backend(Database):
             """
             self._updateall('UPDATE notification_rules' + refUpdate, {'email': kwargs['email'], 'old_email': a.email}, False)
             self._updateall('UPDATE notification_groups' + refUpdate, {'email': kwargs['email'], 'old_email': a.email, 'table': 'notification_groups'}, False)
+            self._updateall('UPDATE on_calls' + refUpdate, {'email': kwargs['email'], 'old_email': a.email, 'table': 'notification_groups'}, False)
         if kwargs.get('phoneNumber', None) is not None:
             update += 'phone_number=%(phoneNumber)s, '
         if kwargs.get('country', None) is not None:
