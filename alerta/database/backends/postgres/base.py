@@ -2072,6 +2072,13 @@ class Backend(Database):
             update += 'password=%(password)s, '
         if kwargs.get('email', None) is not None:
             update += 'email=%(email)s, '
+            a = self._fetchone('select email from users where id=%(id)s', {'id': id})
+            refUpdate = """
+                SET users_emails=array_replace(users_emails, %(old_email)s,%(email)s)
+                WHERE %(old_email)s = ANY(users_emails)
+            """
+            self._updateall('UPDATE notification_rules' + refUpdate, {'email': kwargs['email'], 'old_email': a.email}, False)
+            self._updateall('UPDATE notification_groups' + refUpdate, {'email': kwargs['email'], 'old_email': a.email, 'table': 'notification_groups'}, False)
         if kwargs.get('phoneNumber', None) is not None:
             update += 'phone_number=%(phoneNumber)s, '
         if kwargs.get('country', None) is not None:
