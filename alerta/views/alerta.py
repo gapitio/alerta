@@ -20,15 +20,15 @@ from . import api
 @api.route('/export', methods=['GET'])
 @permission(Scope.admin_alerta)
 def export():
-    escalation_rules = [item.serialize for item in EscalationRule.find_all()]
-    notification_rules = [item.serialize for item in NotificationRule.find_all()]
-    notification_channels = [item.export for item in NotificationChannel.find_all()]
-    blackouts = [item.serialize for item in Blackout.find_all()]
-    notification_groups = [item.serialize for item in NotificationGroup.find_all()]
-    on_calls = [item.serialize for item in OnCall.find_all()]
-    perms = [item.serialize for item in Permission.find_all()]
-    keys = [item.serialize for item in ApiKey.find_all()]
-    customers = [item.serialize for item in Customer.find_all()]
+    escalation_rules = [item.serialize for item in EscalationRule.find_all(page_size='ALL')]
+    notification_rules = [item.serialize for item in NotificationRule.find_all(page_size='ALL')]
+    notification_channels = [item.export for item in NotificationChannel.find_all(page_size='ALL')]
+    blackouts = [item.serialize for item in Blackout.find_all(page_size='ALL')]
+    notification_groups = [item.serialize for item in NotificationGroup.find_all(page_size='ALL')]
+    on_calls = [item.serialize for item in OnCall.find_all(page_size='ALL')]
+    perms = [item.serialize for item in Permission.find_all(page_size='ALL')]
+    keys = [item.serialize for item in ApiKey.find_all(page_size='ALL')]
+    customers = [item.serialize for item in Customer.find_all(page_size='ALL')]
 
     return jsonify(
         escalationRules=escalation_rules,
@@ -39,7 +39,18 @@ def export():
         onCalls=on_calls,
         perms=perms,
         keys=keys,
-        customers=customers
+        customers=customers,
+        total={
+            'escalationRules': len(escalation_rules),
+            'notificationRules': len(notification_rules),
+            'notificationChannels': len(notification_channels),
+            'blackouts': len(blackouts),
+            'notificationGroups': len(notification_groups),
+            'onCalls': len(on_calls),
+            'perms': len(perms),
+            'keys': len(keys),
+            'customers': len(customers),
+        }
     )
 
 
@@ -130,5 +141,16 @@ def import_all():
         onCalls=[item.serialize for item in on_calls],
         perms=[item.serialize for item in perms],
         keys=[item.serialize for item in keys],
-        customers=[item.serialize for item in customers]
+        customers=[item.serialize for item in customers],
+        total={
+            'escalationRules': len(escalation_rules),
+            'notificationRules': len(notification_rules),
+            'notificationChannels': len(notification_channels),
+            'blackouts': len(blackouts),
+            'notificationGroups': len(notification_groups),
+            'onCalls': len(on_calls),
+            'perms': len(perms),
+            'keys': len(keys),
+            'customers': len(customers),
+        }
     )
