@@ -1,18 +1,17 @@
 from flask import jsonify, request
-from alerta.auth.decorators import permission
-
-from alerta.models.escalation_rule import EscalationRule
-from alerta.models.notification_rule import NotificationRule, NotificationChannel, NotificationGroup
-from alerta.models.on_call import OnCall
-from alerta.models.blackout import Blackout
-from alerta.models.user import User
-from alerta.models.enums import Scope
-from alerta.models.customer import Customer
-from alerta.models.permission import Permission
-from alerta.models.key import ApiKey
-
 from psycopg2.errors import UniqueViolation
 
+from alerta.auth.decorators import permission
+from alerta.models.blackout import Blackout
+from alerta.models.customer import Customer
+from alerta.models.enums import Scope
+from alerta.models.escalation_rule import EscalationRule
+from alerta.models.key import ApiKey
+from alerta.models.notification_rule import (NotificationChannel,
+                                             NotificationGroup,
+                                             NotificationRule)
+from alerta.models.on_call import OnCall
+from alerta.models.permission import Permission
 from alerta.utils.response import jsonp
 
 from . import api
@@ -27,7 +26,6 @@ def export():
     blackouts = [item.serialize for item in Blackout.find_all()]
     notification_groups = [item.serialize for item in NotificationGroup.find_all()]
     on_calls = [item.serialize for item in OnCall.find_all()]
-    users = [item.serialize for item in User.find_all()]
     perms = [item.serialize for item in Permission.find_all()]
     keys = [item.serialize for item in ApiKey.find_all()]
     customers = [item.serialize for item in Customer.find_all()]
@@ -39,7 +37,6 @@ def export():
         blackouts=blackouts,
         notificationGroups=notification_groups,
         onCalls=on_calls,
-        users=users,
         perms=perms,
         keys=keys,
         customers=customers
@@ -51,13 +48,6 @@ def export():
 @jsonp
 def import_all():
     data = request.json
-    users = []
-    for user in data.get('users'):
-        try:
-            users.append(User.parse(user).create())
-        except UniqueViolation as pg_error:
-            pg_error.cursor.connection.rollback()
-            continue
 
     perms = []
     for perm in data.get('perms'):
@@ -138,7 +128,6 @@ def import_all():
         blackouts=[item.serialize for item in blackouts],
         notificationGroups=[item.serialize for item in notification_groups],
         onCalls=[item.serialize for item in on_calls],
-        users=[item.serialize for item in users],
         perms=[item.serialize for item in perms],
         keys=[item.serialize for item in keys],
         customers=[item.serialize for item in customers]
