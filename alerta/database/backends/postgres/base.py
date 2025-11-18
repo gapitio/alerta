@@ -827,6 +827,8 @@ class Backend(Database):
              WHERE {where}
           ORDER BY {order}
         """.format(where=query.where, order=query.sort)
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_blackouts_count(self, query=None):
@@ -991,6 +993,8 @@ class Backend(Database):
         """.format(
             where=query.where, order=query.sort
         )
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_notification_channels_count(self, query=None):
@@ -1139,6 +1143,8 @@ class Backend(Database):
         """.format(
             where=query.where, order=query.sort
         )
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_notification_rules_by_notification_group(self, group_id):
@@ -1432,6 +1438,8 @@ class Backend(Database):
         """.format(
             where=query.where, order=query.sort
         )
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_notification_group_users(self, id):
@@ -1618,6 +1626,8 @@ class Backend(Database):
         """.format(
             where=query.where, order=query.sort
         )
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_escalation_rules_count(self, query=None):
@@ -1747,6 +1757,8 @@ class Backend(Database):
         """.format(
             where=query.where, order=query.sort
         )
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size if page else None)
 
     def get_on_calls_count(self, query=None):
@@ -1943,6 +1955,8 @@ class Backend(Database):
              WHERE {query.where}
           ORDER BY {query.sort}
         """
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_keys_by_user(self, user):
@@ -2242,6 +2256,8 @@ class Backend(Database):
              WHERE {query.where}
           ORDER BY {query.sort}
         """
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_perms_count(self, query=None):
@@ -2316,6 +2332,8 @@ class Backend(Database):
              WHERE {query.where}
           ORDER BY {query.sort}
         """
+        if page_size == 'ALL':
+            return self._fetchall(select, query.vars, limit=page_size)
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
     def get_customers_count(self, query=None):
