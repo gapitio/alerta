@@ -199,6 +199,8 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
     mails = {*[receiver.lower() for receiver in notification_rule.receivers], *[user.email.lower() for user in users if user.email is not None]}
 
     if notification_type == 'sendgrid':
+        if len(mails) == 0:
+            return
         try:
             response = send_email(message, channel, mails, fernet)
             if response.status_code != 202:
@@ -212,6 +214,8 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
 
     elif notification_type == 'smtp':
+        if len(mails) == 0:
+            return
         try:
             send_smtp_mail(message, channel, mails, fernet)
             log_notification(True, message, channel, notification_rule.id, alert, mails)
@@ -244,6 +248,8 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
                 log_notification(False, message, channel, notification_rule.id, alert, [number], error='NotificationChannel: Failed to decrypt authentication keys')
 
     elif notification_type == 'link_mobility_xml':
+        if len(phone_numbers) == 0:
+            return
         try:
             response = send_link_mobility_xml(message, channel, phone_numbers, fernet, xml=LINK_MOBILITY_XML.copy())
             if response.content.decode().find('FAIL') != -1:
@@ -257,6 +263,8 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
 
     elif notification_type == 'my_link':
+        if len(phone_numbers) == 0:
+            return
         response = send_mylink_sms(message, channel, phone_numbers, fernet)
         if response.status_code != 202:
             LOG.error(f'Failed to send myLink message with response: {response.content}')
