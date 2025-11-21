@@ -71,4 +71,5 @@ def config():
         'refresh_interval': current_app.config['AUTO_REFRESH_INTERVAL'],
         'environments': current_app.config['ALLOWED_ENVIRONMENTS'],
         'clipboard_template': current_app.config['CLIPBOARD_TEMPLATE'],
+        'hidden_pages': current_app.config['HIDDEN_PAGES'],
     })
