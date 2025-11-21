@@ -292,3 +292,5 @@ DEFAULT_ENVIRONMENT = 'Production'  # default environment used by webhooks, valu
 # Grafana webhook keep legacy behavior by default
 GRAFANA_TAGS_AS_ATTRIBUTES = True
 GRAFANA_TAGS_AS_TAGS = False
+
+HIDDEN_PAGES = []

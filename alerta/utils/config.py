@@ -121,6 +121,8 @@ class Config:
         config['ESCALATE_TIME'] = get_config('ESCALATE_TIME', default=60, type=int, config=config)
         config['ESCALATE_SEVERITIES'] = get_config('ESCALATE_SEVERITIES', default=['critical', 'major', 'minor', 'warning'], type=list, config=config)
 
+        config['HIDDEN_PAGES'] = get_config('HIDDEN_PAGES', default=[], type=list, config=config)
+
         # Runtime config check
         if config['CUSTOMER_VIEWS'] and not config['AUTH_REQUIRED']:
             raise RuntimeError('Must enable authentication to use customer views')
