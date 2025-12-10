@@ -1424,13 +1424,13 @@ class Backend(Database):
     def get_notification_groups(self, query=None, page=None, page_size=None):
         query = query or Query()
         select = """
-            SELECT ng.* FROM notification_groups ng
+            SELECT DISTINCT ng.* FROM notification_groups ng
             LEFT JOIN LATERAL UNNEST(ng.phone_numbers) AS pn ON true
             LEFT JOIN LATERAL UNNEST(ng.mails) AS m ON true
              WHERE {where}
           ORDER BY {order}
         """.format(
-            where=query.where, order=query.sort
+            where=query.where, order=query.sort if query.sort != '(select 1)' else 'name'
         )
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
