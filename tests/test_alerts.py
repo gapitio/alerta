@@ -210,6 +210,189 @@ class AlertsTestCase(unittest.TestCase):
         response = self.client.delete('/alert/' + alert_id)
         self.assertEqual(response.status_code, 200)
 
+    def test_bulk_alert(self):
+
+        # create alert
+        response = self.client.post('/alerts', data=json.dumps([{**self.major_alert, 'resource': 'major_alert'}, {**self.major_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertEqual(first['resource'], 'major_alert')
+        self.assertEqual(first['status'], 'open')
+        self.assertEqual(first['severity'], 'major')
+        self.assertEqual(first['service'], ['Network', 'Shared'])
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['trendIndication'], 'moreSevere')
+        self.assertEqual(first['history'][0]['user'], None)
+
+        self.assertEqual(second['resource'], 'major_alert_2')
+        self.assertEqual(second['status'], 'open')
+        self.assertEqual(second['severity'], 'major')
+        self.assertEqual(second['service'], ['Network', 'Shared'])
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['trendIndication'], 'moreSevere')
+        self.assertEqual(second['history'][0]['user'], None)
+
+        first_id = first['id']
+        second_id = second['id']
+        first_update_time = first['updateTime']
+        second_update_time = second['updateTime']
+
+        # # create duplicate alert
+        response = self.client.post('/alerts', data=json.dumps([{**self.major_alert, 'resource': 'major_alert'}, {**self.major_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertIn(first_id, first['id'])
+        self.assertEqual(first['service'], ['Network', 'Shared'])
+        self.assertEqual(first['duplicateCount'], 1)
+        self.assertEqual(first['severity'], 'major')
+        self.assertEqual(first['previousSeverity'], alarm_model.DEFAULT_PREVIOUS_SEVERITY)
+        self.assertEqual(first['trendIndication'], 'moreSevere')
+        self.assertEqual(first['updateTime'], first_update_time)
+
+        self.assertIn(second_id, second['id'])
+        self.assertEqual(second['service'], ['Network', 'Shared'])
+        self.assertEqual(second['duplicateCount'], 1)
+        self.assertEqual(second['severity'], 'major')
+        self.assertEqual(second['previousSeverity'], alarm_model.DEFAULT_PREVIOUS_SEVERITY)
+        self.assertEqual(second['trendIndication'], 'moreSevere')
+        self.assertEqual(second['updateTime'], second_update_time)
+
+        # # correlate alert (same event, diff sev)
+        response = self.client.post('/alerts', data=json.dumps([{**self.critical_alert, 'resource': 'major_alert'}, {**self.critical_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+        self.assertIn(first_id, first['id'])
+        self.assertEqual(first['status'], 'open')
+        self.assertEqual(first['service'], ['Network'])
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['severity'], self.critical_alert['severity'])
+        self.assertEqual(first['previousSeverity'], self.major_alert['severity'])
+        self.assertEqual(first['trendIndication'], 'moreSevere')
+        self.assertEqual(first['updateTime'], first_update_time)
+
+        self.assertIn(second_id, second['id'])
+        self.assertEqual(second['status'], 'open')
+        self.assertEqual(second['service'], ['Network'])
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['severity'], self.critical_alert['severity'])
+        self.assertEqual(second['previousSeverity'], self.major_alert['severity'])
+        self.assertEqual(second['trendIndication'], 'moreSevere')
+        self.assertEqual(second['updateTime'], second_update_time)
+
+        # # de-duplicate
+        response = self.client.post('/alerts', data=json.dumps([{**self.critical_alert, 'resource': 'major_alert'}, {**self.critical_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertIn(first_id, first['id'])
+        self.assertNotIn(second_id, first['id'])
+        self.assertEqual(first['service'], ['Network'])
+        self.assertEqual(first['severity'], 'critical')
+        self.assertEqual(first['status'], 'open')
+        self.assertEqual(first['duplicateCount'], 1)
+        self.assertEqual(first['trendIndication'], 'moreSevere')
+        self.assertEqual(first['updateTime'], first_update_time)
+
+        self.assertIn(second_id, second['id'])
+        self.assertNotIn(first_id, second['id'])
+        self.assertEqual(second['service'], ['Network'])
+        self.assertEqual(second['severity'], 'critical')
+        self.assertEqual(second['status'], 'open')
+        self.assertEqual(second['duplicateCount'], 1)
+        self.assertEqual(second['trendIndication'], 'moreSevere')
+        self.assertEqual(second['updateTime'], second_update_time)
+
+        # # correlate alert (diff event, same sev)
+        response = self.client.post('/alerts', data=json.dumps([{**self.fatal_alert, 'resource': 'major_alert'}, {**self.fatal_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertIn(first_id, first['id'])
+        self.assertEqual(first['service'], ['Network', 'Shared'])
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['previousSeverity'], self.critical_alert['severity'])
+        self.assertEqual(first['trendIndication'], 'noChange')
+        self.assertEqual(first['updateTime'], first_update_time)
+
+        self.assertIn(second_id, second['id'])
+        self.assertEqual(second['service'], ['Network', 'Shared'])
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['previousSeverity'], self.critical_alert['severity'])
+        self.assertEqual(second['trendIndication'], 'noChange')
+        self.assertEqual(second['updateTime'], second_update_time)
+
+        # # correlate alert (diff event, diff sev)
+        response = self.client.post('/alerts', data=json.dumps([{**self.major_alert, 'resource': 'major_alert'}, {**self.major_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertIn(first_id, first['id'])
+        self.assertEqual(first['service'], ['Network', 'Shared'])
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['severity'], self.major_alert['severity'])
+        self.assertEqual(first['previousSeverity'], self.fatal_alert['severity'])
+        self.assertEqual(first['trendIndication'], 'lessSevere')
+        self.assertEqual(first['updateTime'], first_update_time)
+
+        self.assertIn(second_id, second['id'])
+        self.assertEqual(second['service'], ['Network', 'Shared'])
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['severity'], self.major_alert['severity'])
+        self.assertEqual(second['previousSeverity'], self.fatal_alert['severity'])
+        self.assertEqual(second['trendIndication'], 'lessSevere')
+        self.assertEqual(second['updateTime'], second_update_time)
+
+        # # correlate alert (diff event, diff sev)
+        response = self.client.post('/alerts', data=json.dumps([{**self.normal_alert, 'resource': 'major_alert'}, {**self.normal_alert, 'resource': 'major_alert_2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertIn(first_id, first['id'])
+        self.assertEqual(first['status'], 'closed')
+        self.assertEqual(first['severity'], 'normal')
+        self.assertEqual(first['service'], ['Network'])
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['previousSeverity'], self.major_alert['severity'])
+        self.assertEqual(first['trendIndication'], 'lessSevere')
+        self.assertEqual(first['updateTime'], first['receiveTime'])
+
+        self.assertIn(second_id, second['id'])
+        self.assertEqual(second['status'], 'closed')
+        self.assertEqual(second['severity'], 'normal')
+        self.assertEqual(second['service'], ['Network'])
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['previousSeverity'], self.major_alert['severity'])
+        self.assertEqual(second['trendIndication'], 'lessSevere')
+        self.assertEqual(second['updateTime'], second['receiveTime'])
+
+        # # get alerts
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn(first_id, data['alert']['id'])
+
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn(second_id, data['alert']['id'])
+
+        # # delete alerts
+        response = self.client.delete('/alerts', query_string=(('id', first_id), ('id', second_id)))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 404)
+
     def test_alert_not_found(self):
 
         response = self.client.get('/alert/doesnotexist')
