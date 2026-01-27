@@ -208,6 +208,49 @@ def process_action(alert: Alert, action: str, text: str, timeout: int = None, po
     return alert, action, text, timeout
 
 
+def process_multiple_action(alerts: list[Alert], action: str, text: str, timeout: int = None, post_action: bool = False) -> Tuple[list[Alert], str, str, Optional[int]]:
+    proccessed = []
+    for alert in alerts:
+        wanted_plugins, wanted_config = plugins.routing(alert)
+
+        updated = None
+        alert_was_updated = False
+        for plugin in wanted_plugins:
+            if alert.is_suppressed:
+                break
+            try:
+                if post_action:
+                    updated = plugin.post_action(alert, action, text, timeout=timeout, config=wanted_config)
+                else:
+                    updated = plugin.take_action(alert, action, text, timeout=timeout, config=wanted_config)
+            except NotImplementedError:
+                pass  # plugin does not support take_action() method or post_action() method
+            except (RejectException, ForwardingLoop, InvalidAction, AlertaException):
+                raise
+            except Exception as e:
+                if current_app.config['PLUGINS_RAISE_ON_ERROR']:
+                    raise ApiError(f"Error while running action plugin '{plugin.name}': {str(e)}")
+                else:
+                    logging.error(f"Error while running action plugin '{plugin.name}': {str(e)}")
+
+            if isinstance(updated, Alert):
+                updated = updated, action, text, timeout
+            if isinstance(updated, tuple):
+                if len(updated) == 4:
+                    alert, action, text, timeout = updated
+                elif len(updated) == 3:
+                    alert, action, text = updated
+            if updated:
+                alert_was_updated = True
+
+        if alert_was_updated:
+            alert.update_tags(alert.tags)
+            alert.attributes = alert.update_attributes(alert.attributes)
+        proccessed.append(alert)
+
+    return proccessed, action, text, timeout
+
+
 def process_note(alert: Alert, text: str) -> Tuple[Alert, str]:
 
     wanted_plugins, wanted_config = plugins.routing(alert)

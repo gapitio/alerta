@@ -17,8 +17,9 @@ from alerta.models.metrics import Timer, timer
 from alerta.models.note import Note
 from alerta.models.switch import Switch
 from alerta.utils.api import (assign_customer, process_action, process_alert,
-                              process_delete, process_multiple_alert,
-                              process_note, process_status)
+                              process_delete, process_multiple_action,
+                              process_multiple_alert, process_note,
+                              process_status)
 from alerta.utils.audit import write_audit_trail
 from alerta.utils.paging import Page
 from alerta.utils.response import absolute_url, jsonp
@@ -221,6 +222,57 @@ def action_alert(alert_id):
                            customers=g.customers, scopes=g.scopes, resource_id=alert.id, type='alert', request=request)
 
     if alert:
+        return jsonify(status='ok')
+    else:
+        raise ApiError('failed to action alert', 500)
+
+
+# action alert
+@api.route('/alerts/action', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts)
+@timer(status_timer)
+@jsonp
+def action_alerts():
+    alert_ids = request.json.get('alerts')
+    action = request.json.get('action', None)
+    text = request.json.get('text', f'{action} operator action')
+    timeout = request.json.get('timeout', None)
+
+    if not alert_ids:
+        raise ApiError("must supply 'alert IDs' as json data", 400)
+    if not action:
+        raise ApiError("must supply 'action' as json data", 400)
+
+    customers = g.get('customers', None)
+    query = qb.alerts.from_IDs(alert_ids, customers)
+    alerts = Alert.find_all(query, page_size=len(alert_ids))
+
+    def post(alerts: list[Alert], action, text, timeout):
+        Alert.from_action_multiple(alerts, action, text, timeout)
+        return process_multiple_action(alerts, action, text, timeout, post_action=True)
+
+    try:
+        # pre action
+        alerts, action, text, timeout = process_multiple_action(alerts, action, text, timeout)
+        alerts, action, text, timeout = post(alerts, action, text, timeout)
+    except RejectException as e:
+        current_app.logger.warning(e)
+        raise ApiError(str(e), 400)
+    except InvalidAction as e:
+        current_app.logger.warning(e)
+        raise ApiError(str(e), 409)
+    except ForwardingLoop as e:
+        current_app.logger.warning(e)
+        return jsonify(status='ok', message=str(e)), 202
+    except AlertaException as e:
+        current_app.logger.warning(e)
+        raise ApiError(e.message, code=e.code, errors=e.errors)
+    except Exception as e:
+        current_app.logger.warning(e)
+        raise ApiError(str(e), 500)
+
+    if alerts:
         return jsonify(status='ok')
     else:
         raise ApiError('failed to action alert', 500)

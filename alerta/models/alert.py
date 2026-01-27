@@ -263,6 +263,38 @@ class Alert:
     def get_status_and_value(self):
         return [(h.status, h.value) for h in self.get_alert_history(self, page=1, page_size=10) if h.status]
 
+    @staticmethod
+    def _get_hist_infos(alerts, action=None):
+        histo = Alert.get_alerts_history(alerts)
+        statuses = {}
+        if action == ChangeType.unack:
+            find = ChangeType.ack
+        elif action == ChangeType.unshelve:
+            find = ChangeType.shelve
+        else:
+            find = None
+
+        for a in histo:
+            h_loop = a['history']
+            if not h_loop:
+                statuses[a['id']] = [None, None, None, None]
+                continue
+
+            current_status = h_loop[0].status
+            current_value = h_loop[0].value
+
+            if len(h_loop) == 1:
+                statuses[a['id']] = [current_status, current_value, None, None]
+                continue
+
+            if find:
+                for h, h_next in zip(h_loop, h_loop[1:]):
+                    if h.change_type == find:
+                        statuses[a['id']] = [current_status, current_value, h_next.status, h_next.timeout]
+                        continue
+            statuses[a['id']] = [current_status, current_value, h_loop[1].status, h_loop[1].timeout]
+        return statuses
+
     def _get_hist_info(self, action=None):
         h_loop = self.get_alert_history(alert=self)
         if not h_loop:
@@ -507,6 +539,15 @@ class Alert:
     @staticmethod
     def get_alert_history(alert, page=1, page_size=100):
         return [RichHistory.from_db(hist) for hist in db.get_alert_history(alert, page, page_size)]
+
+    @staticmethod
+    def get_alerts_history(alerts, page=1, page_size=100):
+        res = db.get_alerts_history(alerts, page, page_size)
+        try:
+            hist = [{'id': a['id'], 'history': [RichHistory.from_db(hist) for hist in a['history']]} for a in res]
+            return hist
+        except Exception as e:
+            print(e)
 
     # list alert history
     @staticmethod
@@ -797,6 +838,63 @@ class Alert:
             update_time=now,
             history=history)
         )
+
+    @staticmethod
+    def from_action_multiple(alerts, action, text='', timeout=None):
+        now = datetime.utcnow()
+        statuses = Alert._get_hist_infos(alerts, action)
+        updates = []
+        for a in alerts:
+            status, _, previous_status, previous_timeout = statuses[a.id]
+
+            if action in [ChangeType.unack, ChangeType.unshelve, ChangeType.timeout]:
+                timeout = timeout or previous_timeout
+
+            if action in [ChangeType.ack, ChangeType.unack]:
+                timeout = timeout or current_app.config['ACK_TIMEOUT']
+            elif action in [ChangeType.shelve, ChangeType.unshelve]:
+                timeout = timeout or current_app.config['SHELVE_TIMEOUT']
+            else:
+                timeout = timeout or a.timeout or current_app.config['ALERT_TIMEOUT']
+
+            new_severity, new_status = alarm_model.transition(
+                alert=a,
+                current_status=status,
+                previous_status=previous_status,
+                action=action
+            )
+
+            r = status_change_hook.send(a, status=new_status, text=text)
+            _, (_, new_status, text) = r[0]
+
+            try:
+                change_type = ChangeType(action)
+            except ValueError:
+                change_type = ChangeType.action
+
+            updates.append({
+                'id': a.id,
+                'severity': new_severity,
+                'status': new_status,
+                'tags': a.tags,
+                'attributes': a.attributes,
+                'timeout': a.timeout,
+                'previous_severity': a.severity if new_severity != a.severity else a.previous_severity,
+                'update_time': now,
+                'history': [History(
+                    id=a.id,
+                    event=a.event,
+                    severity=new_severity,
+                    status=new_status,
+                    value=a.value,
+                    text=text,
+                    change_type=change_type,
+                    update_time=now,
+                    user=g.login,
+                    timeout=timeout
+                )],
+            })
+        return [Alert.from_db(alert) for alert in db.set_alerts(updates)]
 
     def from_action(self, action: str, text: str = '', timeout: int = None) -> 'Alert':
         now = datetime.utcnow()

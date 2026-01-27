@@ -446,6 +446,33 @@ class Backend(Database):
                                         'previous_severity': previous_severity, 'update_time': update_time,
                                         'change': history}, returning=True)
 
+    def set_alerts(self, alerts):
+        alert_updates = ','.join([
+            f"""
+                (
+                    %(id{i})s, %(severity{i})s,  %(status{i})s, %(tags{i})s::text[], %(attributes{i})s::jsonb,
+                    %(timeout{i})s, %(previous_severity{i})s, %(update_time{i})s::timestamp without time zone, %(history{i})s
+                )
+            """ for i in range(len(alerts))
+        ])
+        update = f"""
+            UPDATE alerts as a
+                SET severity=c.severity, status=c.status, tags=c.tags,
+                   attributes=c.attributes, timeout=c.timeout, previous_severity=c.previous_severity,
+                   update_time=c.update_time, history=(c.history || a.history)[1:{current_app.config['HISTORY_LIMIT']}]
+            FROM (VALUES
+                {alert_updates}
+            ) AS c(id, severity, status, tags, attributes, timeout, previous_severity, update_time, history)
+            WHERE a.id = c.id
+            RETURNING a.*
+        """
+
+        objs = {}
+        for i, alert in enumerate(alerts):
+            objs.update({f'{key}{i}': value for key, value in alert.items()})
+
+        return self._updateall(update, objs, True)
+
     def get_alert(self, id, customers=None):
         select = """
             SELECT * FROM alerts
@@ -643,6 +670,43 @@ class Backend(Database):
                 customer=h.customer
             ) for h in self._fetchall(select, vars(alert), limit=page_size, offset=(page - 1) * page_size)
         ]
+
+    def get_alerts_history(self, alerts, page=None, page_size=None):
+        select = """
+            SELECT id, resource, environment, service, "group", tags, attributes, origin, customer, history[1:{limit}]
+              FROM alerts
+             WHERE id = ANY(%(IDs)s)
+          ORDER BY update_time DESC
+            """.format(limit=current_app.config['HISTORY_LIMIT'])
+        alerts = self._fetchall(select, {'IDs': [a.id for a in alerts]}, 'ALL')
+        history = [
+            {
+                'id': a.id,
+                'history': [
+                    Record(
+                        id=a.id,
+                        resource=a.resource,
+                        event=h.event,
+                        environment=a.environment,
+                        severity=h.severity,
+                        status=h.status,
+                        service=a.service,
+                        group=a.group,
+                        value=h.value,
+                        text=h.text,
+                        tags=a.tags,
+                        attributes=a.attributes,
+                        origin=a.origin,
+                        update_time=h.update_time,
+                        user=getattr(h, 'user', None),
+                        timeout=getattr(h, 'timeout', None),
+                        type=h.type,
+                        customer=a.customer
+                    ) for h in a.history
+                ]
+            } for a in alerts
+        ]
+        return history
 
     def get_history(self, query=None, page=None, page_size=None):
         query = query or Query()

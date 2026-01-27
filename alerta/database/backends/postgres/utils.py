@@ -264,6 +264,12 @@ class Alerts(QueryBuilder):
     }
 
     @staticmethod
+    def from_IDs(IDs, customers):
+        query = ['id = ANY(%(IDs)s)', 'AND (customer IS NULL or customer = ANY(%(customers)s))']
+        qvars = {'IDs': IDs, 'customers': customers}
+        return Query(where='\n'.join(query), vars=qvars, sort='', group='')
+
+    @staticmethod
     def from_params(params: MultiDict, customers=None, query_time=None):
 
         # ?q=

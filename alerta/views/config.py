@@ -72,4 +72,5 @@ def config():
         'environments': current_app.config['ALLOWED_ENVIRONMENTS'],
         'clipboard_template': current_app.config['CLIPBOARD_TEMPLATE'],
         'hidden_pages': current_app.config['HIDDEN_PAGES'],
+        'bulk_size': current_app.config['BULK_SIZE']
     })

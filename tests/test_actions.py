@@ -147,6 +147,99 @@ class ActionsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['severity'], 'major')
         self.assertEqual(data['alert']['status'], alarm_model.DEFAULT_STATUS)
 
+    def test_alerts(self):
+
+        # create alert
+        response = self.client.post('/alerts', data=json.dumps([{**self.major_alert, 'resource': '1'}, {**self.major_alert, 'resource': '2'}]), headers=self.headers)
+        self.assertEqual(response.status_code, 201)
+        data = json.loads(response.data.decode('utf-8'))
+        first, second = data['alerts']
+
+        self.assertEqual(first['resource'], '1')
+        self.assertEqual(first['status'], 'open')
+        self.assertEqual(first['duplicateCount'], 0)
+        self.assertEqual(first['trendIndication'], 'moreSevere')
+
+        self.assertEqual(second['resource'], '2')
+        self.assertEqual(second['status'], 'open')
+        self.assertEqual(second['duplicateCount'], 0)
+        self.assertEqual(second['trendIndication'], 'moreSevere')
+
+        first_id = first['id']
+        second_id = second['id']
+
+        # ack alert
+        response = self.client.put('/alerts/action',
+                                   data=json.dumps({'alerts': [first_id, second_id], 'action': 'ack'}),
+                                   headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], 'ack')
+
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], 'ack')
+
+        # un-ack alert
+        response = self.client.put('/alerts/action',
+                                   data=json.dumps({'alerts': [first_id, second_id], 'action': 'unack'}),
+                                   headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], 'open')
+
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], 'open')
+
+        # close alert
+        response = self.client.put('/alerts/action',
+                                   data=json.dumps({'alerts': [first_id, second_id], 'action': 'close'}),
+                                   headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'normal')
+        self.assertEqual(data['alert']['status'], 'closed')
+
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'normal')
+        self.assertEqual(data['alert']['status'], 'closed')
+
+        # open alert
+        response = self.client.put('/alerts/action',
+                                   data=json.dumps({'alerts': [first_id, second_id], 'action': 'open'}),
+                                   headers=self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get('/alert/' + first_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], alarm_model.DEFAULT_STATUS)
+
+        response = self.client.get('/alert/' + second_id)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertEqual(data['alert']['severity'], 'major')
+        self.assertEqual(data['alert']['status'], alarm_model.DEFAULT_STATUS)
+
     def test_unwind_actions(self):
 
         # new alert => open

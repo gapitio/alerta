@@ -140,6 +140,9 @@ class Database(Base):
     def set_alert(self, id, severity, status, tags, attributes, timeout, previous_severity, update_time, history=None):
         raise NotImplementedError
 
+    def set_alerts(self, alerts):
+        raise NotImplementedError
+
     def get_alert(self, id, customers=None):
         raise NotImplementedError
 
@@ -186,6 +189,9 @@ class Database(Base):
         raise NotImplementedError
 
     def get_alert_history(self, alert, page=None, page_size=None):
+        raise NotImplementedError
+
+    def get_alerts_history(self, alerts, page=None, page_size=None):
         raise NotImplementedError
 
     def get_history(self, query=None, page=None, page_size=None):
