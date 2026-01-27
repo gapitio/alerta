@@ -393,6 +393,18 @@ def delete_alert(alert_id):
         raise ApiError('failed to delete alert', 500)
 
 
+@api.route('/alerts', methods=['OPTIONS', 'DELETE'])
+@cross_origin()
+@permission(Scope.write_alerts)
+@timer(delete_timer)
+@jsonp
+def delete_alerts():
+    query = qb.alerts.from_params(request.args)
+    deleted = Alert.delete_find_all(query)
+
+    return jsonify(status='ok', deleted=deleted, count=len(deleted))
+
+
 @api.route('/alerts', methods=['OPTIONS', 'GET'])
 @cross_origin()
 @permission(Scope.read_alerts)
