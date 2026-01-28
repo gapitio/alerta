@@ -119,7 +119,16 @@ class Database(Base):
     def dedup_alert(self, alert, history):
         raise NotImplementedError
 
+    def dedup_multiple_alerts(self, alerts):
+        raise NotImplementedError
+
     def correlate_alert(self, alert, history):
+        raise NotImplementedError
+
+    def correlate_multiple_alerts(self, alerts):
+        raise NotImplementedError
+
+    def create_multiple_alerts(self, alerts):
         raise NotImplementedError
 
     def create_alert(self, alert):
@@ -129,6 +138,9 @@ class Database(Base):
         raise NotImplementedError
 
     def set_alert(self, id, severity, status, tags, attributes, timeout, previous_severity, update_time, history=None):
+        raise NotImplementedError
+
+    def set_alerts(self, alerts):
         raise NotImplementedError
 
     def get_alert(self, id, customers=None):
@@ -177,6 +189,9 @@ class Database(Base):
         raise NotImplementedError
 
     def get_alert_history(self, alert, page=None, page_size=None):
+        raise NotImplementedError
+
+    def get_alerts_history(self, alerts, page=None, page_size=None):
         raise NotImplementedError
 
     def get_history(self, query=None, page=None, page_size=None):

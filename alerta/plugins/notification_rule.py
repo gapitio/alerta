@@ -310,8 +310,10 @@ def handle_notifications(alert: 'Alert', notifications: 'list[tuple[Notification
 
 
 def handle_alert(alert: Alert, config, stat: str = ''):
-    fernet = Fernet(config['NOTIFICATION_KEY'])
     notification_rules = NotificationRule.find_all_active(alert) if stat == '' else NotificationRule.find_all_active_status(alert, stat)
+    if len(notification_rules) == 0:
+        return
+    fernet = Fernet(config['NOTIFICATION_KEY'])
     notifications = []
     for rule in notification_rules:
         if rule.delay_time is not None:
@@ -343,6 +345,8 @@ class NotificationRulesHandler(PluginBase):
         return alert
 
     def post_receive(self, alert: 'Alert', **kwargs):
+        if not alert:
+            return
         NotificationDelay.delete_alert(alert.id)
         config = kwargs.get('config')
         if alert.repeat:
@@ -350,6 +354,8 @@ class NotificationRulesHandler(PluginBase):
         handle_alert(alert, config)
 
     def status_change(self, alert, status, text, **kwargs):
+        if not alert:
+            return
         NotificationDelay.delete_alert(alert.id)
         stat = status if isinstance(status, str) else status.value
         config = kwargs.get('config')

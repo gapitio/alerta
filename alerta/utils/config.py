@@ -123,6 +123,8 @@ class Config:
 
         config['HIDDEN_PAGES'] = get_config('HIDDEN_PAGES', default=[], type=list, config=config)
 
+        config['BULK_SIZE'] = get_config('BULK_SIZE', default=50, type=int, config=config)
+
         # Runtime config check
         if config['CUSTOMER_VIEWS'] and not config['AUTH_REQUIRED']:
             raise RuntimeError('Must enable authentication to use customer views')

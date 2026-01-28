@@ -303,6 +303,120 @@ class Backend(Database):
         )
         return self._updateone(update, vars(alert), returning=True)
 
+    def correlate_multiple_alerts(self, alerts):
+        """
+        Update alert status, service, value, text, timeout and rawData, increment duplicate count and set
+        repeat=True, and keep track of last receive id and time but don't append to history unless status changes.
+        """
+        objs = {}
+        alerts_values = []
+        for i, alert in enumerate(alerts):
+            alerts_values.append(
+                f"""
+                (
+                    %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
+                    %(status{i})s,%(service{i})s, %(value{i})s, %(text{i})s,
+                    %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
+                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    (%(history{i})s), %(customer{i})s, (%(create_time{i})s)::timestamp without time zone, %(previous_severity{i})s,
+                    %(trend_indication{i})s, (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s
+                )
+                """
+            )
+            objs.update({f'{key}{i}': value for key, value in vars(alert).items()})
+        update = f"""
+            UPDATE alerts
+               SET event=al.event, severity=al.severity, status=al.status, service=al.service, value=al.value, text=al.text,
+                   create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, repeat=FALSE, previous_severity=al.previous_severity,
+                   trend_indication=al.trend_indication, receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
+                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   duplicate_count=al.duplicate_count, update_time=COALESCE(al.update_time, alerts.update_time),
+                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
+            FROM (VALUES
+                {",".join(alerts_values)}
+                ) as al(
+                    environment, resource, event, severity,
+                    status, service, value, text,
+                    timeout, raw_data, last_receive_id, last_receive_time,
+                    tags, attributes, update_time, history, customer, create_time, previous_severity,
+                    trend_indication, receive_time, duplicate_count
+                )
+             WHERE alerts.environment=al.environment
+               AND alerts.resource=al.resource
+               AND ((alerts.event=al.event AND alerts.severity!=al.severity) OR (alerts.event!=al.event AND al.event=ANY(alerts.correlate)))
+         RETURNING alerts.*
+        """
+        return self._updateall(update, objs, returning=True)
+
+    def dedup_multiple_alerts(self, alerts):
+        """
+        Update alert status, service, value, text, timeout and rawData, increment duplicate count and set
+        repeat=True, and keep track of last receive id and time but don't append to history unless status changes.
+        """
+        objs = {}
+        alerts_values = []
+        for i, alert in enumerate(alerts):
+            alerts_values.append(
+                f"""
+                (
+                    %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
+                    %(status{i})s,%(service{i})s,%(value{i})s, %(text{i})s,
+                    %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
+                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    (%(history{i})s)::history, %(customer{i})s
+                )
+                """
+            )
+            objs.update({f'{key}{i}': value for key, value in vars(alert).items()})
+        update = f"""
+            UPDATE alerts
+               SET status=al.status, service=al.service, value=al.value, text=al.text,
+                   timeout=al.timeout, raw_data=al.raw_data, repeat=TRUE,
+                   last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
+                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   duplicate_count=alerts.duplicate_count + 1, update_time=COALESCE(al.update_time, alerts.update_time),
+                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
+            FROM (VALUES
+                {",".join(alerts_values)}
+                ) as al(
+                    environment, resource, event, severity,
+                    status, service, value, text,
+                    timeout, raw_data, last_receive_id, last_receive_time,
+                    tags, attributes, update_time, history, customer
+                )
+             WHERE alerts.environment=al.environment
+               AND alerts.resource=al.resource
+               AND alerts.event=al.event
+               AND alerts.severity=al.severity
+         RETURNING alerts.*
+        """
+        return self._updateall(update, objs, returning=True)
+
+    def create_multiple_alerts(self, alerts):
+        alerts_insert = ','.join([
+            f"""
+                (
+                    %(id{i})s, %(resource{i})s, %(event{i})s, %(environment{i})s, %(severity{i})s, %(correlate{i})s, %(status{i})s,
+                    %(service{i})s, %(group{i})s, %(value{i})s, %(text{i})s, %(tags{i})s, %(attributes{i})s, %(origin{i})s,
+                    %(event_type{i})s, %(create_time{i})s, %(timeout{i})s, %(raw_data{i})s, %(customer{i})s, %(duplicate_count{i})s,
+                    %(repeat{i})s, %(previous_severity{i})s, %(trend_indication{i})s, %(receive_time{i})s, %(last_receive_id{i})s,
+                    %(last_receive_time{i})s, %(update_time{i})s, %(history{i})s::history[]
+                )
+            """ for i in range(len(alerts))])
+        objs = {}
+        for i, alert in enumerate(alerts):
+            objs.update({f'{key}{i}': value for key, value in vars(alert).items()})
+
+        insert = f"""
+            INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service, "group",
+                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
+                duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
+                last_receive_time, update_time, history)
+            VALUES {alerts_insert}
+            RETURNING *
+        """
+        return self._insert_all(insert, objs)
+
     def create_alert(self, alert):
         insert = """
             INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service, "group",
@@ -331,6 +445,33 @@ class Backend(Database):
                                         'tags': tags, 'attributes': attributes, 'timeout': timeout,
                                         'previous_severity': previous_severity, 'update_time': update_time,
                                         'change': history}, returning=True)
+
+    def set_alerts(self, alerts):
+        alert_updates = ','.join([
+            f"""
+                (
+                    %(id{i})s, %(severity{i})s,  %(status{i})s, %(tags{i})s::text[], %(attributes{i})s::jsonb,
+                    %(timeout{i})s, %(previous_severity{i})s, %(update_time{i})s::timestamp without time zone, %(history{i})s
+                )
+            """ for i in range(len(alerts))
+        ])
+        update = f"""
+            UPDATE alerts as a
+                SET severity=c.severity, status=c.status, tags=c.tags,
+                   attributes=c.attributes, timeout=c.timeout, previous_severity=c.previous_severity,
+                   update_time=c.update_time, history=(c.history || a.history)[1:{current_app.config['HISTORY_LIMIT']}]
+            FROM (VALUES
+                {alert_updates}
+            ) AS c(id, severity, status, tags, attributes, timeout, previous_severity, update_time, history)
+            WHERE a.id = c.id
+            RETURNING a.*
+        """
+
+        objs = {}
+        for i, alert in enumerate(alerts):
+            objs.update({f'{key}{i}': value for key, value in alert.items()})
+
+        return self._updateall(update, objs, True)
 
     def get_alert(self, id, customers=None):
         select = """
@@ -529,6 +670,43 @@ class Backend(Database):
                 customer=h.customer
             ) for h in self._fetchall(select, vars(alert), limit=page_size, offset=(page - 1) * page_size)
         ]
+
+    def get_alerts_history(self, alerts, page=None, page_size=None):
+        select = """
+            SELECT id, resource, environment, service, "group", tags, attributes, origin, customer, history[1:{limit}]
+              FROM alerts
+             WHERE id = ANY(%(IDs)s)
+          ORDER BY update_time DESC
+            """.format(limit=current_app.config['HISTORY_LIMIT'])
+        alerts = self._fetchall(select, {'IDs': [a.id for a in alerts]}, 'ALL')
+        history = [
+            {
+                'id': a.id,
+                'history': [
+                    Record(
+                        id=a.id,
+                        resource=a.resource,
+                        event=h.event,
+                        environment=a.environment,
+                        severity=h.severity,
+                        status=h.status,
+                        service=a.service,
+                        group=a.group,
+                        value=h.value,
+                        text=h.text,
+                        tags=a.tags,
+                        attributes=a.attributes,
+                        origin=a.origin,
+                        update_time=h.update_time,
+                        user=getattr(h, 'user', None),
+                        timeout=getattr(h, 'timeout', None),
+                        type=h.type,
+                        customer=a.customer
+                    ) for h in a.history
+                ]
+            } for a in alerts
+        ]
+        return history
 
     def get_history(self, query=None, page=None, page_size=None):
         query = query or Query()
@@ -2565,6 +2743,16 @@ class Backend(Database):
         cursor.execute(query, vars)
         self.get_db().commit()
         return cursor.fetchone()
+
+    def _insert_all(self, query, vars):
+        """
+        Insert, with return.
+        """
+        cursor = self.get_db().cursor()
+        self._log(cursor, query, vars)
+        cursor.execute(query, vars)
+        self.get_db().commit()
+        return cursor.fetchall()
 
     def _fetchone(self, query, vars):
         """
