@@ -145,15 +145,15 @@ class History(QueryBuilder):
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
         'resource': ('resource', 'resource', 1),
-        'event': ('event', 'event', 1),
+        'event': ('h"."event', 'event', 1),
         'environment': ('environment', 'environment', 1),
         'severity': ('h"."severity', 's.code', 1),
         'correlate': ('correlate', 'correlate', 1),
         'status': ('h"."status', 'st.state', 1),
         'service': ('service', 'service', 1),
         'group': ('group', '"group"', 1),
-        'value': ('value', 'value', 1),
-        'text': ('text', 'text', 1),
+        'value': ('h"."value', 'value', 1),
+        'text': ('h"."text', 'text', 1),
         'tag': ('tags', None, 0),  # filter
         'tags': ('tags', 'tags', 1),  # sort-by
         'customTags': ('custom_tags', 'custom_tags', 1),  # sort-by
