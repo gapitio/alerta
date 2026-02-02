@@ -80,6 +80,7 @@ class RichHistory:
     def __init__(self, resource, event, **kwargs):
 
         self.id = kwargs.get('id', None)
+        self.alert_id = kwargs.get('alert_id', None)
         self.resource = resource
         self.event = event
         self.environment = kwargs.get('environment', None)
@@ -102,7 +103,8 @@ class RichHistory:
     def serialize(self):
         data = {
             'id': self.id,
-            'href': absolute_url('/alert/' + self.id),
+            'alertId': self.alert_id,
+            'href': absolute_url('/alert/' + self.alert_id),
             'resource': self.resource,
             'event': self.event,
             'environment': self.environment,
@@ -163,6 +165,7 @@ class RichHistory:
     def from_record(cls, rec):
         return RichHistory(
             id=rec.id,
+            alert_id=getattr(rec, 'alert_id', None),
             resource=rec.resource,
             event=rec.event,
             environment=rec.environment,

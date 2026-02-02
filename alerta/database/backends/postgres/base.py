@@ -97,6 +97,8 @@ Record = namedtuple('Record', [
     'user', 'timeout', 'type', 'customer',
 ])
 
+HistoryRecord = namedtuple('Record', [*Record._fields, 'alert_id'])
+
 
 class Backend(Database):
 
@@ -719,15 +721,16 @@ class Backend(Database):
             query.vars['id'] = self._fetchone(select, query.vars)
 
         select = """
-            SELECT resource, environment, service, "group", tags, attributes, origin, customer, history, h.*
+            SELECT alerts.id as alert_id, resource, environment, service, "group", tags, attributes, origin, customer, history, h.*
               FROM alerts, unnest(history[1:{limit}]) h
              WHERE {where}
           ORDER BY update_time DESC
         """.format(where=query.where, limit=current_app.config['HISTORY_LIMIT'])
 
         return [
-            Record(
+            HistoryRecord(
                 id=h.id,
+                alert_id=h.alert_id,
                 resource=h.resource,
                 event=h.event,
                 environment=h.environment,
