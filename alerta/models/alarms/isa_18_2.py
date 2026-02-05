@@ -74,7 +74,9 @@ ACTION_UNSHELVE = 'unshelve'
 class StateMachine(AlarmModel):
 
     def register(self, app):
-        # import alerta.management.views
+
+        import alerta.auth  # noqa
+
         self.name = 'ANSI/ISA 18.2'
 
         StateMachine.Severity = app.config['SEVERITY_MAP'] or SEVERITY_MAP

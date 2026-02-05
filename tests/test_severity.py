@@ -20,7 +20,7 @@ class SeverityTestCase(unittest.TestCase):
         correlate = ['node_down', 'node_marginal', 'node_up', 'node_pwned', 'node_trace']
 
         self.auth_alert = {
-            'event': 'node_pwned',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -30,7 +30,7 @@ class SeverityTestCase(unittest.TestCase):
             'attributes': {'foo': 'abc def', 'bar': 1234, 'baz': False}
         }
         self.critical_alert = {
-            'event': 'node_down',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -38,7 +38,7 @@ class SeverityTestCase(unittest.TestCase):
             'correlate': correlate
         }
         self.major_alert = {
-            'event': 'node_marginal',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -46,7 +46,7 @@ class SeverityTestCase(unittest.TestCase):
             'correlate': correlate
         }
         self.warn_alert = {
-            'event': 'node_marginal',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -54,7 +54,7 @@ class SeverityTestCase(unittest.TestCase):
             'correlate': correlate
         }
         self.normal_alert = {
-            'event': 'node_up',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -63,7 +63,7 @@ class SeverityTestCase(unittest.TestCase):
         }
 
         self.trace_alert = {
-            'event': 'node_trace',
+            'event': 'node',
             'resource': 'node1',
             'environment': 'Production',
             'service': ['Network'],
@@ -72,7 +72,7 @@ class SeverityTestCase(unittest.TestCase):
         }
 
         self.ok_alert = {
-            'event': 'node_ok',
+            'event': 'node',
             'resource': 'node2',
             'environment': 'Production',
             'service': ['Network'],
@@ -81,7 +81,7 @@ class SeverityTestCase(unittest.TestCase):
         }
 
         self.inform_alert = {
-            'event': 'node_inform',
+            'event': 'node',
             'resource': 'node3',
             'environment': 'Production',
             'service': ['Network'],
@@ -90,7 +90,7 @@ class SeverityTestCase(unittest.TestCase):
         }
 
         self.debug_alert = {
-            'event': 'node_debug',
+            'event': 'node',
             'resource': 'node4',
             'environment': 'Production',
             'service': ['Network'],

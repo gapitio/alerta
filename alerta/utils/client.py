@@ -32,7 +32,6 @@ class Client:
             'event': event,
             'environment': kwargs.get('environment'),
             'severity': kwargs.get('severity'),
-            'correlate': kwargs.get('correlate', None) or list(),
             'service': kwargs.get('service', None) or list(),
             'group': kwargs.get('group'),
             'value': kwargs.get('value'),

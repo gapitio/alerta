@@ -25,7 +25,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'LIC_101',
             'value': 'ERROR',
             'resource': 'LIC_101',
-            'event': 'FAILED_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'Shutdown/Interlocked',
             'type': 'FAULT',
@@ -39,7 +39,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '19',
             'resource': 'LIC_101',
-            'event': 'HI_HI_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'High High Alarm Limit 15',
             'type': 'ALARM',
@@ -53,7 +53,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '13',
             'resource': 'LIC_101',
-            'event': 'HI_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'High Alarm Limit 10',
             'type': 'ALARM',
@@ -67,7 +67,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '6',
             'resource': 'LIC_101',
-            'event': 'LO_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'Low Alarm Limit 5',
             'type': 'ALARM',
@@ -81,7 +81,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '1',
             'resource': 'LIC_101',
-            'event': 'LO_LO_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'Low Low Alarm Limit 0',
             'type': 'ALARM',
@@ -95,7 +95,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '1',
             'resource': 'LIC_101',
-            'event': 'ADVISE_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'Low Low Alarm Limit 0',
             'type': 'ALARM',
@@ -109,7 +109,7 @@ class Isa182TestCase(unittest.TestCase):
             'origin': 'PID1',
             'value': '0',
             'resource': 'LIC_101',
-            'event': 'RST_ALM',
+            'event': 'ALM',
             'group': 'PROCESS',
             'text': 'OK Alarm Limit 0',
             'type': 'ALARM',
@@ -137,7 +137,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -174,7 +174,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'Critical')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -211,7 +211,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'NORM')
@@ -243,7 +243,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -266,7 +266,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'RTNUN')
@@ -289,7 +289,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'LO_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'Medium')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -312,7 +312,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'LO_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'Medium')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -335,7 +335,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'RTNUN')
@@ -381,7 +381,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -455,7 +455,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -534,7 +534,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'SHLVD')
@@ -582,7 +582,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -632,7 +632,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'OOSRV')
@@ -655,7 +655,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'LO_LO_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'Low')
         self.assertEqual(data['alert']['status'], 'OOSRV')
@@ -687,7 +687,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'LO_LO_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'Low')
         self.assertEqual(data['alert']['status'], 'UNACK')
@@ -724,7 +724,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'HI_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'High')
         self.assertEqual(data['alert']['status'], 'OOSRV')
@@ -747,7 +747,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'OOSRV')
@@ -779,7 +779,7 @@ class Isa182TestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['resource'], 'LIC_101')
-        self.assertEqual(data['alert']['event'], 'RST_ALM')
+        self.assertEqual(data['alert']['event'], 'ALM')
         self.assertEqual(data['alert']['environment'], 'Production')
         self.assertEqual(data['alert']['severity'], 'OK')
         self.assertEqual(data['alert']['status'], 'NORM')
