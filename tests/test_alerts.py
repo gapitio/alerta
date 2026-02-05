@@ -767,12 +767,12 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(sorted(data['alert']['attributes']), sorted(
             {'foo': 'abc def', 'baz': False, 'quux': ['q', 'u', 'u', 'x'], 'ip': '10.0.0.1'}))
 
-        # re-send duplicate alert with custom attributes ('quux' should not change)
+        # re-send duplicate alert with custom attributes ('quux' should change)
         response = self.client.post('/alert', data=json.dumps(self.fatal_alert), headers=self.headers)
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(sorted(data['alert']['attributes']), sorted(
-            {'foo': 'abc def', 'bar': 1234, 'baz': False, 'quux': ['q', 'u', 'u', 'x'], 'ip': '10.0.0.1'}))
+            {'foo': 'abc def', 'bar': 1234, 'baz': False, 'ip': '10.0.0.1'}))
 
         # update custom attribute again (only 'quux' should change)
         response = self.client.put('/alert/' + alert_id + '/attributes',
@@ -784,14 +784,13 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(sorted(data['alert']['attributes']), sorted(
             {'foo': 'abc def', 'bar': 1234, 'baz': False, 'quux': [1, 'u', 'u', 4], 'ip': '10.0.0.1'}))
 
-        # send correlated alert with custom attributes (nothing should change)
+        # send correlated alert with custom attributes (attributes should be updated)
         response = self.client.post('/alert', data=json.dumps(self.critical_alert), headers=self.headers)
         self.assertEqual(response.status_code, 201)
         response = self.client.get('/alert/' + alert_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(sorted(data['alert']['attributes']), sorted(
-            {'foo': 'abc def', 'bar': 1234, 'baz': False, 'quux': [1, 'u', 'u', 4], 'ip': '10.0.0.1'}))
+        self.assertEqual(sorted(data['alert']['attributes']), sorted({'ip': '10.0.0.1'}))
 
     def test_history_limit(self):
 

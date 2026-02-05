@@ -266,9 +266,9 @@ class Backend(Database):
         update = """
             UPDATE alerts
                SET status=%(status)s, service=%(service)s, value=%(value)s, text=%(text)s,
-                   timeout=%(timeout)s, raw_data=%(raw_data)s, repeat=%(repeat)s,
+                   timeout=%(timeout)s, raw_data=%(raw_data)s, repeat=%(repeat)s, type=%(event_type)s,
                    last_receive_id=%(last_receive_id)s, last_receive_time=%(last_receive_time)s,
-                   tags=%(tags)s, attributes=attributes || %(attributes)s,
+                   tags=%(tags)s, attributes=%(attributes)s, "group"=%(group)s, origin=%(origin)s,
                    duplicate_count=duplicate_count + 1, {update_time}, history=(%(history)s || history)[1:{limit}]
              WHERE environment=%(environment)s
                AND resource=%(resource)s
@@ -291,8 +291,9 @@ class Backend(Database):
                    text=%(text)s, create_time=%(create_time)s, timeout=%(timeout)s, raw_data=%(raw_data)s,
                    duplicate_count=%(duplicate_count)s, repeat=%(repeat)s, previous_severity=%(previous_severity)s,
                    trend_indication=%(trend_indication)s, receive_time=%(receive_time)s, last_receive_id=%(last_receive_id)s,
-                   last_receive_time=%(last_receive_time)s, tags=%(tags)s,
-                   attributes=attributes || %(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}]
+                   last_receive_time=%(last_receive_time)s, tags=%(tags)s, "group"=%(group)s, origin=%(origin)s,
+                   attributes=%(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}],
+                   type=%(event_type)s, customer=%(customer)s
              WHERE environment=%(environment)s
                AND resource=%(resource)s
                AND ((event=%(event)s AND severity!=%(severity)s) OR (event!=%(event)s AND %(event)s=ANY(correlate)))
@@ -319,9 +320,10 @@ class Backend(Database):
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s, %(value{i})s, %(text{i})s,
                     %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
-                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    %(tags{i})s::text[], (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
                     (%(history{i})s), %(customer{i})s, (%(create_time{i})s)::timestamp without time zone, %(previous_severity{i})s,
-                    %(trend_indication{i})s, (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s
+                    %(trend_indication{i})s, (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s,
+                    %(origin{i})s, %(group{i})s, %(event_type{i})s
                 )
                 """
             )
@@ -331,9 +333,10 @@ class Backend(Database):
                SET event=al.event, severity=al.severity, status=al.status, service=al.service, value=al.value, text=al.text,
                    create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, repeat=FALSE, previous_severity=al.previous_severity,
                    trend_indication=al.trend_indication, receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
-                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   tags=al.tags, attributes=al.attributes,
                    duplicate_count=al.duplicate_count, update_time=COALESCE(al.update_time, alerts.update_time),
-                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
+                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END,
+                   origin=al.origin, "group"=al.group, type=al.type
             FROM (VALUES
                 {",".join(alerts_values)}
                 ) as al(
@@ -341,7 +344,7 @@ class Backend(Database):
                     status, service, value, text,
                     timeout, raw_data, last_receive_id, last_receive_time,
                     tags, attributes, update_time, history, customer, create_time, previous_severity,
-                    trend_indication, receive_time, duplicate_count
+                    trend_indication, receive_time, duplicate_count, origin, "group", type
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource
@@ -364,8 +367,8 @@ class Backend(Database):
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s,%(value{i})s, %(text{i})s,
                     %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
-                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
-                    (%(history{i})s)::history, %(customer{i})s
+                    %(tags{i})s::text[], (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    (%(history{i})s)::history, %(customer{i})s, %(group{i})s, %(origin{i})s, %(event_type{i})s
                 )
                 """
             )
@@ -375,7 +378,7 @@ class Backend(Database):
                SET status=al.status, service=al.service, value=al.value, text=al.text,
                    timeout=al.timeout, raw_data=al.raw_data, repeat=TRUE,
                    last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
-                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   tags=al.tags, attributes=al.attributes, origin=al.origin, "group"=al.group, type=al.type,
                    duplicate_count=alerts.duplicate_count + 1, update_time=COALESCE(al.update_time, alerts.update_time),
                    history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
             FROM (VALUES
@@ -384,7 +387,8 @@ class Backend(Database):
                     environment, resource, event, severity,
                     status, service, value, text,
                     timeout, raw_data, last_receive_id, last_receive_time,
-                    tags, attributes, update_time, history, customer
+                    tags, attributes, update_time, history, customer,
+                    "group", origin, type
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource
