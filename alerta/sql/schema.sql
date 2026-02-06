@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS alerts (
     event text NOT NULL,
     environment text,
     severity text,
-    correlate text[],
     status text,
     service text[],
     "group" text,
@@ -61,6 +60,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS custom_tags text[];
+ALTER TABLE alerts DROP COLUMN IF EXISTS correlate;
 
 -- remove alerts with status set to null
 DO $$
