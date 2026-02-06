@@ -1,7 +1,7 @@
 import os
 import platform
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -53,12 +53,12 @@ class Heartbeat:
         self.tags = tags or list()
         self.attributes = kwargs.get('attributes', None) or dict()
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'Heartbeat'
-        self.create_time = create_time or datetime.utcnow()
+        self.create_time = create_time or datetime.now(UTC)
         self.timeout = timeout
         self.max_latency = max_latency
-        self.receive_time = kwargs.get('receive_time', None) or datetime.utcnow()
+        self.receive_time = kwargs.get('receive_time', None) or datetime.now(UTC)
         self.latency = int((self.receive_time - self.create_time).total_seconds() * 1000)
-        self.since = datetime.utcnow() - self.receive_time
+        self.since = datetime.now(UTC) - self.receive_time
         self.customer = customer
 
     @property
@@ -137,9 +137,9 @@ class Heartbeat:
             tags=rec.tags,
             attributes=dict(getattr(rec, 'attributes') or ()),
             event_type=rec.type,
-            create_time=rec.create_time,
+            create_time=rec.create_time.replace(tzinfo=UTC) if rec.create_time is not None else None,
             timeout=rec.timeout,
-            receive_time=rec.receive_time,
+            receive_time=rec.receive_time.replace(tzinfo=UTC) if rec.receive_time is not None else None,
             latency=rec.latency,
             since=rec.since,
             customer=rec.customer

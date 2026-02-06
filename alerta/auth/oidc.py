@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
@@ -96,7 +96,7 @@ def openid():
         data['client_secret'] = current_app.config['OAUTH2_CLIENT_SECRET']
         r = requests.post(token_endpoint, data)
     elif preferred_token_auth_method == 'client_secret_jwt':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         payload = dict(
             iss=request.json['clientId'],
             sub=request.json['clientId'],

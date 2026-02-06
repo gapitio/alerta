@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -13,7 +13,7 @@ class NotificationHistory:
     def __init__(self, sent: bool, message: str, channel: str, rule: str, alert: str, receiver: str, sender: str, **kwargs) -> None:
         self.id = kwargs.get('id') or str(uuid4())
         self.sent = sent
-        self.sent_time = kwargs.get('sent_time', datetime.utcnow())
+        self.sent_time = kwargs.get('sent_time', datetime.now(UTC))
         self.message = message
         self.channel = channel
         self.rule = rule

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from flask import current_app
 from pymongo import ASCENDING, TEXT, MongoClient, ReturnDocument
@@ -187,7 +187,7 @@ class Backend(Database):
             }},
             {'$unwind': '$history'},
             {'$match': {
-                'history.updateTime': {'$gt': datetime.utcnow() - timedelta(seconds=window)},
+                'history.updateTime': {'$gt': datetime.now(UTC) - timedelta(seconds=window)},
                 'history.type': 'severity'
             }},
             {'$group': {'_id': '$history.type', 'count': {'$sum': 1}}}
@@ -211,7 +211,7 @@ class Backend(Database):
             'customer': alert.customer
         }
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         update = {
             '$set': {
                 'status': alert.status,
@@ -1366,7 +1366,7 @@ class Backend(Database):
         if status:
             pipeline.extend([
                 {'$addFields': {'timeoutInMs': {'$multiply': ['$timeout', 1000]}}},
-                {'$addFields': {'isExpired': {'$gt': [{'$subtract': [datetime.utcnow(), '$receiveTime']}, '$timeoutInMs']}}},
+                {'$addFields': {'isExpired': {'$gt': [{'$subtract': [datetime.now(UTC), '$receiveTime']}, '$timeoutInMs']}}},
                 {'$addFields': {'isSlow': {'$gt': [{'$subtract': ['$receiveTime', '$createTime']}, max_latency]}}}
             ])
             match_or = list()
@@ -1444,7 +1444,7 @@ class Backend(Database):
         return self.get_db().keys.update_one(
             {'$or': [{'key': key}, {'_id': key}]},
             {
-                '$set': {'lastUsedTime': datetime.utcnow()},
+                '$set': {'lastUsedTime': datetime.now(UTC)},
                 '$inc': {'count': 1}
             }
         ).matched_count == 1
@@ -1511,7 +1511,7 @@ class Backend(Database):
     def update_last_login(self, id):
         return self.get_db().users.update_one(
             {'_id': id},
-            update={'$set': {'lastLogin': datetime.utcnow()}}
+            update={'$set': {'lastLogin': datetime.now(UTC)}}
         ).matched_count == 1
 
     def update_user(self, id, **kwargs):
@@ -1553,7 +1553,7 @@ class Backend(Database):
     def set_email_hash(self, id, hash):
         return self.get_db().users.update_one(
             {'_id': id},
-            update={'$set': {'hash': hash, 'updateTime': datetime.utcnow()}}
+            update={'$set': {'hash': hash, 'updateTime': datetime.now(UTC)}}
         ).matched_count == 1
 
     # GROUPS
@@ -1769,7 +1769,7 @@ class Backend(Database):
         return self.get_db().notes.find({'customer': customer}).skip((page - 1) * page_size).limit(page_size)
 
     def update_note(self, id, **kwargs):
-        kwargs['updateTime'] = datetime.utcnow()
+        kwargs['updateTime'] = datetime.now(UTC)
         return self.get_db().notes.find_one_and_update(
             {'_id': id},
             update={'$set': kwargs},
@@ -1855,12 +1855,12 @@ class Backend(Database):
         # and 'informational' alerts older than "info_threshold" seconds
 
         if expired_threshold:
-            expired_seconds_ago = datetime.utcnow() - timedelta(seconds=expired_threshold)
+            expired_seconds_ago = datetime.now(UTC) - timedelta(seconds=expired_threshold)
             self.get_db().alerts.delete_many(
                 {'status': {'$in': ['closed', 'expired']}, 'lastReceiveTime': {'$lt': expired_seconds_ago}})
 
         if info_threshold:
-            info_seconds_ago = datetime.utcnow() - timedelta(seconds=info_threshold)
+            info_seconds_ago = datetime.now(UTC) - timedelta(seconds=info_threshold)
             self.get_db().alerts.delete_many({'severity': alarm_model.DEFAULT_INFORM_SEVERITY, 'lastReceiveTime': {'$lt': info_seconds_ago}})
 
         # get list of alerts to be newly expired
@@ -1870,7 +1870,7 @@ class Backend(Database):
                 'computedTimeout': {'$multiply': [{'$ifNull': ['$timeout', current_app.config['ALERT_TIMEOUT']]}, 1000]}
             }},
             {'$addFields': {
-                'isExpired': {'$lt': [{'$add': ['$lastReceiveTime', '$computedTimeout']}, datetime.utcnow()]}
+                'isExpired': {'$lt': [{'$add': ['$lastReceiveTime', '$computedTimeout']}, datetime.now(UTC)]}
             }},
             {'$match': {'isExpired': True, 'computedTimeout': {'$ne': 0}}}
         ]
@@ -1920,7 +1920,7 @@ class Backend(Database):
                 'computedTimeout': {'$multiply': [{'$ifNull': ['$history.timeout', current_app.config['SHELVE_TIMEOUT']]}, 1000]}
             }},
             {'$addFields': {
-                'isExpired': {'$lt': [{'$add': ['$updateTime', '$computedTimeout']}, datetime.utcnow()]}
+                'isExpired': {'$lt': [{'$add': ['$updateTime', '$computedTimeout']}, datetime.now(UTC)]}
             }},
             {'$match': {'isExpired': True, 'computedTimeout': {'$ne': 0}}}
         ]
@@ -1970,7 +1970,7 @@ class Backend(Database):
                 'computedTimeout': {'$multiply': [{'$ifNull': ['$history.timeout', current_app.config['ACK_TIMEOUT']]}, 1000]}
             }},
             {'$addFields': {
-                'isExpired': {'$lt': [{'$add': ['$updateTime', '$computedTimeout']}, datetime.utcnow()]}
+                'isExpired': {'$lt': [{'$add': ['$updateTime', '$computedTimeout']}, datetime.now(UTC)]}
             }},
             {'$match': {'isExpired': True, 'computedTimeout': {'$ne': 0}}}
         ]

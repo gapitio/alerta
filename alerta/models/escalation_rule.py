@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import UTC, datetime, time, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -50,7 +50,7 @@ class EscalationRule:
 
         self.user = kwargs.get('user', None)
         self.create_time = (
-            kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+            kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
         )
 
         if self.environment:

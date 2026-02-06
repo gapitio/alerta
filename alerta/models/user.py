@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -54,10 +54,10 @@ class User:
         self.status = kwargs.get('status', None) or UserStatus.Active
         self.roles = current_app.config['ADMIN_ROLES'] if self.email and self.email in current_app.config['ADMIN_USERS'] else roles
         self.attributes = kwargs.get('attributes', None) or dict()
-        self.create_time = kwargs.get('create_time', None) or datetime.utcnow()
+        self.create_time = kwargs.get('create_time', None) or datetime.now(UTC)
         self.last_login = kwargs.get('last_login', None)
         self.text = text or ''
-        self.update_time = kwargs.get('update_time', None) or datetime.utcnow()
+        self.update_time = kwargs.get('update_time', None) or datetime.now(UTC)
         self.email_verified = kwargs.get('email_verified', False)
 
     @property

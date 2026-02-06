@@ -142,7 +142,7 @@ def health_check():
     try:
         heartbeats = Heartbeat.find_all()
         for heartbeat in heartbeats:
-            delta = datetime.datetime.utcnow() - heartbeat.receive_time
+            delta = datetime.datetime.now(datetime.UTC) - heartbeat.receive_time
             threshold = int(heartbeat.timeout) * 4
             if delta.seconds > threshold:
                 return f'HEARTBEAT_STALE: {heartbeat.origin}', 503

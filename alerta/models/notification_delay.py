@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -72,7 +72,7 @@ class NotificationDelay:
 
     @ staticmethod
     def find_firing() -> List['NotificationDelay']:
-        return [NotificationDelay.from_db(notification_delay) for notification_delay in db.get_delayed_notifications_firing(datetime.utcnow())]
+        return [NotificationDelay.from_db(notification_delay) for notification_delay in db.get_delayed_notifications_firing(datetime.now(UTC))]
 
     @ staticmethod
     def delete_alert(alert_id) -> List['NotificationDelay']:

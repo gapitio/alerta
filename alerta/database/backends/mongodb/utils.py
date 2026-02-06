@@ -1,7 +1,7 @@
 import json
 import re
 from collections import namedtuple
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List  # noqa
 
 import pytz
@@ -247,11 +247,11 @@ class Blackouts(QueryBuilder):
         if status:
             query['$or'] = list()
             if BlackoutStatus.Active in status:
-                query['$or'].append({'$and': [{'startTime': {'$lte': datetime.utcnow()}}, {'endTime': {'$gt': datetime.utcnow()}}]})
+                query['$or'].append({'$and': [{'startTime': {'$lte': datetime.now(UTC)}}, {'endTime': {'$gt': datetime.now(UTC)}}]})
             if BlackoutStatus.Pending in status:
-                query['$or'].append({'startTime': {'$gt': datetime.utcnow()}})
+                query['$or'].append({'startTime': {'$gt': datetime.now(UTC)}})
             if BlackoutStatus.Expired in status:
-                query['$or'].append({'endTime': {'$lte': datetime.utcnow()}})
+                query['$or'].append({'endTime': {'$lte': datetime.now(UTC)}})
 
         # filter, sort-by, group-by
         query = QueryBuilder.filter_query(params, Blackouts.VALID_PARAMS, query)
@@ -527,9 +527,9 @@ class ApiKeys(QueryBuilder):
         if status:
             query['$or'] = list()
             if ApiKeyStatus.Active in status:
-                query['$or'].append({'expireTime': {'$gte': datetime.utcnow()}})
+                query['$or'].append({'expireTime': {'$gte': datetime.now(UTC)}})
             if ApiKeyStatus.Expired in status:
-                query['$or'].append({'expireTime': {'$lt': datetime.utcnow()}})
+                query['$or'].append({'expireTime': {'$lt': datetime.now(UTC)}})
 
         # filter, sort-by, group-by
         query = QueryBuilder.filter_query(params, ApiKeys.VALID_PARAMS, query)

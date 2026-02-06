@@ -56,7 +56,7 @@ class DateTime:
         if not isinstance(date_str, str):
             return None
         try:
-            return datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+            return datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=datetime.UTC)
         except Exception:
             raise ValueError('dates must be ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ')
 
