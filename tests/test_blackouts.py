@@ -2,7 +2,7 @@ import json
 import os
 import time
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from alerta.app import create_app, db, plugins
 from alerta.exceptions import BlackoutPeriod
@@ -685,7 +685,7 @@ class BlackoutsTestCase(unittest.TestCase):
         }
 
         # create new blackout with end time 1 second in the future
-        three_second_from_now = datetime.utcnow() + timedelta(seconds=3)
+        three_second_from_now = datetime.now(UTC) + timedelta(seconds=3)
         blackout = {
             'environment': 'Production',
             'service': ['Core'],

@@ -1,7 +1,7 @@
 import threading
 import time
 from collections import defaultdict, namedtuple
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import psycopg2
@@ -636,7 +636,7 @@ class Backend(Database):
             FROM alerts
             WHERE status='open' AND last_receive_time < %(etime)s
         """
-        return self._fetchall(select, {'etime': datetime.utcnow() - timedelta(minutes=current_app.config['ESCALATE_TIME'])}, limit=1000)
+        return self._fetchall(select, {'etime': datetime.now(UTC) - timedelta(minutes=current_app.config['ESCALATE_TIME'])}, limit=1000)
 
     def get_alert_history(self, alert, page=None, page_size=None):
         select = """
@@ -1505,7 +1505,7 @@ class Backend(Database):
         data['reactivate'] = data['reactivate'].isoformat() if data.get('reactivate') is not None else None
         data['createTime'] = data['createTime'].isoformat() if data.get('createTime') is not None else None
         data['delayTime'] = str(data['delayTime']) if data.get('delayTime') is not None else None
-        return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.utcnow()})
+        return self._insert(insert, {'data': data, 'id': notification_rule.id, 'user': notification_rule.user, 'type': update_type, 'create_time': datetime.now(UTC)})
 
     def get_notification_rule_history(self, rule_id: str, page, page_size):
         select = """
@@ -1773,7 +1773,7 @@ class Backend(Database):
             WHERE id=%(id)s
             RETURNING *
         """
-        return self._updateone(update, {'id': id, 'time': datetime.utcnow()}, returning=True)
+        return self._updateone(update, {'id': id, 'time': datetime.now(UTC)}, returning=True)
 
 # ESCALATION RULES
 
@@ -1853,7 +1853,7 @@ class Backend(Database):
             SELECT * from alert_tags
             WHERE alert_tags.id NOT IN (SELECT DISTINCT alert_excluded.id FROM alert_excluded)
         """
-        return self._fetchall(select, {'now': datetime.utcnow()}, limit='ALL')
+        return self._fetchall(select, {'now': datetime.now(UTC)}, limit='ALL')
 
     def update_escalation_rule(self, id, **kwargs):
         update = """

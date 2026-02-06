@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -34,7 +34,7 @@ class Blackout:
         if kwargs.get('origin') == '':
             raise ValueError('origin can not be an empty string')
 
-        start_time = kwargs.get('start_time', None) or datetime.utcnow()
+        start_time = kwargs.get('start_time', None) or datetime.now(UTC)
         if kwargs.get('end_time', None):
             end_time = kwargs['end_time']
             duration = int((end_time - start_time).total_seconds())
@@ -57,7 +57,7 @@ class Blackout:
         self.remaining = kwargs.get('remaining', duration)
 
         self.user = kwargs.get('user', None)
-        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
         self.text = kwargs.get('text', None)
 
         if self.environment:
@@ -81,7 +81,7 @@ class Blackout:
 
     @property
     def status(self):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         if self.start_time <= now < self.end_time:
             return BlackoutStatus.Active
         if self.start_time > now:
@@ -200,8 +200,8 @@ class Blackout:
             tags=rec.tags,
             origin=rec.origin if rec.origin != '' else None,
             customer=rec.customer,
-            start_time=rec.start_time,
-            end_time=rec.end_time,
+            start_time=rec.start_time.replace(tzinfo=UTC) if rec.start_time is not None else None,
+            end_time=rec.end_time.replace(tzinfo=UTC) if rec.end_time is not None else None,
             duration=rec.duration,
             remaining=rec.remaining,
             user=rec.user,

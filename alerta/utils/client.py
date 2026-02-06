@@ -41,7 +41,7 @@ class Client:
             'attributes': kwargs.get('attributes', None) or dict(),
             'origin': kwargs.get('origin'),
             'type': kwargs.get('type'),
-            'createTime': datetime.datetime.utcnow(),
+            'createTime': datetime.datetime.now(datetime.UTC),
             'timeout': kwargs.get('timeout'),
             'rawData': kwargs.get('raw_data'),
             'customer': kwargs.get('customer')

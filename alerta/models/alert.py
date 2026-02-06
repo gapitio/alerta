@@ -1,7 +1,7 @@
 import os
 import platform
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional  # noqa
 from typing import Any, Dict, List, Tuple, Union
 from uuid import uuid4
@@ -68,7 +68,7 @@ class Alert:
         self.attributes = kwargs.get('attributes', None) or dict()
         self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
         self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'exceptionAlert'
-        self.create_time = kwargs.get('create_time', None) or datetime.utcnow()
+        self.create_time = kwargs.get('create_time', None) or datetime.now(UTC)
         self.day = self.create_time.strftime('%a')
         self.time = self.create_time.time()
         self.timeout = timeout
@@ -79,7 +79,7 @@ class Alert:
         self.repeat = kwargs.get('repeat', None)
         self.previous_severity = kwargs.get('previous_severity', None)
         self.trend_indication = kwargs.get('trend_indication', None)
-        self.receive_time = kwargs.get('receive_time', None) or datetime.utcnow()
+        self.receive_time = kwargs.get('receive_time', None) or datetime.now(UTC)
         self.last_receive_id = kwargs.get('last_receive_id', None)
         self.last_receive_time = kwargs.get('last_receive_time', None)
         self.update_time = kwargs.get('update_time', None)
@@ -321,7 +321,7 @@ class Alert:
 
     # de-duplicate an alert
     def deduplicate(self, duplicate_of) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         status, previous_value, previous_status, _ = self._get_hist_info()
 
@@ -374,7 +374,7 @@ class Alert:
 
     # correlate an alert
     def update(self, correlate_with) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         self.previous_severity = db.get_severity(self)
         self.trend_indication = alarm_model.trend(self.previous_severity, self.severity)
@@ -418,7 +418,7 @@ class Alert:
 
     # create an alert
     def create(self) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         trend_indication = alarm_model.trend(alarm_model.DEFAULT_PREVIOUS_SEVERITY, self.severity)
 
@@ -469,7 +469,7 @@ class Alert:
 
     # set alert status
     def set_status(self, status: str, text: str = '', timeout: int = None) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         timeout = timeout or current_app.config['ALERT_TIMEOUT']
         history = History(
@@ -621,7 +621,7 @@ class Alert:
     def create_multiple_alerts(alerts: 'list[Alert]'):
         if len(alerts) < 1:
             return []
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         for alert in alerts:
 
             trend_indication = alarm_model.trend(alarm_model.DEFAULT_PREVIOUS_SEVERITY, alert.severity)
@@ -657,7 +657,7 @@ class Alert:
     def dedup_multiple_alerts(duplicates: 'list[dict[str, Alert]]'):
         if len(duplicates) < 1:
             return []
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         alerts = []
         for alert in duplicates:
             alert, duplicate_of = (alert['alert'], alert['duplicate'])
@@ -716,7 +716,7 @@ class Alert:
     def update_multiple(correlates: 'list[dict[str, Alert]]') -> 'Alert':
         if len(correlates) < 1:
             return []
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         alerts = []
         for alert in correlates:
             alert, correlate_with = (alert['alert'], alert['correlate'])
@@ -777,7 +777,7 @@ class Alert:
             value=self.value,
             text=text,
             change_type=ChangeType.note,
-            update_time=datetime.utcnow(),
+            update_time=datetime.now(UTC),
             user=g.login
         )
         db.add_history(self.id, history)
@@ -797,7 +797,7 @@ class Alert:
             value=self.value,
             text='note dismissed',
             change_type=ChangeType.dismiss,
-            update_time=datetime.utcnow(),
+            update_time=datetime.now(UTC),
             user=g.login
         )
         db.add_history(self.id, history)
@@ -812,7 +812,7 @@ class Alert:
         )
 
     def from_status(self, status: str, text: str = '', timeout: int = None) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         self.timeout = timeout or current_app.config['ALERT_TIMEOUT']
         history = [History(
@@ -841,7 +841,7 @@ class Alert:
 
     @staticmethod
     def from_action_multiple(alerts, action, text='', timeout=None):
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         statuses = Alert._get_hist_infos(alerts, action)
         updates = []
         for a in alerts:
@@ -897,7 +897,7 @@ class Alert:
         return [Alert.from_db(alert) for alert in db.set_alerts(updates)]
 
     def from_action(self, action: str, text: str = '', timeout: int = None) -> 'Alert':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
 
         status, _, previous_status, previous_timeout = self._get_hist_info(action)
 

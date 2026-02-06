@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, List
 
 import blinker
@@ -91,7 +91,7 @@ class AuditTrail:
 
         return json.dumps({
             'id': str(uuid.uuid4()),
-            '@timestamp': datetime.utcnow(),
+            '@timestamp': datetime.now(UTC),
             'event': event,
             'category': category,
             'message': message,

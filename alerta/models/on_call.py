@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -32,7 +32,7 @@ class OnCall:
         self.customer = kwargs.get('customer')
         self.user = kwargs.get('user')
 
-        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
 
     @property
     def users(self):

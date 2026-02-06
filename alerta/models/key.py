@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -28,7 +28,7 @@ class ApiKey:
         self.user = user
         self.scopes = scopes or key_helper.user_default_scopes
         self.text = text
-        self.expire_time = expire_time or datetime.utcnow() + timedelta(days=key_helper.api_key_expire_days)
+        self.expire_time = expire_time or datetime.now(UTC) + timedelta(days=key_helper.api_key_expire_days)
         self.count = kwargs.get('count', 0)  # type: ignore
         self.last_used_time = kwargs.get('last_used_time', None)
         self.customer = customer
@@ -39,7 +39,7 @@ class ApiKey:
 
     @property
     def status(self) -> ApiKeyStatus:
-        return ApiKeyStatus.Expired if datetime.utcnow() > self.expire_time else ApiKeyStatus.Active
+        return ApiKeyStatus.Expired if datetime.now(UTC) > self.expire_time else ApiKeyStatus.Active
 
     @classmethod
     def parse(cls, json: JSON) -> 'ApiKey':
@@ -120,7 +120,7 @@ class ApiKey:
             user=rec.user,
             scopes=[Scope(s) for s in rec.scopes],  # legacy type => scopes conversion only required for mongo documents
             text=rec.text,
-            expire_time=rec.expire_time,
+            expire_time=rec.expire_time.replace(tzinfo=UTC) if rec.expire_time is not None else None,
             count=rec.count,
             last_used_time=rec.last_used_time,
             customer=rec.customer
@@ -177,7 +177,7 @@ class ApiKey:
     @staticmethod
     def verify_key(key: str) -> Optional['ApiKey']:
         key_info = ApiKey.from_db(db.get_key(key))
-        if key_info and key_info.expire_time > datetime.utcnow():
+        if key_info and key_info.expire_time > datetime.now(UTC):
             db.update_key_last_used(key)
             return key_info
         return None

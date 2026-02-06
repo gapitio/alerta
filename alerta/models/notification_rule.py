@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import UTC, datetime, time, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -188,7 +188,7 @@ class NotificationRule:
 
         self.user = kwargs.get('user', None)
         self.create_time = (
-            kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+            kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
         )
         self.text = kwargs.get('text', None)
 
@@ -464,7 +464,7 @@ class NotificationRule:
 
     @staticmethod
     def find_all_reactivate(**kwargs) -> 'list[NotificationRule]':
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         return [NotificationRule.from_db(db_notification_rule) for db_notification_rule in db.get_notification_rules_reactivate(now)]
 
     def get_notification_rule_alerts(self, page=None, page_size=None):

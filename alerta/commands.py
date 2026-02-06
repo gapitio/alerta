@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Dict
 
 import click
@@ -63,7 +63,7 @@ def key(username, want_key, scopes, duration, text, customer, all, force):
         raise click.UsageError('Can only set API key with "--username".')
 
     scopes = [Scope(s) for s in scopes] or [Scope.admin, Scope.write, Scope.read]
-    expires = datetime.utcnow() + timedelta(seconds=duration) if duration else None
+    expires = datetime.now(UTC) + timedelta(seconds=duration) if duration else None
     text = text or 'Created by alertad script'
 
     def create_key(admin, key=None):

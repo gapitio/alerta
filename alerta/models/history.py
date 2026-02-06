@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from alerta.utils.response import absolute_url
 
@@ -13,7 +13,7 @@ class History:
         self.value = kwargs.get('value', None)
         self.text = kwargs.get('text', None)
         self.change_type = kwargs.get('change_type', kwargs.get('type', None)) or ''
-        self.update_time = kwargs.get('update_time', None) or datetime.utcnow()
+        self.update_time = kwargs.get('update_time', None) or datetime.now(UTC)
         self.user = kwargs.get('user', None)
         self.timeout = kwargs.get('timeout', None)
 

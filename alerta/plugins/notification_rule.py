@@ -1,7 +1,7 @@
 import json
 import logging
 import smtplib
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from threading import Thread
 
 import requests
@@ -185,7 +185,7 @@ def log_notification(sent: bool, message: str, channel: NotificationChannel, rul
 
 
 def delay_notification(alert: Alert, notification_rule: NotificationRule):
-    delay_time = datetime.utcnow() + notification_rule.delay_time
+    delay_time = datetime.now(UTC) + notification_rule.delay_time
     NotificationDelay.parse({
         'alert_id': alert.id,
         'notification_rule_id': notification_rule.id,

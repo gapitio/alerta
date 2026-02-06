@@ -29,7 +29,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.10', '3.12']
+        python-version: ['3.12']
 
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.10', '3.12']
+        python-version: ['3.12']
 
     steps:
       - uses: actions/checkout@v4
@@ -174,10 +174,10 @@ jobs:
             libldap2-dev \
             libsasl2-dev \
             xmlsec1
-      - name: Set up Python 3.10
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           architecture: 'x64'
       - name: Install dependencies
         id: install-deps

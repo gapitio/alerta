@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, List, cast
 from urllib.parse import urljoin
 from uuid import uuid4
@@ -49,7 +49,7 @@ def get_customers(login: str, groups: List[str]) -> List[str]:
 
 def create_token(user_id: str, name: str, login: str, provider: str, customers: List[str], scopes: List[str],
                  email: str = None, email_verified: bool = None, picture: str = None, **kwargs) -> 'Jwt':
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     return Jwt(
         iss=request.url_root,
         typ='Bearer',

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -22,7 +22,7 @@ class Note:
         self.user = user
         self.note_type = note_type
         self.attributes = kwargs.get('attributes', None) or dict()
-        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.utcnow()
+        self.create_time = kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
         self.update_time = kwargs.get('update_time')
         self.alert = kwargs.get('alert')
         self.customer = kwargs.get('customer')

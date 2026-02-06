@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import UTC, datetime
 from io import BytesIO, StringIO
 
 from flask import current_app, g, jsonify, request, send_file
@@ -411,7 +411,7 @@ def delete_alerts():
 @timer(gets_timer)
 @jsonp
 def search_alerts():
-    query_time = datetime.utcnow()
+    query_time = datetime.now(UTC)
     query = qb.alerts.from_params(request.args, customers=g.customers, query_time=query_time)
     show_raw_data = request.args.get('show-raw-data', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
     show_history = request.args.get('show-history', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
