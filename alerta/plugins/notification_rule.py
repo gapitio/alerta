@@ -345,7 +345,7 @@ class NotificationRulesHandler(PluginBase):
         return alert
 
     def post_receive(self, alert: 'Alert', **kwargs):
-        if not alert:
+        if not alert or alert.is_shelved:
             return
         NotificationDelay.delete_alert(alert.id)
         config = kwargs.get('config')

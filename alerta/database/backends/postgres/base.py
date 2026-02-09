@@ -1018,6 +1018,13 @@ class Backend(Database):
         """
         return self._fetchone(select, query.vars).count
 
+    def is_shelved(self, alert):
+        select = """
+            select true from alerts where status='shelved' AND resource=%(resource)s AND event=%(event)s AND environment=%(environment)s
+        """
+        test = self._fetchone(select, vars(alert))
+        return test is not None
+
     def is_blackout_period(self, alert):
         select = """
             SELECT *
