@@ -156,7 +156,7 @@ class HeartbeatsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['service'], ['Test'])
         self.assertEqual(data['alert']['timeout'], 2)
         self.assertEqual(data['alert']['duplicateCount'], 0)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
+        self.assertEqual(data['alert']['severity'], 'major')
         self.assertEqual(data['alert']['history'][0]['user'], None)
 
     def test_heartbeat_from_alert(self):
@@ -242,7 +242,6 @@ class HeartbeatsTestCase(unittest.TestCase):
                 environment='Development',
                 severity='warning',
                 service=['Monitoring'],
-                group='Healthchecks'
             )
         )
         self.assertEqual(data['heartbeats'][0]['timeout'], 8)

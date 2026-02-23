@@ -61,6 +61,12 @@ CREATE TABLE IF NOT EXISTS alerts (
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS custom_tags text[];
 ALTER TABLE alerts DROP COLUMN IF EXISTS correlate;
+ALTER TABLE alerts
+DROP COLUMN IF EXISTS "group",
+DROP COLUMN IF EXISTS "repeat",
+DROP COLUMN IF EXISTS "type",
+DROP COLUMN IF EXISTS "trend_indication"
+;
 
 -- remove alerts with status set to null
 DO $$
@@ -101,7 +107,8 @@ ALTER TABLE blackouts
 ADD COLUMN IF NOT EXISTS "user" text,
 ADD COLUMN IF NOT EXISTS create_time timestamp without time zone,
 ADD COLUMN IF NOT EXISTS text text,
-ADD COLUMN IF NOT EXISTS origin text;
+ADD COLUMN IF NOT EXISTS origin text,
+DROP COLUMN IF EXISTS "group";
 
 DROP TABLE IF EXISTS twilio_rules;
 
@@ -244,6 +251,8 @@ BEGIN
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
 END$$;
+
+ALTER TABLE escalation_rules DROP COLUMN IF EXISTS "group";
 
 
 CREATE TABLE IF NOT EXISTS delayed_notifications (
@@ -432,7 +441,7 @@ DO $$
 BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
     UPDATE public.notification_rules SET event=NULL WHERE event='';
-    UPDATE public.notification_rules SET "group"=NULL WHERE "group"='';
+    ALTER TABLE notification_rules DROP COLUMN IF EXISTS "group";
     UPDATE notification_rules SET excluded_tags='{}' WHERE excluded_tags IS NULL;
     UPDATE notification_rules set triggers = ARRAY[('{}', '{}', '{}', null)::notification_triggers] WHERE triggers = '{}';
 

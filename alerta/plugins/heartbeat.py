@@ -26,7 +26,6 @@ class HeartbeatReceiver(PluginBase):
                     'environment': alert.environment,
                     'severity': alert.severity,
                     'service': alert.service,
-                    'group': alert.group
                 },
                 timeout=alert.timeout,
                 customer=alert.customer

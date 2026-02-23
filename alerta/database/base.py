@@ -239,11 +239,6 @@ class Database(Base):
     def get_services(self, query=None, topn=1000):
         raise NotImplementedError
 
-    # ALERT GROUPS
-
-    def get_alert_groups(self, query=None, topn=1000):
-        raise NotImplementedError
-
     # ALERT TAGS
 
     def get_alert_tags(self, query=None, topn=1000):

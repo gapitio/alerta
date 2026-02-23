@@ -117,7 +117,7 @@ class ChannelNotificationTestCase(unittest.TestCase):
         self.assertEqual(delayed_data['notifications'], [])
         while len(delayed_data['notifications']) == 0:
             delayed_data = self.get_api_obj('/notificationdelay/fire', self.headers)
-        self.assertTrue(datetime.now() - start >= timedelta(seconds=1))
+        self.assertGreaterEqual(datetime.now() - start, timedelta(seconds=1))
         self.assertIn({'rule_id': delayed_notification_rule_id, 'alert_id': alert_id}, map(get_delay_id, delayed_data['notifications']))
 
     def test_twilio_sms_channel(self):
