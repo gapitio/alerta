@@ -56,17 +56,12 @@ COLOR_MAP = {
     'text': 'black'
 }
 
-F_DSUPR = 'DSUPR'
-G_OOSRV = 'OOSRV'
-
 STATUS_MAP = {
     Status.Closed: 'A',
     Status.Open: 'B',
     Status.Ack: 'C',
     Status.Unack: 'D',
     Status.Shelved: 'E',
-    F_DSUPR: 'F',
-    G_OOSRV: 'G'
 }
 
 MORE_SEVERE = 'moreSevere'
@@ -174,22 +169,8 @@ class StateMachine(AlarmModel):
             if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
                 return next_state('Open -> Unack', current_severity, Status.Unack)
 
-        # Return from Suppressed-by-design (F) -> Normal (A) or Unack (B)
-        if state == F_DSUPR:
-            if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
-                return next_state('Return from Suppressed-by-design, Suppressed-by-design (G) -> Normal (A)', current_severity, Status.Closed)
-            else:
-                return next_state('Return from Suppressed-by-design, Suppressed-by-design (G) -> Unack (B)', current_severity, Status.Open)
-
-        # Return from Out-of-service (G) -> Normal (A) or Unack (B)
-        if state == G_OOSRV:
-            if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
-                return next_state('Return from Out-of-service, Out-of-service (G) -> Normal (A)', current_severity, Status.Closed)
-            else:
-                return next_state('Return from Out-of-service, Out-of-service (G) -> Unack (B)', current_severity, Status.Open)
-
         return next_state('NOOP', current_severity, state)
 
     @staticmethod
     def is_suppressed(alert):
-        return alert.status in [F_DSUPR, G_OOSRV]
+        return alert.status == Status.Shelved

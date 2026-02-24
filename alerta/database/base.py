@@ -146,6 +146,9 @@ class Database(Base):
     def get_alert(self, id, customers=None):
         raise NotImplementedError
 
+    def is_shelved(self, alert):
+        raise NotImplementedError
+
     # STATUS, TAGS, ATTRIBUTES
 
     def set_status(self, id, status, timeout, update_time, history=None):

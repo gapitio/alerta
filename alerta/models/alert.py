@@ -454,6 +454,10 @@ class Alert:
         return db.is_blackout_period(self)
 
     @property
+    def is_shelved(self) -> bool:
+        return db.is_shelved(self)
+
+    @property
     def is_suppressed(self) -> bool:
         """Is the alert status 'blackout'?"""
         return alarm_model.is_suppressed(self)
