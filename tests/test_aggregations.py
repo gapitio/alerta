@@ -12,7 +12,6 @@ class AggregationsTestCase(unittest.TestCase):
         test_config = {
             'TESTING': True,
             'AUTH_REQUIRED': False,
-            'ALERT_TIMEOUT': 120,
             'HISTORY_LIMIT': 5
         }
         self.app = create_app(test_config)

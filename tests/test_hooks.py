@@ -121,7 +121,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -149,7 +149,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -168,7 +168,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertEqual(alert.history[0].text, 'node is down.')
         self.assertEqual(alert.history[0].change_type, 'new')
         self.assertIsNone(alert.history[0].user)
-        self.assertEqual(alert.history[0].timeout, 86400)
+        self.assertEqual(alert.history[0].timeout, 0)
 
         return alert
 
@@ -186,7 +186,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -205,7 +205,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertEqual(alert.history[0].text, 'node is down.')
         self.assertEqual(alert.history[0].change_type, 'new')
         self.assertIsNone(alert.history[0].user)
-        self.assertEqual(alert.history[0].timeout, 86400)
+        self.assertEqual(alert.history[0].timeout, 0)
 
         self.assertEqual(action, 'ack')
         self.assertEqual(text, 'ack text')
@@ -226,7 +226,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -245,7 +245,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertEqual(alert.history[0].text, 'node is down.')
         self.assertEqual(alert.history[0].change_type, 'new')
         self.assertIsNone(alert.history[0].user)
-        self.assertEqual(alert.history[0].timeout, 86400)
+        self.assertEqual(alert.history[0].timeout, 0)
 
         self.assertEqual(status, 'ack')
         self.assertEqual(text, 'ack text')
@@ -266,7 +266,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -295,7 +295,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertEqual(alert.history[1].text, 'node is down.')
         self.assertEqual(alert.history[1].change_type, 'new')
         self.assertIsNone(alert.history[1].user)
-        self.assertEqual(alert.history[1].timeout, 86400)
+        self.assertEqual(alert.history[1].timeout, 0)
 
         self.assertEqual(text, 'this is a note')
 
@@ -315,7 +315,7 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertDictEqual(alert.attributes, {'region': 'EU', 'site': 'london'})
         self.assertEqual(alert.origin, 'test_hooks.py')
         self.assertIsInstance(alert.create_time, datetime)
-        self.assertEqual(alert.timeout, 86400)
+        self.assertEqual(alert.timeout, 0)
         self.assertEqual(alert.raw_data, 'raw text')
         self.assertIsNone(alert.customer)
 
@@ -354,6 +354,6 @@ class Plugin1(unittest.TestCase, PluginBase):
         self.assertEqual(alert.history[2].text, 'node is down.')
         self.assertEqual(alert.history[2].change_type, 'new')
         self.assertIsNone(alert.history[2].user)
-        self.assertEqual(alert.history[2].timeout, 86400)
+        self.assertEqual(alert.history[2].timeout, 0)
 
         return True

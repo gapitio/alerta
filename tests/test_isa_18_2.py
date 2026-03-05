@@ -14,7 +14,6 @@ class Isa182TestCase(unittest.TestCase):
             'ALARM_MODEL': 'ISA_18_2',
             'AUTH_REQUIRED': False,
             'PLUGINS': [],
-            'ALERT_TIMEOUT': 120,
             'HISTORY_LIMIT': 5
         }
         self.app = create_app(test_config, environment='development')

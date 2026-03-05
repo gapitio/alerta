@@ -871,7 +871,7 @@ class WebhooksTestCase(unittest.TestCase):
                              'target="_blank">Rule</a>')
             self.assertNotIn('service', data['alert']['attributes'])
             self.assertEqual(data['alert']['origin'], 'Grafana')
-            self.assertEqual(data['alert']['timeout'], 86400)
+            self.assertEqual(data['alert']['timeout'], 0)
             self.assertEqual(data['alert']['customer'], 'Foo Corp.')
 
     def test_graylog_webhook(self):
@@ -977,7 +977,7 @@ class WebhooksTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['event'], 'thing_dead')
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['severity'], 'critical')
-        self.assertEqual(data['alert']['timeout'], 86400)
+        self.assertEqual(data['alert']['timeout'], 0)
         self.assertEqual(data['alert']['attributes']['ip'], '10.1.1.1')
         self.assertEqual(data['alert']['attributes']['moreInfo'],
                          '<a href="http://somehost:9090/graph?g0.expr=sum%28irate%28messages_received_total%5B5m%5D%29%29+%3D%3D+0&g0.tab=0" target="_blank">Prometheus Graph</a>')

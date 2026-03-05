@@ -41,7 +41,7 @@ class Alert:
             if kwargs['status'] not in alarm_model.Status.keys():
                 raise ValueError(f'Status must be one of: {", ".join(alarm_model.Status.keys())}')
 
-        timeout = kwargs.get('timeout') if kwargs.get('timeout') is not None else current_app.config['ALERT_TIMEOUT']
+        timeout = kwargs.get('timeout') or 0
         try:
             timeout = int(timeout)  # type: ignore
         except ValueError:
@@ -87,8 +87,6 @@ class Alert:
             raise ValueError('tags must be a list')
         if not isinstance(json.get('attributes', {}), dict):
             raise ValueError('attributes must be a JSON object')
-        if not isinstance(json.get('timeout') if json.get('timeout', None) is not None else 0, int):
-            raise ValueError('timeout must be an integer')
         if json.get('customer', None) == '':
             raise ValueError('customer must not be an empty string')
 
@@ -106,7 +104,6 @@ class Alert:
             attributes=json.get('attributes', dict()),
             origin=json.get('origin', None),
             create_time=DateTime.parse(json['createTime']) if 'createTime' in json else None,
-            timeout=json.get('timeout', None),
             raw_data=json.get('rawData', None),
             customer=json.get('customer', None)
         )
@@ -443,7 +440,7 @@ class Alert:
     def set_status(self, status: str, text: str = '', timeout: int = None) -> 'Alert':
         now = datetime.now(UTC)
 
-        timeout = timeout or current_app.config['ALERT_TIMEOUT']
+        timeout = timeout or 0
         history = History(
             id=self.id,
             event=self.event,
@@ -772,9 +769,8 @@ class Alert:
         return Note.delete_by_id(note_id)
 
     @staticmethod
-    def housekeeping(expired_threshold: int, info_threshold: int) -> Tuple[List['Alert'], List['Alert'], List['Alert']]:
+    def housekeeping() -> Tuple[List['Alert'], List['Alert'], List['Alert']]:
         return (
-            [Alert.from_db(alert) for alert in db.get_expired(expired_threshold, info_threshold)],
             [Alert.from_db(alert) for alert in db.get_unshelve()],
             [Alert.from_db(alert) for alert in db.get_unack()]
         )
@@ -782,7 +778,7 @@ class Alert:
     def from_status(self, status: str, text: str = '', timeout: int = None) -> 'Alert':
         now = datetime.now(UTC)
 
-        self.timeout = timeout or current_app.config['ALERT_TIMEOUT']
+        self.timeout = timeout or 0
         history = [History(
             id=self.id,
             event=self.event,
@@ -818,12 +814,12 @@ class Alert:
             if action in [ChangeType.unack, ChangeType.unshelve, ChangeType.timeout]:
                 timeout = timeout or previous_timeout
 
-            if action in [ChangeType.ack, ChangeType.unack]:
+            if action in [ChangeType.ack]:
                 timeout = timeout or current_app.config['ACK_TIMEOUT']
-            elif action in [ChangeType.shelve, ChangeType.unshelve]:
+            elif action in [ChangeType.shelve]:
                 timeout = timeout or current_app.config['SHELVE_TIMEOUT']
             else:
-                timeout = timeout or a.timeout or current_app.config['ALERT_TIMEOUT']
+                timeout = timeout or 0
 
             new_severity, new_status = alarm_model.transition(
                 alert=a,
@@ -846,7 +842,7 @@ class Alert:
                 'status': new_status,
                 'tags': a.tags,
                 'attributes': a.attributes,
-                'timeout': a.timeout,
+                'timeout': int(timeout),
                 'previous_severity': a.severity if new_severity != a.severity else a.previous_severity,
                 'update_time': now,
                 'history': [History(
@@ -872,12 +868,12 @@ class Alert:
         if action in [ChangeType.unack, ChangeType.unshelve, ChangeType.timeout]:
             timeout = timeout or previous_timeout
 
-        if action in [ChangeType.ack, ChangeType.unack]:
+        if action in [ChangeType.ack]:
             timeout = timeout or current_app.config['ACK_TIMEOUT']
-        elif action in [ChangeType.shelve, ChangeType.unshelve]:
+        elif action in [ChangeType.shelve]:
             timeout = timeout or current_app.config['SHELVE_TIMEOUT']
         else:
-            timeout = timeout or self.timeout or current_app.config['ALERT_TIMEOUT']
+            timeout = timeout or 0
 
         new_severity, new_status = alarm_model.transition(
             alert=self,
@@ -913,14 +909,11 @@ class Alert:
             status=new_status,
             tags=self.tags,
             attributes=self.attributes,
-            timeout=self.timeout,
+            timeout=timeout,
             previous_severity=self.severity if new_severity != self.severity else self.previous_severity,
             update_time=now,
             history=history)
         )
-
-    def from_expired(self, text: str = '', timeout: int = None):
-        return self.from_action(action='expired', text=text, timeout=timeout)
 
     def from_timeout(self, text: str = '', timeout: int = None):
         return self.from_action(action='timeout', text=text, timeout=timeout)

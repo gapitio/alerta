@@ -16,7 +16,6 @@ class AlertsTestCase(unittest.TestCase):
         test_config = {
             'TESTING': True,
             'AUTH_REQUIRED': False,
-            'ALERT_TIMEOUT': 120,
             'HISTORY_LIMIT': 5
         }
         self.app = create_app(test_config)
@@ -727,53 +726,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertListEqual([h['value'] for h in data['alert']['history']], ['101', '102', '99', '104', '105'])
         self.assertListEqual([h['type'] for h in data['alert']['history']],
                              ['status', 'value', 'severity', 'severity', 'value'])
-
-    def test_timeout(self):
-
-        # create alert with default timeout
-        response = self.client.post('/alert', data=json.dumps(self.fatal_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 120)
-
-        # resend alert with different timeout
-        self.fatal_alert['timeout'] = 20
-        response = self.client.post('/alert', data=json.dumps(self.fatal_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 20)
-
-        # resend alert with timeout disabled (ie. 0)
-        self.fatal_alert['timeout'] = 0
-        response = self.client.post('/alert', data=json.dumps(self.fatal_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 0)
-
-        # send correlated with different timeout
-        response = self.client.post('/alert', data=json.dumps(self.major_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 40)
-
-        # send different correlated alert with different timeout
-        response = self.client.post('/alert', data=json.dumps(self.warn_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 50)
-
-        # send same correlated alert with different timeout
-        self.warn_alert['timeout'] = 60
-        response = self.client.post('/alert', data=json.dumps(self.warn_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 60)
-
-        # send ok alert with default timeout
-        response = self.client.post('/alert', data=json.dumps(self.ok_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['timeout'], 120)
 
     def test_filter_params(self):
         # create alert

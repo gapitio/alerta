@@ -327,7 +327,7 @@ class Backend(Database):
         update = f"""
             UPDATE alerts
                SET event=al.event, severity=al.severity, status=al.status, service=al.service, value=al.value, text=al.text,
-                   create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, previous_severity=al.previous_severity,
+                   create_time=al.create_time, timeout=CASE WHEN al.status != ALL (ARRAY['ack', 'shelved']) THEN al.timeout ELSE alerts.timeout END, raw_data=al.raw_data, previous_severity=al.previous_severity,
                    receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
                    tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
                    duplicate_count=al.duplicate_count, update_time=COALESCE(al.update_time, alerts.update_time),
@@ -361,7 +361,7 @@ class Backend(Database):
                 (
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s,%(value{i})s, %(text{i})s,
-                    %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
+                    %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
                     %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
                     (%(history{i})s)::history, %(customer{i})s
                 )
@@ -371,7 +371,7 @@ class Backend(Database):
         update = f"""
             UPDATE alerts
                SET status=al.status, service=al.service, value=al.value, text=al.text,
-                   timeout=al.timeout, raw_data=al.raw_data,
+                   raw_data=al.raw_data,
                    last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
                    tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
                    duplicate_count=alerts.duplicate_count + 1, update_time=COALESCE(al.update_time, alerts.update_time),
@@ -381,7 +381,7 @@ class Backend(Database):
                 ) as al(
                     environment, resource, event, severity,
                     status, service, value, text,
-                    timeout, raw_data, last_receive_id, last_receive_time,
+                    raw_data, last_receive_id, last_receive_time,
                     tags, attributes, update_time, history, customer
                 )
              WHERE alerts.environment=al.environment
@@ -2641,62 +2641,28 @@ class Backend(Database):
 
     # HOUSEKEEPING
 
-    def get_expired(self, expired_threshold, info_threshold):
-        # delete 'closed' or 'expired' alerts older than "expired_threshold" seconds
-        # and 'informational' alerts older than "info_threshold" seconds
-
-        if expired_threshold:
-            delete = """
-                DELETE FROM alerts
-                 WHERE (status IN ('closed', 'expired')
-                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(expired_threshold)s seconds'))
-            """
-            self._deleteall(delete, {'expired_threshold': expired_threshold})
-
-        if info_threshold:
-            delete = """
-                DELETE FROM alerts
-                 WHERE (severity=%(inform_severity)s
-                        AND last_receive_time < (NOW() at time zone 'utc' - INTERVAL '%(info_threshold)s seconds'))
-            """
-            self._deleteall(delete, {'inform_severity': alarm_model.DEFAULT_INFORM_SEVERITY, 'info_threshold': info_threshold})
-
-        # get list of alerts to be newly expired
-        select = """
-            SELECT *
-              FROM alerts
-             WHERE status NOT IN ('expired') AND COALESCE(timeout, {timeout})!=0
-               AND (last_receive_time + INTERVAL '1 second' * timeout) < NOW() at time zone 'utc'
-        """.format(timeout=current_app.config['ALERT_TIMEOUT'])
-
-        return self._fetchall(select, {})
-
     def get_unshelve(self):
         # get list of alerts to be unshelved
-        select = """
-            SELECT DISTINCT ON (a.id) a.*
-              FROM alerts a, UNNEST(history) h
-             WHERE a.status='shelved'
-               AND h.type='shelve'
-               AND h.status='shelved'
-               AND COALESCE(h.timeout, {timeout})!=0
-               AND (a.update_time + INTERVAL '1 second' * h.timeout) < NOW() at time zone 'utc'
-          ORDER BY a.id, a.update_time DESC
-        """.format(timeout=current_app.config['SHELVE_TIMEOUT'])
+        select = f"""
+            SELECT *
+                FROM alerts
+                WHERE status='shelved'
+                AND COALESCE(timeout, {current_app.config['SHELVE_TIMEOUT']})!=0
+                AND (update_time + INTERVAL '1 second' * timeout) < NOW() at time zone 'utc'
+            ORDER BY update_time DESC
+        """
         return self._fetchall(select, {})
 
     def get_unack(self):
         # get list of alerts to be unack'ed
-        select = """
-            SELECT DISTINCT ON (a.id) a.*
-              FROM alerts a, UNNEST(history) h
-             WHERE a.status='ack'
-               AND h.type='ack'
-               AND h.status='ack'
-               AND COALESCE(h.timeout, {timeout})!=0
-               AND (a.update_time + INTERVAL '1 second' * h.timeout) < NOW() at time zone 'utc'
-          ORDER BY a.id, a.update_time DESC
-        """.format(timeout=current_app.config['ACK_TIMEOUT'])
+        select = f"""
+            SELECT *
+              FROM alerts
+             WHERE status='ack'
+               AND COALESCE(timeout, {current_app.config['ACK_TIMEOUT']})!=0
+               AND (update_time + INTERVAL '1 second' * timeout) < NOW() at time zone 'utc'
+          ORDER BY id, update_time DESC
+        """
         return self._fetchall(select, {})
 
     # SQL HELPERS

@@ -42,7 +42,6 @@ def config():
         'oidc_auth_url': current_app.config['OIDC_AUTH_URL'],
         'site_logo_url': current_app.config['SITE_LOGO_URL'],
         'timeouts': {
-            'alert': current_app.config['ALERT_TIMEOUT'],
             'heartbeat': current_app.config['HEARTBEAT_TIMEOUT'],
             'ack': current_app.config['ACK_TIMEOUT'],
             'shelve': current_app.config['SHELVE_TIMEOUT']
