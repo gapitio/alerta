@@ -150,7 +150,6 @@ class History(QueryBuilder):
         'severity': ('h"."severity', 's.code', 1),
         'status': ('h"."status', 'st.state', 1),
         'service': ('service', 'service', 1),
-        'group': ('group', '"group"', 1),
         'value': ('h"."value', 'value', 1),
         'text': ('h"."text', 'text', 1),
         'tag': ('tags', None, 0),  # filter
@@ -158,15 +157,12 @@ class History(QueryBuilder):
         'customTags': ('custom_tags', 'custom_tags', 1),  # sort-by
         'attributes': ('attributes', 'attributes', 1),
         'origin': ('origin', 'origin', 1),
-        'type': ('event_type', 'event_type', 1),
         'createTime': ('create_time', 'create_time', -1),
         'timeout': ('timeout', 'timeout', 1),
         'rawData': ('raw_data', 'raw_data', 1),
         'customer': ('customer', 'customer', 1),
         'duplicateCount': ('duplicate_count', 'duplicate_count', 1),
-        'repeat': ('repeat', 'repeat', 1),
         'previousSeverity': ('previous_severity', 'previous_severity', 1),
-        'trendIndication': ('trend_indication', 'trend_indication', 1),
         'receiveTime': ('receive_time', 'receive_time', -1),
         'lastReceiveId': ('last_receive_id', 'last_receive_id', 1),
         'lastReceiveTime': ('last_receive_time', 'last_receive_time', -1),
@@ -206,10 +202,6 @@ class History(QueryBuilder):
             query.append('AND h.update_time <= %(to_date)s')
             qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
 
-        if params.get('repeat', None):
-            query.append('AND repeat=%(repeat)s')
-            qvars['repeat'] = params.get('repeat', default=True, type=lambda x: x.lower()
-                                         in ['true', 't', '1', 'yes', 'y', 'on'])
         # id
         ids = params.getlist('id')
         if len(ids) == 1:
@@ -238,7 +230,6 @@ class Alerts(QueryBuilder):
         'severity': ('severity', 's.code', 1),
         'status': ('status', 'st.state', 1),
         'service': ('service', 'service', 1),
-        'group': ('group', '"group"', 1),
         'value': ('value', 'value', 1),
         'text': ('text', 'text', 1),
         'tag': ('tags', None, 0),  # filter
@@ -246,15 +237,12 @@ class Alerts(QueryBuilder):
         'customTags': ('custom_tags', 'custom_tags', 1),  # sort-by
         'attributes': ('attributes', 'attributes', 1),
         'origin': ('origin', 'origin', 1),
-        'type': ('event_type', 'event_type', 1),
         'createTime': ('create_time', 'create_time', -1),
         'timeout': ('timeout', 'timeout', 1),
         'rawData': ('raw_data', 'raw_data', 1),
         'customer': ('customer', 'customer', 1),
         'duplicateCount': ('duplicate_count', 'duplicate_count', 1),
-        'repeat': ('repeat', 'repeat', 1),
         'previousSeverity': ('previous_severity', 'previous_severity', 1),
-        'trendIndication': ('trend_indication', 'trend_indication', 1),
         'receiveTime': ('receive_time', 'receive_time', -1),
         'lastReceiveId': ('last_receive_id', 'last_receive_id', 1),
         'lastReceiveTime': ('last_receive_time', 'last_receive_time', -1),
@@ -301,10 +289,6 @@ class Alerts(QueryBuilder):
             query.append('AND last_receive_time <= %(to_date)s')
             qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
 
-        if params.get('repeat', None):
-            query.append('AND repeat=%(repeat)s')
-            qvars['repeat'] = params.get('repeat', default=True, type=lambda x: x.lower()
-                                         in ['true', 't', '1', 'yes', 'y', 'on'])
         # id
         ids = params.getlist('id')
         if len(ids) == 1:
@@ -332,7 +316,6 @@ class Blackouts(QueryBuilder):
         'service': ('service', 'service', 1),
         'resource': ('resource', 'resource', 1),
         'event': ('event', 'event', 1),
-        'group': ('group', '"group"', 1),
         'tag': ('tags', None, 0),  # filter
         'tags': (None, 'tags', 1),  # sort-by
         'customer': ('customer', 'customer', 1),
@@ -470,7 +453,6 @@ class NotificationRules(QueryBuilder):
         'service': ('service', 'service', 1),
         'resource': ('resource', 'resource', 1),
         'event': ('event', 'event', 1),
-        'group': ('group', '"group"', 1),
         'tag': ('tags', None, 0),  # filter
         'tags': (None, 'tags', 1),  # sort-by
         'customer': ('customer', 'customer', 1),
@@ -582,7 +564,6 @@ class EscalationRules(QueryBuilder):
         'service': ('service', 'service', 1),
         'resource': ('resource', 'resource', 1),
         'event': ('event', 'event', 1),
-        'group': ('group', '"group"', 1),
         'tag': ('tags', None, 0),  # filter
         'taga': ('"t"."all"', None, 0),  # filter
         'tago': ('"t"."any"', None, 0),  # filter

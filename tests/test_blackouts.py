@@ -712,7 +712,6 @@ class BlackoutsTestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['duplicateCount'], 1)
-        self.assertEqual(data['alert']['repeat'], True)
         self.assertEqual(data['alert']['receiveTime'], alert_receive_time)
         self.assertEqual(
             data['alert']['attributes']['is_blackout'], True  # original alert received within blackout period
@@ -774,7 +773,6 @@ class BlackoutsTestCase(unittest.TestCase):
         self.assertEqual(data['blackout']['environment'], 'Development')
         self.assertEqual(data['blackout']['resource'], 'node404')
         self.assertEqual(data['blackout']['service'], ['Network', 'Web'])
-        self.assertEqual(data['blackout']['group'], None)
         self.assertEqual(data['blackout']['startTime'], '2019-01-01T00:00:00.000Z')
         self.assertEqual(data['blackout']['endTime'], '2099-12-31T23:59:59.999Z')
 

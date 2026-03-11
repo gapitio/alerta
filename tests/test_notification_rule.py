@@ -298,7 +298,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         self.assertEqual(data['notificationRule']['environment'], 'Development')
         self.assertEqual(data['notificationRule']['resource'], 'node404')
         self.assertEqual(data['notificationRule']['service'], ['Network', 'Web'])
-        self.assertEqual(data['notificationRule']['group'], None)
         self.assertEqual(data['notificationRule']['startTime'], '00:00')
         self.assertEqual(data['notificationRule']['endTime'], '22:00')
 
@@ -353,13 +352,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         none_severity_alert = {**base_alert, 'severity': None}
         pop_severity_alert = {**base_alert}
         pop_severity_alert.pop('severity')
-
-        wrong_group_alert = {**base_alert, 'group': 'wrong'}
-        none_group_alert = {**base_alert, 'group': None}
-        pop_group_alert = {**base_alert}
-        pop_group_alert.pop('group')
-
-        self.assertNotEqual(wrong_group_alert['group'], base_alert['group'])
 
         notification_rule = {
             'channelId': 'SMS_Channel',
@@ -450,18 +442,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         self.assertNotIn(notification_rule_data['notificationRule'], none_active_notification_rules)
         self.assertNotIn(notification_rule_data['notificationRule'], pop_active_notification_rules)
 
-        data = self.delete_api_obj(f"/alert/{data['id']}", self.headers)
-        wrong_data = self.create_api_obj('/alert', wrong_group_alert, self.headers)
-        none_data = self.create_api_obj('/alert', none_group_alert, self.headers)
-        pop_data = self.create_api_obj('/alert', pop_group_alert, self.headers)
-        wrong_active_notification_rules = self.create_api_obj('/notificationrules/active', wrong_data['alert'], self.headers, 200)['notificationRules']
-        none_active_notification_rules = self.create_api_obj('/notificationrules/active', none_data['alert'], self.headers, 200)['notificationRules']
-        pop_active_notification_rules = self.create_api_obj('/notificationrules/active', pop_data['alert'], self.headers, 200)['notificationRules']
-
-        self.assertNotIn(notification_rule_data['notificationRule'], wrong_active_notification_rules)
-        self.assertNotIn(notification_rule_data['notificationRule'], none_active_notification_rules)
-        self.assertNotIn(notification_rule_data['notificationRule'], pop_active_notification_rules)
-
     def test_full_alert(self):
         now_time = datetime.now()
         diff_time = timedelta(hours=2)
@@ -535,11 +515,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         none_days_rule = {**base_rule, 'days': None}
         pop_days_rule = {**base_rule}
         pop_days_rule.pop('days')
-
-        wrong_group_rule = {**base_rule, 'group': 'wrong'}
-        none_group_rule = {**base_rule, 'group': None}
-        pop_group_rule = {**base_rule}
-        pop_group_rule.pop('group')
 
         more_tags_rule = {**base_rule, 'tags': [{'all': ['notification_test', 'network', 'More']}]}
         less_tags_rule = {**base_rule, 'tags': [{'all': ['notification_test']}]}
@@ -620,16 +595,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         ]
         pop_days_rule_data = self.create_api_obj('/notificationrules', pop_days_rule, self.headers)['notificationRule']
 
-        wrong_group_rule_data = self.create_api_obj('/notificationrules', wrong_group_rule, self.headers)[
-            'notificationRule'
-        ]
-        none_group_rule_data = self.create_api_obj('/notificationrules', none_group_rule, self.headers)[
-            'notificationRule'
-        ]
-        pop_group_rule_data = self.create_api_obj('/notificationrules', pop_group_rule, self.headers)[
-            'notificationRule'
-        ]
-
         more_tags_rule_data = self.create_api_obj('/notificationrules', more_tags_rule, self.headers)[
             'notificationRule'
         ]
@@ -692,10 +657,6 @@ class NotificationRuleTestCase(unittest.TestCase):
         self.assertNotIn(wrong_days_rule_data, notification_rules)
         self.assertIn(none_days_rule_data, notification_rules)
         self.assertIn(pop_days_rule_data, notification_rules)
-
-        self.assertNotIn(wrong_group_rule_data, notification_rules)
-        self.assertIn(none_group_rule_data, notification_rules)
-        self.assertIn(pop_group_rule_data, notification_rules)
 
         self.assertNotIn(more_tags_rule_data, notification_rules)
         self.assertIn(less_tags_rule_data, notification_rules)

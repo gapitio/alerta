@@ -93,7 +93,7 @@ class AdvancedTagsAdapter:
 
 Record = namedtuple('Record', [
     'id', 'resource', 'event', 'environment', 'severity', 'status', 'service',
-    'group', 'value', 'text', 'tags', 'attributes', 'origin', 'update_time',
+    'value', 'text', 'tags', 'attributes', 'origin', 'update_time',
     'user', 'timeout', 'type', 'customer',
 ])
 
@@ -257,14 +257,14 @@ class Backend(Database):
 
     def dedup_alert(self, alert, history):
         """
-        Update alert status, service, value, text, timeout and rawData, increment duplicate count and set
-        repeat=True, and keep track of last receive id and time but don't append to history unless status changes.
+        Update alert status, service, value, text, timeout and rawData, increment duplicate count
+        and keep track of last receive id and time but don't append to history unless status changes.
         """
         alert.history = history
         update = """
             UPDATE alerts
                SET status=%(status)s, service=%(service)s, value=%(value)s, text=%(text)s,
-                   timeout=%(timeout)s, raw_data=%(raw_data)s, repeat=%(repeat)s,
+                   timeout=%(timeout)s, raw_data=%(raw_data)s,
                    last_receive_id=%(last_receive_id)s, last_receive_time=%(last_receive_time)s,
                    tags=%(tags)s, attributes=attributes || %(attributes)s,
                    duplicate_count=duplicate_count + 1, {update_time}, history=(%(history)s || history)[1:{limit}]
@@ -287,8 +287,8 @@ class Backend(Database):
             UPDATE alerts
                SET event=%(event)s, severity=%(severity)s, status=%(status)s, service=%(service)s, value=%(value)s,
                    text=%(text)s, create_time=%(create_time)s, timeout=%(timeout)s, raw_data=%(raw_data)s,
-                   duplicate_count=%(duplicate_count)s, repeat=%(repeat)s, previous_severity=%(previous_severity)s,
-                   trend_indication=%(trend_indication)s, receive_time=%(receive_time)s, last_receive_id=%(last_receive_id)s,
+                   duplicate_count=%(duplicate_count)s, previous_severity=%(previous_severity)s,
+                   receive_time=%(receive_time)s, last_receive_id=%(last_receive_id)s,
                    last_receive_time=%(last_receive_time)s, tags=%(tags)s,
                    attributes=attributes || %(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}]
              WHERE environment=%(environment)s
@@ -305,8 +305,8 @@ class Backend(Database):
 
     def correlate_multiple_alerts(self, alerts):
         """
-        Update alert status, service, value, text, timeout and rawData, increment duplicate count and set
-        repeat=True, and keep track of last receive id and time but don't append to history unless status changes.
+        Update alert status, service, value, text, timeout and rawData, increment duplicate count
+        and keep track of last receive id and time but don't append to history unless status changes.
         """
         objs = {}
         alerts_values = []
@@ -319,7 +319,7 @@ class Backend(Database):
                     %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
                     %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
                     (%(history{i})s), %(customer{i})s, (%(create_time{i})s)::timestamp without time zone, %(previous_severity{i})s,
-                    %(trend_indication{i})s, (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s
+                    (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s
                 )
                 """
             )
@@ -327,8 +327,8 @@ class Backend(Database):
         update = f"""
             UPDATE alerts
                SET event=al.event, severity=al.severity, status=al.status, service=al.service, value=al.value, text=al.text,
-                   create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, repeat=FALSE, previous_severity=al.previous_severity,
-                   trend_indication=al.trend_indication, receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
+                   create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, previous_severity=al.previous_severity,
+                   receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
                    tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
                    duplicate_count=al.duplicate_count, update_time=COALESCE(al.update_time, alerts.update_time),
                    history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
@@ -339,7 +339,7 @@ class Backend(Database):
                     status, service, value, text,
                     timeout, raw_data, last_receive_id, last_receive_time,
                     tags, attributes, update_time, history, customer, create_time, previous_severity,
-                    trend_indication, receive_time, duplicate_count
+                    receive_time, duplicate_count
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource
@@ -350,8 +350,8 @@ class Backend(Database):
 
     def dedup_multiple_alerts(self, alerts):
         """
-        Update alert status, service, value, text, timeout and rawData, increment duplicate count and set
-        repeat=True, and keep track of last receive id and time but don't append to history unless status changes.
+        Update alert status, service, value, text, timeout and rawData, increment duplicate count and keep
+        track of last receive id and time but don't append to history unless status changes.
         """
         objs = {}
         alerts_values = []
@@ -371,7 +371,7 @@ class Backend(Database):
         update = f"""
             UPDATE alerts
                SET status=al.status, service=al.service, value=al.value, text=al.text,
-                   timeout=al.timeout, raw_data=al.raw_data, repeat=TRUE,
+                   timeout=al.timeout, raw_data=al.raw_data,
                    last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
                    tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
                    duplicate_count=alerts.duplicate_count + 1, update_time=COALESCE(al.update_time, alerts.update_time),
@@ -397,9 +397,9 @@ class Backend(Database):
             f"""
                 (
                     %(id{i})s, %(resource{i})s, %(event{i})s, %(environment{i})s, %(severity{i})s, %(status{i})s,
-                    %(service{i})s, %(group{i})s, %(value{i})s, %(text{i})s, %(tags{i})s, %(attributes{i})s, %(origin{i})s,
-                    %(event_type{i})s, %(create_time{i})s, %(timeout{i})s, %(raw_data{i})s, %(customer{i})s, %(duplicate_count{i})s,
-                    %(repeat{i})s, %(previous_severity{i})s, %(trend_indication{i})s, %(receive_time{i})s, %(last_receive_id{i})s,
+                    %(service{i})s, %(value{i})s, %(text{i})s, %(tags{i})s, %(attributes{i})s, %(origin{i})s,
+                    %(create_time{i})s, %(timeout{i})s, %(raw_data{i})s, %(customer{i})s, %(duplicate_count{i})s,
+                    %(previous_severity{i})s, %(receive_time{i})s, %(last_receive_id{i})s,
                     %(last_receive_time{i})s, %(update_time{i})s, %(history{i})s::history[]
                 )
             """ for i in range(len(alerts))])
@@ -408,9 +408,9 @@ class Backend(Database):
             objs.update({f'{key}{i}': value for key, value in vars(alert).items()})
 
         insert = f"""
-            INSERT INTO alerts (id, resource, event, environment, severity, status, service, "group",
-                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
-                duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
+            INSERT INTO alerts (id, resource, event, environment, severity, status, service,
+                value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
+                duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
             VALUES {alerts_insert}
             RETURNING *
@@ -419,14 +419,14 @@ class Backend(Database):
 
     def create_alert(self, alert):
         insert = """
-            INSERT INTO alerts (id, resource, event, environment, severity, status, service, "group",
-                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
-                duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
+            INSERT INTO alerts (id, resource, event, environment, severity, status, service,
+                value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
+                duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
             VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(severity)s, %(status)s,
-                %(service)s, %(group)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
-                %(event_type)s, %(create_time)s, %(timeout)s, %(raw_data)s, %(customer)s, %(duplicate_count)s,
-                %(repeat)s, %(previous_severity)s, %(trend_indication)s, %(receive_time)s, %(last_receive_id)s,
+                %(service)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
+                %(create_time)s, %(timeout)s, %(raw_data)s, %(customer)s, %(duplicate_count)s,
+                %(previous_severity)s, %(receive_time)s, %(last_receive_id)s,
                 %(last_receive_time)s, %(update_time)s, %(history)s::history[])
             RETURNING *
         """
@@ -599,9 +599,9 @@ class Backend(Database):
             select = '*'
         else:
             select = (
-                'id, resource, event, environment, severity, status, service, "group", value, "text",'
-                + 'tags, custom_tags, attributes, origin, type, create_time, timeout, {raw_data}, customer, duplicate_count, repeat,'
-                + 'previous_severity, trend_indication, receive_time, last_receive_id, last_receive_time, update_time,'
+                'id, resource, event, environment, severity, status, service, value, "text",'
+                + 'tags, custom_tags, attributes, origin, create_time, timeout, {raw_data}, customer, duplicate_count,'
+                + 'previous_severity, receive_time, last_receive_id, last_receive_time, update_time,'
                 + '{history}'
             ).format(
                 raw_data='raw_data' if raw_data else 'NULL as raw_data',
@@ -627,9 +627,9 @@ class Backend(Database):
 
     def get_escalate(self):
         select = """
-            SELECT id, resource, event, environment, severity, status, service, "group",
-                value, text, tags, attributes, origin, type, create_time, timeout, raw_data, customer,
-                duplicate_count, repeat, previous_severity, trend_indication, receive_time, last_receive_id,
+            SELECT id, resource, event, environment, severity, status, service,
+                value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
+                duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history
             FROM alerts
             WHERE status='open' AND last_receive_time < %(etime)s
@@ -638,7 +638,7 @@ class Backend(Database):
 
     def get_alert_history(self, alert, page=None, page_size=None):
         select = """
-            SELECT resource, environment, service, "group", tags, attributes, origin, customer, h.*
+            SELECT resource, environment, service, tags, attributes, origin, customer, h.*
               FROM alerts, unnest(history[1:{limit}]) h
              WHERE environment=%(environment)s AND resource=%(resource)s
                AND h.event=%(event)s
@@ -657,7 +657,6 @@ class Backend(Database):
                 severity=h.severity,
                 status=h.status,
                 service=h.service,
-                group=h.group,
                 value=h.value,
                 text=h.text,
                 tags=h.tags,
@@ -673,7 +672,7 @@ class Backend(Database):
 
     def get_alerts_history(self, alerts, page=None, page_size=None):
         select = """
-            SELECT id, resource, environment, service, "group", tags, attributes, origin, customer, history[1:{limit}]
+            SELECT id, resource, environment, service, tags, attributes, origin, customer, history[1:{limit}]
               FROM alerts
              WHERE id = ANY(%(IDs)s)
           ORDER BY update_time DESC
@@ -691,7 +690,6 @@ class Backend(Database):
                         severity=h.severity,
                         status=h.status,
                         service=a.service,
-                        group=a.group,
                         value=h.value,
                         text=h.text,
                         tags=a.tags,
@@ -719,7 +717,7 @@ class Backend(Database):
             query.vars['id'] = self._fetchone(select, query.vars)
 
         select = """
-            SELECT alerts.id as alert_id, resource, environment, service, "group", tags, attributes, origin, customer, history, h.*
+            SELECT alerts.id as alert_id, resource, environment, service, tags, attributes, origin, customer, history, h.*
               FROM alerts, unnest(history[1:{limit}]) h
              WHERE {where}
           ORDER BY update_time DESC
@@ -735,7 +733,6 @@ class Backend(Database):
                 severity=h.severity,
                 status=h.status,
                 service=h.service,
-                group=h.group,
                 value=h.value,
                 text=h.text,
                 tags=h.tags,
@@ -772,17 +769,6 @@ class Backend(Database):
              WHERE {query.where}
         """
         return self._fetchone(select, query.vars).count
-
-    def get_counts(self, query=None, group=None):
-        query = query or Query()
-        if group is None:
-            raise ValueError('Must define a group')
-        select = """
-            SELECT {group}, COUNT(*) FROM alerts
-             WHERE {where}
-            GROUP BY {group}
-        """.format(where=query.where, group=group)
-        return {s['group']: s.count for s in self._fetchall(select, query.vars)}
 
     def get_counts_by_severity(self, query=None):
         query = query or Query()
@@ -948,22 +934,6 @@ class Backend(Database):
                 'count': total_count[(s.environment, s.svc)]
             } for s in services]
 
-    # ALERT GROUPS
-
-    def get_alert_groups(self, query=None, topn=1000):
-        query = query or Query()
-        select = f"""
-            SELECT environment, "group", count(1) FROM alerts
-            WHERE {query.where}
-            GROUP BY environment, "group"
-        """
-        return [
-            {
-                'environment': g.environment,
-                'group': g.group,
-                'count': g.count
-            } for g in self._fetchall(select, query.vars, limit=topn)]
-
     # ALERT TAGS
 
     def get_alert_tags(self, query=None, topn=1000):
@@ -980,10 +950,10 @@ class Backend(Database):
     def create_blackout(self, blackout):
         insert = """
             INSERT INTO blackouts (id, priority, environment, service, resource, event,
-                "group", tags, origin, customer, start_time, end_time,
+                tags, origin, customer, start_time, end_time,
                 duration, "user", create_time, text)
             VALUES (%(id)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s,
-                %(group)s, %(tags)s, %(origin)s, %(customer)s, %(start_time)s, %(end_time)s,
+                %(tags)s, %(origin)s, %(customer)s, %(start_time)s, %(end_time)s,
                 %(duration)s, %(user)s, %(create_time)s, %(text)s)
             RETURNING *, duration AS remaining
         """
@@ -1032,70 +1002,70 @@ class Backend(Database):
             WHERE start_time <= %(create_time)s AND end_time > %(create_time)s
               AND environment=%(environment)s
               AND (
-                 ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group" IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags='{}' AND origin=%(origin)s )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin IS NULL )
-              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND "group"=%(group)s AND tags <@ %(tags)s AND origin=%(origin)s )
+                 ( resource IS NULL AND service='{}' AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource IS NULL AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service='{}' AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event IS NULL AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags='{}' AND origin=%(origin)s )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin IS NULL )
+              OR ( resource=%(resource)s AND service <@ %(service)s AND event=%(event)s AND tags <@ %(tags)s AND origin=%(origin)s )
                  )
         """
         if current_app.config['CUSTOMER_VIEWS']:
@@ -1117,8 +1087,6 @@ class Backend(Database):
             update += 'resource=%(resource)s, '
         if 'event' in kwargs:
             update += 'event=%(event)s, '
-        if 'group' in kwargs:
-            update += '"group"=%(group)s, '
         if 'tags' in kwargs:
             update += 'tags=%(tags)s, '
         if 'origin' in kwargs:
@@ -1302,9 +1270,9 @@ class Backend(Database):
 
     def create_notification_rule(self, notification_rule):
         insert = """
-            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, "group", tags, reactivate, excluded_tags, delay_time,
+            INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, tags, reactivate, excluded_tags, delay_time,
                 customer, "user", create_time, start_time, end_time, days, receivers, users_emails, group_ids, use_oncall, text, channel_id, triggers)
-            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
+            VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
                 %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(users_emails)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
@@ -1366,7 +1334,6 @@ class Backend(Database):
                 AND (resource IS NULL OR resource=%(resource)s)
                 AND (service='{}' OR service <@ %(service)s)
                 AND (event IS NULL OR event=%(event)s)
-                AND ("group" IS NULL OR "group"=%(group)s)
                 AND active=true
             ), alert_tags AS (
                 SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers) as foo
@@ -1415,7 +1382,6 @@ class Backend(Database):
                 AND (%(resource)s is NULL OR resource = %(resource)s)
                 AND (%(event)s is NULL OR event = %(event)s)
                 AND (%(service)s = '{}' OR service <@ %(service)s)
-                AND (%(group)s is NULL OR "group" = %(group)s)
         """
 
         return self._fetchone(select, vars(notification_rule))
@@ -1446,7 +1412,6 @@ class Backend(Database):
                 AND (%(resource)s is NULL OR resource = %(resource)s)
                 AND (%(event)s is NULL OR event = %(event)s)
                 AND (%(service)s = '{}' OR service <@ %(service)s)
-                AND (%(group)s is NULL OR "group" = %(group)s)
             ORDER BY event, resource
         """
 
@@ -1477,7 +1442,6 @@ class Backend(Database):
                     AND (resource IS NULL OR resource=%(resource)s)
                     AND (service='{}' OR service <@ %(service)s)
                     AND (event IS NULL OR event=%(event)s)
-                    AND ("group" IS NULL OR "group"=%(group)s)
                     AND active=true
             ), alert_tags AS (
                 SELECT * from (select *, generate_subscripts(tags,1) as t from alert_triggers) as foo
@@ -1542,8 +1506,6 @@ class Backend(Database):
             update += 'resource=%(resource)s, ' if kwargs['resource'] != '' else 'resource=NULL, '
         if 'event' in kwargs:
             update += 'event=%(event)s, ' if kwargs['event'] != '' else 'event=NULL, '
-        if 'group' in kwargs:
-            update += '"group"=%(group)s, ' if kwargs['group'] != '' else '"group"=NULL, '
         if kwargs.get('tags') is not None:
             update += 'tags=%(tags)s::advanced_tags[], '
         if 'excludedTags' in kwargs:
@@ -1784,9 +1746,9 @@ class Backend(Database):
 
     def create_escalation_rule(self, escalation_rule):
         insert = """
-            INSERT INTO escalation_rules (id, active, "time", priority, environment, service, resource, event, "group", tags,
+            INSERT INTO escalation_rules (id, active, "time", priority, environment, service, resource, event, tags,
                 customer, "user", create_time, start_time, end_time, days, triggers, excluded_tags)
-            VALUES (%(id)s, %(active)s, %(time)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(group)s, %(tags)s,
+            VALUES (%(id)s, %(active)s, %(time)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(tags)s,
                 %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(triggers)s::notification_triggers[], %(excluded_tags)s )
             RETURNING *
         """
@@ -1838,7 +1800,6 @@ class Backend(Database):
                     AND (e.resource IS NULL OR e.resource=a.resource OR e.resource = '')
                     AND (e.service='{}' OR e.service <@ a.service)
                     AND (e.event IS NULL OR e.event=a.event or e.event = '')
-                    AND (e.group IS NULL OR e.group=a.group)
                     AND (((e.triggers[s].from_severity='{}' OR ARRAY[a.previous_severity] <@ e.triggers[s].from_severity) AND (e.triggers[s].to_severity='{}' OR ARRAY[a.severity] <@ e.triggers[s].to_severity)))
             ),
             alert_tags AS (
@@ -1875,8 +1836,6 @@ class Backend(Database):
             update += 'resource=%(resource)s, '
         if 'event' in kwargs:
             update += 'event=%(event)s, '
-        if 'group' in kwargs:
-            update += '"group"=%(group)s, '
         if 'tags' in kwargs:
             update += 'tags=%(tags)s::advanced_tags[], '
         if 'excludedTags' in kwargs:

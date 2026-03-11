@@ -30,7 +30,6 @@ class SearchTestCase(unittest.TestCase):
             ('status', 'closed'),
             ('service', 'Network'),
             ('service', 'Shared'),
-            ('group', 'OS'),
             ('value', '100rps'),
             ('text', 'this is text'),
             ('tag', 'tag1'),
@@ -38,15 +37,12 @@ class SearchTestCase(unittest.TestCase):
             ('attributes.foo', 'bar'),
             ('attributes.baz', 'quux'),
             ('origin', 'origin/foo'),
-            ('type', 'exceptionAlert'),
             ('createTime', ''),
             ('timeout', '3600'),
             ('rawData', '/Volumes/GoogleDrive'),
             ('customer', 'cust1'),
             ('duplicateCount', '3'),
-            ('repeat', 'true'),
             ('previousSeverity', 'warning'),
-            ('trendIndication', 'moreSevere'),
             ('receiveTime', ''),
             ('lastReceiveId', '69dbf798-0dad-475a-9375-18d2471ae08b'),
             ('lastReceiveTime', ''),
@@ -69,22 +65,18 @@ class SearchTestCase(unittest.TestCase):
             ('sort-by', 'status'),
             ('sort-by', 'service'),
             ('sort-by', 'service'),
-            ('sort-by', 'group'),
             ('sort-by', 'value'),
             ('sort-by', 'text'),
             ('sort-by', 'tags'),
             ('sort-by', 'attributes.foo'),
             ('sort-by', 'attributes.bar'),
             ('sort-by', 'origin'),
-            ('sort-by', 'type'),
             ('sort-by', 'createTime'),
             ('sort-by', 'timeout'),
             ('sort-by', 'rawData'),
             ('sort-by', 'customer'),
             ('sort-by', 'duplicateCount'),
-            ('sort-by', 'repeat'),
             ('sort-by', 'previousSeverity'),
-            ('sort-by', 'trendIndication'),
             ('sort-by', 'receiveTime'),
             ('sort-by', 'lastReceiveId'),
             ('sort-by', 'lastReceiveTime'),
@@ -105,7 +97,6 @@ class SearchTestCase(unittest.TestCase):
             ('status', 'open'),
             ('status', 'ack'),
             ('environment', '~DEV'),
-            ('group', '!Network'),
             ('sort-by', '-severity'),
             ('sort-by', '-lastReceiveTime'),
         ])
@@ -114,8 +105,8 @@ class SearchTestCase(unittest.TestCase):
             query = qb.alerts.from_params(search_params)  # noqa
 
         if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND "status"=ANY(%(status)s)\nAND "environment" ILIKE %(environment)s\nAND "group"!=%(not_group)s')
-            self.assertEqual(query.vars, {'status': ['open', 'ack'], 'environment': '%DEV%', 'not_group': 'Network'})
+            self.assertEqual(query.where, '1=1\nAND "status"=ANY(%(status)s)\nAND "environment" ILIKE %(environment)s')
+            self.assertEqual(query.vars, {'status': ['open', 'ack'], 'environment': '%DEV%'})
             self.assertEqual(query.sort, 's.code DESC,last_receive_time ASC')
         else:
             import re
@@ -145,7 +136,6 @@ class SearchTestCase(unittest.TestCase):
             ('service', 'svc1'),
             ('resource', 'res1'),
             ('event', 'evt1'),
-            ('group', 'grp1'),
             ('tag', 'tag1'),
             ('customer', 'cust1'),
             ('startTime', ''),
@@ -172,7 +162,6 @@ class SearchTestCase(unittest.TestCase):
             ('sort-by', 'service'),
             ('sort-by', 'resource'),
             ('sort-by', 'event'),
-            ('sort-by', 'group'),
             ('sort-by', 'tags'),
             ('sort-by', 'customer'),
             ('sort-by', 'startTime'),
@@ -725,8 +714,6 @@ class QueryParserTestCase(unittest.TestCase):
     def test_field_names(self):
         self.assertEqual(self._search(q='status:ack'), 1)
         self.assertEqual(self._search(q='severity:major'), 2)
-        self.assertEqual(self._search(q='group:(Network OR Performance)'), 4)
-        self.assertEqual(self._search(q='group:(Network Performance)'), 4)
         self.assertEqual(self._search(q='text:"kernel panic"'), 2)
         self.assertEqual(self._search(q='_exists_:region'), 4)
         self.assertEqual(self._search(q='service:Shared'), 4)

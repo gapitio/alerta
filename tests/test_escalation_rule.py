@@ -118,7 +118,6 @@ class EscalationRuleTestCase(unittest.TestCase):
         wrong_service = {**self.prod_alert, 'service': ['Test'], 'event': 'wrong_service'}
         wrong_resource = {**self.prod_alert, 'resource': 'test', 'event': 'wrong_resource'}
         wrong_environment = {**self.prod_alert, 'environment': 'Development', 'event': 'wrong_environment'}
-        wrong_group = {**self.prod_alert, 'group': 'test', 'event': 'wrong_group'}
 
         self.create_api_obj('/escalationrules', escalation_rule, self.headers)
 
@@ -126,13 +125,11 @@ class EscalationRuleTestCase(unittest.TestCase):
         wrong_service_alert = self.create_api_obj('/alert', wrong_service, self.headers)['alert']
         wrong_resource_alert = self.create_api_obj('/alert', wrong_resource, self.headers)['alert']
         wrong_environment_alert = self.create_api_obj('/alert', wrong_environment, self.headers)['alert']
-        wrong_group_alert = self.create_api_obj('/alert', wrong_group, self.headers)['alert']
         escalated_alerts = self.get_api_obj('/escalate', self.headers, 200)['alerts']
         self.assertIn(alert['id'], map(get_id, escalated_alerts))
         self.assertNotIn(wrong_service_alert['id'], map(get_id, escalated_alerts))
         self.assertNotIn(wrong_resource_alert['id'], map(get_id, escalated_alerts))
         self.assertNotIn(wrong_environment_alert['id'], map(get_id, escalated_alerts))
-        self.assertNotIn(wrong_group_alert['id'], map(get_id, escalated_alerts))
         new_data = self.get_api_obj(f"/alert/{alert['id']}", self.headers)['alert']
         self.assertEqual(alert['severity'], 'minor')
         self.assertEqual(new_data['severity'], 'major')

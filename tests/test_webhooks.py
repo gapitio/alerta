@@ -780,7 +780,6 @@ class WebhooksTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['resource'], 'StorageType:StandardStorage')
         self.assertEqual(data['alert']['event'], 'bucketbytesAlarm')
         self.assertEqual(data['alert']['service'], ['1234567890'])
-        self.assertEqual(data['alert']['group'], 'AWS/S3')
         self.assertEqual(data['alert']['value'], 'ALARM')
         self.assertEqual(data['alert']['text'], 'bucket bytes size exceeded')
         self.assertEqual(data['alert']['tags'], ['EU (Ireland)'])
@@ -794,7 +793,6 @@ class WebhooksTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['resource'], 'TopicName:alerta-test')
         self.assertEqual(data['alert']['event'], 'notificationCountAlarm')
         self.assertEqual(data['alert']['service'], ['1234567890'])
-        self.assertEqual(data['alert']['group'], 'AWS/SNS')
         self.assertEqual(data['alert']['value'], 'INSUFFICIENT_DATA')
         self.assertEqual(data['alert']['text'], 'number of notifications exceeded')
         self.assertEqual(data['alert']['tags'], ['EU (Ireland)'])
@@ -834,7 +832,6 @@ class WebhooksTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['resource'], 'requests')
         self.assertEqual(data['alert']['event'], 'Load peaking!')
         self.assertEqual(data['alert']['service'], ['SvcA', 'SvcB'])
-        self.assertEqual(data['alert']['group'], 'Performance')
         self.assertEqual(data['alert']['text'],
                          'Load is peaking. Make sure the traffic is real and spin up more webfronts')
         self.assertEqual(data['alert']['timeout'], 7200)
@@ -860,7 +857,6 @@ class WebhooksTestCase(unittest.TestCase):
             self.assertEqual(data['alert']['severity'], 'warning')
             self.assertEqual(data['alert']['status'], 'open')
             self.assertEqual(data['alert']['service'], ['Grafana', 'Core', 'Physical'])
-            self.assertEqual(data['alert']['group'], 'BatteryPower')
             self.assertEqual(data['alert']['value'], '23644.5')
             self.assertEqual(data['alert']['text'], 'Battery Voltage dropped below 23.7 Volts, please investigate')
             self.assertEqual(data['alert']['tags'], [])
@@ -1082,8 +1078,6 @@ class WebhooksTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['event'], 'ALERT_SUBTYPE_AVAILABILITY_PROBLEM')
         self.assertEqual(data['alert']['service'], ['sample-object-type'])
         self.assertEqual(data['alert']['severity'], 'critical')
-        self.assertEqual(data['alert']['group'], 'sample-object-type')
-        self.assertEqual(data['alert']['type'], 'ALERT_TYPE_APPLICATION_PROBLEM')
         self.assertEqual(data['alert']['text'], 'sample-info')
 
     def test_custom_webhook(self):

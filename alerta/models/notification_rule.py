@@ -176,7 +176,6 @@ class NotificationRule:
         self.service = kwargs.get('service', None) or list()
         self.resource = kwargs['resource'] if kwargs.get('resource', '') != '' else None
         self.event = kwargs['event'] if kwargs.get('event', '') != '' else None
-        self.group = kwargs['group'] if kwargs.get('group', '') != '' else None
         self.tags = kwargs.get('tags', None) or list()
         self.tags = kwargs.get('tags') or [AdvancedTags([], [])]
         self.excluded_tags = kwargs.get('excluded_tags', None) or [AdvancedTags([], [])]
@@ -200,12 +199,10 @@ class NotificationRule:
             self.priority = 3
         elif self.event and not self.resource:
             self.priority = 4
-        elif self.group:
-            self.priority = 5
         elif self.resource and self.event:
-            self.priority = 6
+            self.priority = 5
         elif self.tags:
-            self.priority = 7
+            self.priority = 6
 
     @property
     def channel(self):
@@ -252,7 +249,6 @@ class NotificationRule:
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
-            group=json.get('group', None),
             tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('tags', [])],
             excluded_tags=[AdvancedTags(tag.get('all', []), tag.get('any', [])) for tag in json.get('excludedTags', [])],
             customer=json.get('customer', None),
@@ -296,7 +292,6 @@ class NotificationRule:
             'triggers': [trigger.serialize for trigger in self.triggers],
             'resource': self.resource,
             'event': self.event,
-            'group': self.group,
             'tags': [tag.serialize for tag in self.tags],
             'excludedTags': [tag.serialize for tag in self.excluded_tags],
             'customer': self.customer,
@@ -321,8 +316,6 @@ class NotificationRule:
             more += 'resource=%r, ' % self.resource
         if self.event:
             more += 'event=%r, ' % self.event
-        if self.group:
-            more += 'group=%r, ' % self.group
         if self.customer:
             more += 'customer=%r, ' % self.customer
         if self.triggers:
@@ -354,7 +347,6 @@ class NotificationRule:
             triggers=[NotificationTriggers.from_db(trigger) for trigger in doc.get('triggers', [])],
             resource=doc.get('resource', None),
             event=doc.get('event', None),
-            group=doc.get('group', None),
             tags=[AdvancedTags.from_db(tag) for tag in doc.get('tags', [])],
             excluded_tags=[AdvancedTags.from_db(tag) for tag in doc.get('excludedTags', [])],
             customer=doc.get('customer', None),
@@ -401,7 +393,6 @@ class NotificationRule:
             triggers=[NotificationTriggers.from_db(trigger) for trigger in rec.triggers or []],
             resource=rec.resource,
             event=rec.event,
-            group=rec.group,
             tags=[AdvancedTags.from_db(tag) for tag in rec.tags or []],
             excluded_tags=[AdvancedTags.from_db(tag) for tag in rec.excluded_tags or []],
             customer=rec.customer,

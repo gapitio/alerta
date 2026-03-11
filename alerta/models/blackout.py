@@ -29,8 +29,6 @@ class Blackout:
             raise ValueError('resource can not be an empty string')
         if kwargs.get('event') == '':
             raise ValueError('event can not be an empty string')
-        if kwargs.get('group') == '':
-            raise ValueError('group can not be an empty string')
         if kwargs.get('origin') == '':
             raise ValueError('origin can not be an empty string')
 
@@ -47,7 +45,6 @@ class Blackout:
         self.service = kwargs.get('service', None) or list()
         self.resource = kwargs.get('resource', None)
         self.event = kwargs.get('event', None)
-        self.group = kwargs.get('group', None)
         self.tags = kwargs.get('tags', None) or list()
         self.origin = kwargs.get('origin', None)
         self.customer = kwargs.get('customer', None)
@@ -70,8 +67,6 @@ class Blackout:
             self.priority = 3
         elif self.event and not self.resource:
             self.priority = 4
-        elif self.group:
-            self.priority = 5
         elif self.resource and self.event:
             self.priority = 6
         elif self.tags:
@@ -102,7 +97,6 @@ class Blackout:
             service=json.get('service', list()),
             resource=json.get('resource', None),
             event=json.get('event', None),
-            group=json.get('group', None),
             tags=json.get('tags', list()),
             origin=json.get('origin', None),
             customer=json.get('customer', None),
@@ -123,7 +117,6 @@ class Blackout:
             'service': self.service,
             'resource': self.resource,
             'event': self.event,
-            'group': self.group,
             'tags': self.tags,
             'origin': self.origin,
             'customer': self.customer,
@@ -145,8 +138,6 @@ class Blackout:
             more += f'resource={self.resource!r}, '
         if self.event:
             more += f'event={self.event!r}, '
-        if self.group:
-            more += f'group={self.group!r}, '
         if self.tags:
             more += f'tags={self.tags!r}, '
         if self.origin:
@@ -174,7 +165,6 @@ class Blackout:
             service=doc.get('service', list()),
             resource=doc.get('resource', None),
             event=doc.get('event', None),
-            group=doc.get('group', None),
             tags=doc.get('tags', list()),
             origin=doc.get('origin', None),
             customer=doc.get('customer', None),
@@ -196,7 +186,6 @@ class Blackout:
             service=rec.service,
             resource=rec.resource if rec.resource != '' else None,
             event=rec.event if rec.event != '' else None,
-            group=rec.group if rec.group != '' else None,
             tags=rec.tags,
             origin=rec.origin if rec.origin != '' else None,
             customer=rec.customer,

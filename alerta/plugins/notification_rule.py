@@ -349,7 +349,7 @@ class NotificationRulesHandler(PluginBase):
             return
         NotificationDelay.delete_alert(alert.id)
         config = kwargs.get('config')
-        if alert.repeat:
+        if alert.duplicate_count != 0:
             return
         handle_alert(alert, config)
 

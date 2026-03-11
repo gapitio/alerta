@@ -56,7 +56,6 @@ class Alert:
         self.severity = kwargs.get('severity', None) or alarm_model.DEFAULT_NORMAL_SEVERITY
         self.status = kwargs.get('status', None) or alarm_model.DEFAULT_STATUS
         self.service = kwargs.get('service', None) or list()
-        self.group = kwargs.get('group', None) or 'Misc'
         self.value = kwargs.get('value', None)
         self.text = kwargs.get('text', None) or ''
         self.tags = kwargs.get('tags', None) or list()
@@ -64,7 +63,6 @@ class Alert:
         self.custom_tags = kwargs.get('custom_tags', None) or list()
         self.attributes = kwargs.get('attributes', None) or dict()
         self.origin = kwargs.get('origin', None) or f'{os.path.basename(sys.argv[0])}/{platform.uname()[1]}'
-        self.event_type = kwargs.get('event_type', kwargs.get('type', None)) or 'exceptionAlert'
         self.create_time = kwargs.get('create_time', None) or datetime.now(UTC)
         self.day = self.create_time.strftime('%a')
         self.time = self.create_time.time()
@@ -73,9 +71,8 @@ class Alert:
         self.customer = kwargs.get('customer', None)
 
         self.duplicate_count = kwargs.get('duplicate_count', None)
-        self.repeat = kwargs.get('repeat', None)
+        self.repeat = None
         self.previous_severity = kwargs.get('previous_severity', None)
-        self.trend_indication = kwargs.get('trend_indication', None)
         self.receive_time = kwargs.get('receive_time', None) or datetime.now(UTC)
         self.last_receive_id = kwargs.get('last_receive_id', None)
         self.last_receive_time = kwargs.get('last_receive_time', None)
@@ -103,13 +100,11 @@ class Alert:
             severity=json.get('severity', None),
             status=json.get('status', None),
             service=json.get('service', list()),
-            group=json.get('group', None),
             value=json.get('value', None),
             text=json.get('text', None),
             tags=json.get('tags', list()),
             attributes=json.get('attributes', dict()),
             origin=json.get('origin', None),
-            event_type=json.get('type', None),
             create_time=DateTime.parse(json['createTime']) if 'createTime' in json else None,
             timeout=json.get('timeout', None),
             raw_data=json.get('rawData', None),
@@ -127,22 +122,18 @@ class Alert:
             'severity': self.severity,
             'status': self.status,
             'service': self.service,
-            'group': self.group,
             'value': self.value,
             'text': self.text,
             'tags': self.tags,
             'customTags': self.custom_tags,
             'attributes': self.attributes,
             'origin': self.origin,
-            'type': self.event_type,
             'createTime': self.create_time,
             'timeout': self.timeout,
             'rawData': self.raw_data,
             'customer': self.customer,
             'duplicateCount': self.duplicate_count,
-            'repeat': self.repeat,
             'previousSeverity': self.previous_severity,
-            'trendIndication': self.trend_indication,
             'receiveTime': self.receive_time,
             'lastReceiveId': self.last_receive_id,
             'lastReceiveTime': self.last_receive_time,
@@ -177,22 +168,18 @@ class Alert:
             severity=doc.get('severity', None),
             status=doc.get('status', None),
             service=doc.get('service', list()),
-            group=doc.get('group', None),
             value=doc.get('value', None),
             text=doc.get('text', None),
             tags=doc.get('tags', list()),
             custom_tags=doc.get('custom_tags', list()),
             attributes=doc.get('attributes', dict()),
             origin=doc.get('origin', None),
-            event_type=doc.get('type', None),
             create_time=doc.get('createTime', None),
             timeout=doc.get('timeout', None),
             raw_data=doc.get('rawData', None),
             customer=doc.get('customer', None),
             duplicate_count=doc.get('duplicateCount', None),
-            repeat=doc.get('repeat', None),
             previous_severity=doc.get('previousSeverity', None),
-            trend_indication=doc.get('trendIndication', None),
             receive_time=doc.get('receiveTime', None),
             last_receive_id=doc.get('lastReceiveId', None),
             last_receive_time=doc.get('lastReceiveTime', None),
@@ -210,22 +197,18 @@ class Alert:
             severity=rec.severity,
             status=rec.status,
             service=rec.service,
-            group=rec.group,
             value=rec.value,
             text=rec.text,
             tags=rec.tags,
             custom_tags=rec.custom_tags,
             attributes=dict(rec.attributes),
             origin=rec.origin,
-            event_type=rec.type,
             create_time=rec.create_time,
             timeout=rec.timeout,
             raw_data=rec.raw_data,
             customer=rec.customer,
             duplicate_count=rec.duplicate_count,
-            repeat=rec.repeat,
             previous_severity=rec.previous_severity,
-            trend_indication=rec.trend_indication,
             receive_time=rec.receive_time,
             last_receive_id=rec.last_receive_id,
             last_receive_time=rec.last_receive_time,
@@ -368,7 +351,6 @@ class Alert:
         now = datetime.now(UTC)
 
         self.previous_severity = db.get_severity(self)
-        self.trend_indication = alarm_model.trend(self.previous_severity, self.severity)
 
         status, _, previous_status, _ = self._get_hist_info()
 
@@ -379,7 +361,6 @@ class Alert:
         )
 
         self.duplicate_count = 0
-        self.repeat = False
         self.receive_time = now
         self.last_receive_id = self.id
         self.last_receive_time = now
@@ -411,16 +392,12 @@ class Alert:
     def create(self) -> 'Alert':
         now = datetime.now(UTC)
 
-        trend_indication = alarm_model.trend(alarm_model.DEFAULT_PREVIOUS_SEVERITY, self.severity)
-
         _, self.status = alarm_model.transition(
             alert=self
         )
 
         self.duplicate_count = 0
-        self.repeat = False
         self.previous_severity = alarm_model.DEFAULT_PREVIOUS_SEVERITY
-        self.trend_indication = trend_indication
         self.receive_time = now
         self.last_receive_id = self.id
         self.last_receive_time = now
@@ -619,8 +596,6 @@ class Alert:
         now = datetime.now(UTC)
         for alert in alerts:
 
-            trend_indication = alarm_model.trend(alarm_model.DEFAULT_PREVIOUS_SEVERITY, alert.severity)
-
             _, alert.status = alarm_model.transition(
                 alert=alert
             )
@@ -628,7 +603,6 @@ class Alert:
             alert.duplicate_count = 0
             alert.repeat = False
             alert.previous_severity = alarm_model.DEFAULT_PREVIOUS_SEVERITY
-            alert.trend_indication = trend_indication
             alert.receive_time = now
             alert.last_receive_id = alert.id
             alert.last_receive_time = now
@@ -716,7 +690,6 @@ class Alert:
         for alert in correlates:
             alert, correlate_with = (alert['alert'], alert['correlate'])
             alert.previous_severity = db.get_severity(alert)
-            alert.trend_indication = alarm_model.trend(alert.previous_severity, alert.severity)
 
             status, _, previous_status, _ = alert._get_hist_info()
 

@@ -129,7 +129,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['service'], ['Network', 'Shared'])
         self.assertEqual(data['alert']['duplicateCount'], 0)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
         self.assertEqual(data['alert']['history'][0]['user'], None)
 
         alert_id = data['id']
@@ -143,7 +142,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['service'], ['Network', 'Shared'])
         self.assertEqual(data['alert']['duplicateCount'], 1)
         self.assertEqual(data['alert']['previousSeverity'], alarm_model.DEFAULT_PREVIOUS_SEVERITY)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
         self.assertEqual(data['alert']['updateTime'], update_time)
 
         # correlate alert (same event, diff sev)
@@ -155,7 +153,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['service'], ['Network'])
         self.assertEqual(data['alert']['duplicateCount'], 0)
         self.assertEqual(data['alert']['previousSeverity'], self.major_alert['severity'])
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
         self.assertEqual(data['alert']['updateTime'], update_time)
 
         # de-duplicate
@@ -165,7 +162,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertIn(alert_id, data['alert']['id'])
         self.assertEqual(data['alert']['service'], ['Network'])
         self.assertEqual(data['alert']['duplicateCount'], 1)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
         self.assertEqual(data['alert']['updateTime'], update_time)
 
         # get alert
@@ -191,7 +187,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(first['severity'], 'major')
         self.assertEqual(first['service'], ['Network', 'Shared'])
         self.assertEqual(first['duplicateCount'], 0)
-        self.assertEqual(first['trendIndication'], 'moreSevere')
         self.assertEqual(first['history'][0]['user'], None)
 
         self.assertEqual(second['resource'], 'major_alert_2')
@@ -199,7 +194,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(second['severity'], 'major')
         self.assertEqual(second['service'], ['Network', 'Shared'])
         self.assertEqual(second['duplicateCount'], 0)
-        self.assertEqual(second['trendIndication'], 'moreSevere')
         self.assertEqual(second['history'][0]['user'], None)
 
         first_id = first['id']
@@ -218,7 +212,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(first['duplicateCount'], 1)
         self.assertEqual(first['severity'], 'major')
         self.assertEqual(first['previousSeverity'], alarm_model.DEFAULT_PREVIOUS_SEVERITY)
-        self.assertEqual(first['trendIndication'], 'moreSevere')
         self.assertEqual(first['updateTime'], first_update_time)
 
         self.assertIn(second_id, second['id'])
@@ -226,7 +219,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(second['duplicateCount'], 1)
         self.assertEqual(second['severity'], 'major')
         self.assertEqual(second['previousSeverity'], alarm_model.DEFAULT_PREVIOUS_SEVERITY)
-        self.assertEqual(second['trendIndication'], 'moreSevere')
         self.assertEqual(second['updateTime'], second_update_time)
 
         # # correlate alert (same event, diff sev)
@@ -240,7 +232,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(first['duplicateCount'], 0)
         self.assertEqual(first['severity'], self.critical_alert['severity'])
         self.assertEqual(first['previousSeverity'], self.major_alert['severity'])
-        self.assertEqual(first['trendIndication'], 'moreSevere')
         self.assertEqual(first['updateTime'], first_update_time)
 
         self.assertIn(second_id, second['id'])
@@ -249,7 +240,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(second['duplicateCount'], 0)
         self.assertEqual(second['severity'], self.critical_alert['severity'])
         self.assertEqual(second['previousSeverity'], self.major_alert['severity'])
-        self.assertEqual(second['trendIndication'], 'moreSevere')
         self.assertEqual(second['updateTime'], second_update_time)
 
         # # de-duplicate
@@ -264,7 +254,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(first['severity'], 'critical')
         self.assertEqual(first['status'], 'open')
         self.assertEqual(first['duplicateCount'], 1)
-        self.assertEqual(first['trendIndication'], 'moreSevere')
         self.assertEqual(first['updateTime'], first_update_time)
 
         self.assertIn(second_id, second['id'])
@@ -273,7 +262,6 @@ class AlertsTestCase(unittest.TestCase):
         self.assertEqual(second['severity'], 'critical')
         self.assertEqual(second['status'], 'open')
         self.assertEqual(second['duplicateCount'], 1)
-        self.assertEqual(second['trendIndication'], 'moreSevere')
         self.assertEqual(second['updateTime'], second_update_time)
 
         # # get alerts

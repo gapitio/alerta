@@ -103,7 +103,7 @@ class ActionsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['resource'], self.resource)
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['duplicateCount'], 0)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
+        self.assertEqual(data['alert']['severity'], 'major')
 
         alert_id = data['id']
 
@@ -158,12 +158,10 @@ class ActionsTestCase(unittest.TestCase):
         self.assertEqual(first['resource'], '1')
         self.assertEqual(first['status'], 'open')
         self.assertEqual(first['duplicateCount'], 0)
-        self.assertEqual(first['trendIndication'], 'moreSevere')
 
         self.assertEqual(second['resource'], '2')
         self.assertEqual(second['status'], 'open')
         self.assertEqual(second['duplicateCount'], 0)
-        self.assertEqual(second['trendIndication'], 'moreSevere')
 
         first_id = first['id']
         second_id = second['id']
@@ -252,7 +250,6 @@ class ActionsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['severity'], 'warning')
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['duplicateCount'], 0)
-        self.assertEqual(data['alert']['trendIndication'], 'moreSevere')
 
         alert_id = data['id']
 

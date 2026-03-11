@@ -272,34 +272,6 @@ class AggregationsTestCase(unittest.TestCase):
             }
         ])
 
-        # groups
-        response = self.client.get('/alerts/groups')
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertIn('groups', data)
-        self.assertCountEqual(data['groups'], [
-            {
-                'count': 1,
-                'environment': 'Production',
-                'group': 'Nw'
-            },
-            {
-                'count': 1,
-                'environment': 'Production',
-                'group': 'nw'
-            },
-            {
-                'count': 5,
-                'environment': 'Production',
-                'group': 'Network'
-            },
-            {
-                'count': 1,
-                'environment': 'Production',
-                'group': 'net'
-            }
-        ])
-
         # tags
         response = self.client.get('/alerts/tags')
         self.assertEqual(response.status_code, 200)

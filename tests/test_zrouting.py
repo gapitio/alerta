@@ -305,7 +305,8 @@ class DummySlackPlugin(PluginBase):
 
 def rules(alert, plugins, **kwargs):
 
-    if alert.repeat is None:
+    # look at a variable that is set after pre-receive
+    if alert.update_time is None:
         hook = 'pre-receive'
     else:
         hook = 'post-receive'
