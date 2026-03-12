@@ -27,7 +27,7 @@ class HeartbeatReceiver(PluginBase):
                     'severity': alert.severity,
                     'service': alert.service,
                 },
-                timeout=alert.timeout,
+                timeout=alert.timeout or kwargs['config']['HEARTBEAT_TIMEOUT'],
                 customer=alert.customer
             )
             r = hb.create()

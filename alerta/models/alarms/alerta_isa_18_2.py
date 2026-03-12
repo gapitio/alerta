@@ -72,6 +72,7 @@ ACTION_ACK = 'ack'
 ACTION_UNACK = 'unack'
 ACTION_SHELVE = 'shelve'
 ACTION_UNSHELVE = 'unshelve'
+ACTION_TIMOUT = 'timeout'
 ACTION_OPEN = 'open'
 
 
@@ -126,8 +127,7 @@ class StateMachine(AlarmModel):
 
         if action == ACTION_SHELVE:
             return next_state('Operator Shelve, Any (*) -> Shelve (E)', current_severity, Status.Shelved)
-
-        if action == ACTION_UNSHELVE:
+        if action == ACTION_UNSHELVE or (state == Status.Shelved and action == ACTION_TIMOUT):
             if current_severity == StateMachine.DEFAULT_NORMAL_SEVERITY:
                 return next_state('Operator Unshelve, Shelve (E) -> Normal (A)', current_severity, Status.Closed)
             else:
@@ -147,7 +147,7 @@ class StateMachine(AlarmModel):
             if state == Status.Unack:
                 return next_state(' Operator Ack, RTN Unack (D) -> Normal (A)', current_severity, Status.Closed)
 
-        if action == ACTION_UNACK:
+        if action == ACTION_UNACK or (state == Status.Ack and action == ACTION_TIMOUT):
             if state == Status.Ack:
                 return next_state('Operator Unack, Ack (C) -> Unack (B)', current_severity, Status.Open)
 

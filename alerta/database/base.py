@@ -659,9 +659,6 @@ class Database(Base):
 
     # HOUSEKEEPING
 
-    def get_expired(self, expired_threshold, info_threshold):
-        raise NotImplementedError
-
     def get_unshelve(self):
         raise NotImplementedError
 

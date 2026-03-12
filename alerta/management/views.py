@@ -158,41 +158,12 @@ def health_check():
 @cross_origin()
 @permission(Scope.admin_management)
 def housekeeping():
-    expired_threshold_hrs = request.args.get('expired', type=int)
-    info_threshold_hrs = request.args.get('info', type=int)
 
-    if expired_threshold_hrs:
-        expired_threshold = expired_threshold_hrs * 60 * 60  # convert hours to seconds
-    else:
-        expired_threshold = current_app.config['DELETE_EXPIRED_AFTER']  # seconds
-
-    if info_threshold_hrs:
-        info_threshold = info_threshold_hrs * 60 * 60  # convert hours to seconds
-    else:
-        info_threshold = current_app.config['DELETE_INFO_AFTER']  # seconds
-
-    has_expired, shelve_timeout, ack_timeout = Alert.housekeeping(expired_threshold, info_threshold)
+    shelve_timeout, ack_timeout = Alert.housekeeping()
 
     errors = []
-    for alert in has_expired:
-        try:
-            # pre actioon
-            alert, _, text, timeout = process_action(alert, action='expired', text='', timeout=None)
-            # update status
-            alert = alert.from_expired(text, timeout)
-            # post action
-            alert, _, text, timeout = process_action(alert, action='expired', text=text, timeout=timeout, post_action=True)
-        except RejectException as e:
-            write_audit_trail.send(current_app._get_current_object(), event='alert-expire-rejected', message=alert.text,
-                                   user=g.login, customers=g.customers, scopes=g.scopes, resource_id=alert.id, type='alert',
-                                   request=request)
-            errors.append(str(e))
-            continue
-        except Exception as e:
-            raise ApiError(str(e), 500)
 
-        write_audit_trail.send(current_app._get_current_object(), event='alert-expired', message=text, user=g.login,
-                               customers=g.customers, scopes=g.scopes, resource_id=alert.id, type='alert', request=request)
+    # alerts, _, text, timeout = process_multiple_action([*shelve_timeout, *ack_timeout], 'timeout', '', None)
 
     for alert in shelve_timeout + ack_timeout:
         try:
@@ -219,10 +190,9 @@ def housekeeping():
     else:
         return jsonify(
             status='ok',
-            expired=[a.id for a in has_expired],
             unshelve=[a.id for a in shelve_timeout],
             unack=[a.id for a in ack_timeout],
-            count=len(has_expired) + len(shelve_timeout) + len(ack_timeout)
+            count=len(shelve_timeout) + len(ack_timeout)
         )
 
 

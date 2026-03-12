@@ -14,7 +14,6 @@ class HeartbeatsTestCase(unittest.TestCase):
         test_config = {
             'TESTING': True,
             'AUTH_REQUIRED': False,
-            'ALERT_TIMEOUT': 2,
             'HEARTBEAT_TIMEOUT': 4,
             'HEARTBEAT_EVENTS': ['Heartbeat', 'Watchdog'],
             'PLUGINS': ['heartbeat']
@@ -154,7 +153,7 @@ class HeartbeatsTestCase(unittest.TestCase):
         self.assertEqual(data['alert']['resource'], hb.origin)
         self.assertEqual(data['alert']['status'], 'open')
         self.assertEqual(data['alert']['service'], ['Test'])
-        self.assertEqual(data['alert']['timeout'], 2)
+        self.assertEqual(data['alert']['timeout'], 0)
         self.assertEqual(data['alert']['duplicateCount'], 0)
         self.assertEqual(data['alert']['severity'], 'major')
         self.assertEqual(data['alert']['history'][0]['user'], None)
@@ -167,7 +166,6 @@ class HeartbeatsTestCase(unittest.TestCase):
             'environment': 'Production',
             'service': ['Svc1'],
             'origin': 'test/hb',
-            'timeout': 500
         }
 
         response = self.client.post('/alert', data=json.dumps(heartbeat_alert), headers=self.headers)
@@ -179,7 +177,7 @@ class HeartbeatsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['heartbeats'][0]['origin'], 'test/hb')
-        self.assertEqual(data['heartbeats'][0]['timeout'], 500)
+        self.assertEqual(data['heartbeats'][0]['timeout'], 4)
 
         prometheus_alert = r"""
         {

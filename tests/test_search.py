@@ -590,7 +590,6 @@ class QueryParserTestCase(unittest.TestCase):
         test_config = {
             'TESTING': True,
             'AUTH_REQUIRED': False,
-            'ALERT_TIMEOUT': 120,
             'HISTORY_LIMIT': 5,
             'DEBUG': False,
         }
@@ -607,12 +606,11 @@ class QueryParserTestCase(unittest.TestCase):
                 'status': 'open',
                 'service': ['Network', 'Core'],
                 'group': 'Network',
-                'value': 'johno',
+                'value': '100',
                 'text': 'panic: this is a foo alert',
                 'tags': ['aaa', 'bbb', 'ccc'],
                 'attributes': {'region': 'EMEA', 'partition': '7.0'},
                 'origin': 'alpha',
-                'timeout': 100,
                 'rawData': ''
             },
             {
@@ -624,12 +622,11 @@ class QueryParserTestCase(unittest.TestCase):
                 'status': 'ack',
                 'service': ['Network', 'Core', 'Shared'],
                 'group': 'Network',
-                'value': 'jonathon',
+                'value': '200',
                 'text': 'Kernel Panic: this is a bar test alert',
                 'tags': ['bbb', 'ccc', 'ddd'],
                 'attributes': {'region': 'LATAM', 'partition': '72'},
                 'origin': 'bravo',
-                'timeout': 200,
                 'rawData': ''
             },
             {
@@ -641,12 +638,11 @@ class QueryParserTestCase(unittest.TestCase):
                 'status': 'closed',
                 'service': ['Network', 'Shared'],
                 'group': 'Netperf',
-                'value': 'jonathan',
+                'value': '300',
                 'text': 'kernel panic: this is a foo bar text alert',
                 'tags': ['ccc', 'ddd', 'eee'],
                 'attributes': {'region': 'APAC', 'partition': '727'},
                 'origin': 'charlie',
-                'timeout': 300,
                 'rawData': ''
             },
             {
@@ -658,12 +654,11 @@ class QueryParserTestCase(unittest.TestCase):
                 'status': 'closed',
                 'service': ['Core', 'Shared'],
                 'group': 'Performance',
-                'value': 'john',
+                'value': '400',
                 'text': 'kernel panick: this is a fu bar baz quux tests alert (i have a boat)',
                 'tags': ['ddd', 'eee', 'aaa'],
                 'attributes': {'region': 'EMEA', 'partition': '27'},
                 'origin': 'delta',
-                'timeout': 400,
                 'rawData': ''
             },
             {
@@ -675,12 +670,11 @@ class QueryParserTestCase(unittest.TestCase):
                 'status': 'shelved',
                 'service': ['Network', 'Core', 'Shared'],
                 'group': 'Network',
-                'value': 'jon',
+                'value': '500',
                 'text': 'don\'t panic: this is a foo bar baz quux tester alert (i have a moat)',
                 'tags': ['eee', 'aaa', 'bbb'],
                 'attributes': {},
                 'origin': 'zulu',
-                'timeout': 500,
                 'rawData': ''
             },
         ]
@@ -737,20 +731,19 @@ class QueryParserTestCase(unittest.TestCase):
 
     def test_regex(self):
         self.assertEqual(self._search(q='/[mb]oat/'), 2)
-        self.assertEqual(self._search(q='value:/joh?n(ath[oa]n)/'), 2)
         self.assertEqual(self._search(q='resource:/net(wo?rk)?[0-9]/'), 5)
         self.assertEqual(self._search(q='/f(oo|u) ba.?/'), 3)
 
     def test_ranges(self):
-        self.assertEqual(self._search(q='timeout:[100 TO 500]'), 5)
+        self.assertEqual(self._search(q='value:[100 TO 500]'), 5)
         self.assertEqual(self._search(q='origin:{alpha TO zulu}'), 3)
-        self.assertEqual(self._search(q='timeout:{* TO 300}'), 2)
-        self.assertEqual(self._search(q='timeout:[500 TO *]'), 1)
+        self.assertEqual(self._search(q='value:{* TO 300}'), 2)
+        self.assertEqual(self._search(q='value:[500 TO *]'), 1)
 
-        self.assertEqual(self._search(q='timeout:>500'), 0)
-        self.assertEqual(self._search(q='timeout:>=500'), 1)
-        self.assertEqual(self._search(q='timeout:<500'), 4)
-        self.assertEqual(self._search(q='timeout:<=500'), 5)
+        self.assertEqual(self._search(q='value:>500'), 0)
+        self.assertEqual(self._search(q='value:>=500'), 1)
+        self.assertEqual(self._search(q='value:<500'), 4)
+        self.assertEqual(self._search(q='value:<=500'), 5)
 
     def test_boolean_operators(self):
         self.assertEqual(self._search(q='"foo bar" foo'), 3)

@@ -13,7 +13,6 @@ class ShelvingTestCase(unittest.TestCase):
             'AUTH_REQUIRED': True,
             'CUSTOMER_VIEWS': True,
             'PLUGINS': ['timeout'],
-            'ALERT_TIMEOUT': 24680,
             'ACK_TIMEOUT': 98765,
             'SHELVE_TIMEOUT': 12345
         }

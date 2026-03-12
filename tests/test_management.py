@@ -4,7 +4,6 @@ import unittest
 from uuid import uuid4
 
 from alerta.app import create_app, db
-from tests.helpers.utils import mod_env
 
 
 class ManagementTestCase(unittest.TestCase):
@@ -23,12 +22,8 @@ class ManagementTestCase(unittest.TestCase):
             # 'SERVER_VERSION': 'major'
         }
 
-        with mod_env(
-            DELETE_EXPIRED_AFTER='2',
-            DELETE_INFO_AFTER='3'
-        ):
-            self.app = create_app(test_config)
-            self.client = self.app.test_client()
+        self.app = create_app(test_config)
+        self.client = self.app.test_client()
 
         self.headers = {
             'Content-type': 'application/json'
@@ -37,7 +32,7 @@ class ManagementTestCase(unittest.TestCase):
         def random_resource():
             return str(uuid4()).upper()[:8]
 
-        self.expired_alert = {
+        self.alert = {
             'event': 'node_down',
             'resource': random_resource(),
             'environment': 'Production',
@@ -46,7 +41,6 @@ class ManagementTestCase(unittest.TestCase):
             'correlate': ['node_down', 'node_marginal', 'node_up'],
             'tags': ['foo'],
             'attributes': {'foo': 'abc def', 'bar': 1234, 'baz': False},
-            'timeout': 2
         }
 
         self.shelved_alert = {
@@ -126,19 +120,6 @@ class ManagementTestCase(unittest.TestCase):
 
     def test_housekeeping(self):
 
-        # create an alert with short timeout that will expire
-        response = self.client.post('/alert', data=json.dumps(self.expired_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-
-        expired_id = data['id']
-
-        response = self.client.get('/alert/' + expired_id)
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['alert']['id'], expired_id)
-        self.assertEqual(data['alert']['timeout'], 2)
-
         # create an alert and shelve it
         response = self.client.post('/alert', data=json.dumps(self.shelved_alert), headers=self.headers)
         self.assertEqual(response.status_code, 201)
@@ -154,8 +135,8 @@ class ManagementTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], shelved_id)
-        self.assertEqual(data['alert']['timeout'], 20)
-        self.assertEqual(data['alert']['history'][0]['timeout'], 20)
+        self.assertEqual(data['alert']['timeout'], 3)
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)
         self.assertEqual(data['alert']['history'][1]['timeout'], 3)
 
         # create an alert and ack it
@@ -173,22 +154,15 @@ class ManagementTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], acked_id)
-        self.assertEqual(data['alert']['timeout'], 86400)
+        self.assertEqual(data['alert']['timeout'], 2)
         self.assertEqual(data['alert']['history'][0]['status'], 'open')
-        self.assertEqual(data['alert']['history'][0]['timeout'], 86400)
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)
         self.assertEqual(data['alert']['history'][1]['status'], 'ack')
         self.assertEqual(data['alert']['history'][1]['timeout'], 2)
 
         # create an alert that should be unaffected
         response = self.client.post('/alert', data=json.dumps(self.ok_alert), headers=self.headers)
         self.assertEqual(response.status_code, 201)
-
-        # create an info alert that should be deleted
-        response = self.client.post('/alert', data=json.dumps(self.info_alert), headers=self.headers)
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.data.decode('utf-8'))
-
-        info_id = data['id']
 
         # create an alert and ack it then shelve it
         response = self.client.post('/alert', data=json.dumps(self.acked_and_shelved_alert), headers=self.headers)
@@ -209,9 +183,9 @@ class ManagementTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], acked_and_shelved_id)
-        self.assertEqual(data['alert']['timeout'], 240)
+        self.assertEqual(data['alert']['timeout'], 3)
         self.assertEqual(data['alert']['history'][0]['status'], 'open')
-        self.assertEqual(data['alert']['history'][0]['timeout'], 240)
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)
         self.assertEqual(data['alert']['history'][1]['status'], 'ack')
         self.assertEqual(data['alert']['history'][1]['timeout'], 4)
         self.assertEqual(data['alert']['history'][2]['status'], 'shelved')
@@ -223,8 +197,7 @@ class ManagementTestCase(unittest.TestCase):
         response = self.client.get('/management/housekeeping', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertEqual(data['count'], 4)
-        self.assertListEqual(data['expired'], [expired_id])
+        self.assertEqual(data['count'], 3)
         self.assertListEqual(sorted(data['unshelve']), sorted([shelved_id, acked_and_shelved_id]))
         self.assertListEqual(sorted(data['unack']), sorted([acked_id]))
 
@@ -233,44 +206,41 @@ class ManagementTestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], shelved_id)
         self.assertEqual(data['alert']['status'], 'open')
-        self.assertEqual(data['alert']['timeout'], 20)
+        self.assertEqual(data['alert']['timeout'], 0)
         self.assertEqual(data['alert']['history'][0]['status'], 'open')   # previous status
-        self.assertEqual(data['alert']['history'][0]['timeout'], 20)  # previous timeout
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)  # previous timeout
         self.assertEqual(data['alert']['history'][1]['status'], 'shelved')  # status
         self.assertEqual(data['alert']['history'][1]['timeout'], 3)
         self.assertEqual(data['alert']['history'][2]['status'], 'open')
-        self.assertEqual(data['alert']['history'][2]['timeout'], 20, data['alert'])
+        self.assertEqual(data['alert']['history'][2]['timeout'], 0, data['alert'])
 
         response = self.client.get('/alert/' + acked_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], acked_id)
         self.assertEqual(data['alert']['status'], 'open')
-        self.assertEqual(data['alert']['timeout'], 86400)
+        self.assertEqual(data['alert']['timeout'], 0)
         self.assertEqual(data['alert']['history'][0]['status'], 'open')
-        self.assertEqual(data['alert']['history'][0]['timeout'], 86400)
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)
         self.assertEqual(data['alert']['history'][1]['status'], 'ack')
         self.assertEqual(data['alert']['history'][1]['timeout'], 2)
         self.assertEqual(data['alert']['history'][2]['status'], 'open')
-        self.assertEqual(data['alert']['history'][2]['timeout'], 86400)
+        self.assertEqual(data['alert']['history'][2]['timeout'], 0)
 
         response = self.client.get('/alert/' + acked_and_shelved_id)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['id'], acked_and_shelved_id)
         self.assertEqual(data['alert']['status'], 'ack')
-        self.assertEqual(data['alert']['timeout'], 240)
+        self.assertEqual(data['alert']['timeout'], 4)
         self.assertEqual(data['alert']['history'][0]['status'], 'open')
-        self.assertEqual(data['alert']['history'][0]['timeout'], 240)
+        self.assertEqual(data['alert']['history'][0]['timeout'], 0)
         self.assertEqual(data['alert']['history'][1]['status'], 'ack')
         self.assertEqual(data['alert']['history'][1]['timeout'], 4)
         self.assertEqual(data['alert']['history'][2]['status'], 'shelved')
         self.assertEqual(data['alert']['history'][2]['timeout'], 3)
         self.assertEqual(data['alert']['history'][3]['status'], 'ack')
         self.assertEqual(data['alert']['history'][3]['timeout'], 4)
-
-        response = self.client.get('/alert/' + info_id)
-        self.assertEqual(response.status_code, 404)
 
         time.sleep(5)
 
@@ -279,26 +249,21 @@ class ManagementTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['count'], 1)
-        self.assertListEqual(data['expired'], [])
         self.assertListEqual(data['unshelve'], [])
         self.assertListEqual(data['unack'], [acked_and_shelved_id])
-
-        response = self.client.get('/alert/' + expired_id)
-        self.assertEqual(response.status_code, 404)
 
         # run housekeeping (3rd time)
         response = self.client.get('/management/housekeeping', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['count'], 0)
-        self.assertListEqual(data['expired'], [])
         self.assertListEqual(data['unshelve'], [])
         self.assertListEqual(data['unack'], [])
 
     def test_status(self):
 
         # create alert
-        response = self.client.post('/alert', data=json.dumps(self.expired_alert), headers=self.headers)
+        response = self.client.post('/alert', data=json.dumps(self.alert), headers=self.headers)
         self.assertEqual(response.status_code, 201)
 
         response = self.client.get('/management/status', headers=self.headers)

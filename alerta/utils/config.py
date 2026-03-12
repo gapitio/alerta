@@ -83,19 +83,6 @@ class Config:
 
         config['GOOGLE_TRACKING_ID'] = get_config('GOOGLE_TRACKING_ID', default=None, type=str, config=config)
 
-        # housekeeping
-        config['DELETE_EXPIRED_AFTER'] = (
-            get_config('DEFAULT_EXPIRED_DELETE_HRS', default=0, type=int, config=config) * 60 * 60
-            or get_config('HK_EXPIRED_DELETE_HRS', default=0, type=int) * 60 * 60
-            or get_config('DELETE_EXPIRED_AFTER', default=None, type=int, config=config)
-        )
-
-        config['DELETE_INFO_AFTER'] = (
-            get_config('DEFAULT_INFO_DELETE_HRS', default=0, type=int, config=config) * 60 * 60
-            or get_config('HK_INFO_DELETE_HRS', default=0, type=int) * 60 * 60
-            or get_config('DELETE_INFO_AFTER', default=None, type=int, config=config)
-        )
-
         # plugins
         config['PLUGINS'] = get_config('PLUGINS', default=[], type=list, config=config)
 
