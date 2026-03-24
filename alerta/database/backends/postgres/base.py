@@ -945,6 +945,91 @@ class Backend(Database):
         """.format(where=query.where)
         return [{'environment': t.environment, 'tag': t.tag, 'count': t.count} for t in self._fetchall(select, query.vars, limit=topn)]
 
+    # FILTER TABS
+
+    def get_filter_tabs(self):
+        select = """SELECT * FROM filter_tabs ORDER BY index"""
+        return self._fetchall(select, {}, 'ALL')
+
+    def get_filter_tab(self, name):
+        select = """SELECT * FROM filter_tabs WHERE name=%(name)s"""
+        return self._fetchone(select, {'name': name})
+
+    def update_filter_tabs(self, tabs):
+        tab_updates = ','.join([
+            f"""
+                (%(name{i})s, %(index{i})s, %(filter{i})s)
+            """ for i in range(len(tabs))
+        ])
+        update = f"""
+            UPDATE filter_tabs as tab
+                SET name=update.name, index=update.index, filter=update.filter::jsonb
+            FROM (VALUES
+                {tab_updates}
+            ) AS update(name, index, filter)
+            WHERE tab.name = update.name
+            RETURNING tab.*
+        """
+        objs = {}
+        for i, tab in enumerate(tabs):
+            objs.update({f'{key}{i}': value for key, value in tab.items()})
+
+        return self._updateall(update, objs, True)
+
+    def update_filter_tab_indexes(self, tabs):
+        tab_updates = ','.join([
+            f"""
+                (%(name{i})s, %(index{i})s)
+            """ for i in range(len(tabs))
+        ])
+        update = f"""
+            UPDATE filter_tabs as tab
+                SET index=update.index
+            FROM (VALUES
+                {tab_updates}
+            ) AS update(name, index)
+            WHERE tab.name = update.name
+            RETURNING tab.*
+        """
+        objs = {}
+        for i, tab in enumerate(tabs):
+            objs.update({f'{key}{i}': value for key, value in tab.items()})
+
+        return self._updateall(update, objs, True)
+
+    def delete_filter_tab(self, name):
+        select = """DELETE FROM filter_tabs WHERE name=%(name)s RETURNING name"""
+        return self._deleteone(select, {'name': name})
+
+    def delete_filter_tabs(self, names):
+        select = """DELETE FROM filter_tabs WHERE name=ANY(%(names)s) RETURNING name"""
+        return self._deleteall(select, {'names': names}, returning=True)
+
+    def create_filter_tab(self, filter):
+        insert = """
+            INSERT INTO filter_tabs (name, index, filter)
+            VALUES (%(name)s, %(index)s, %(filter)s)
+            RETURNING *
+        """
+        return self._insert(insert, vars(filter))
+
+    def create_filter_tabs(self, tabs):
+        tab_values = ','.join([
+            f"""
+                (%(name{i})s, %(index{i})s, %(filter{i})s)
+            """ for i in range(len(tabs))
+        ])
+        insert = f"""
+            INSERT INTO filter_tabs (name, index, filter)
+            VALUES {tab_values}
+            RETURNING *
+        """
+
+        objs = {}
+        for i, tab in enumerate(tabs):
+            objs.update({f'{key}{i}': value for key, value in tab.items()})
+        return self._insert_all(insert, objs)
+
     # BLACKOUTS
 
     def create_blackout(self, blackout):
