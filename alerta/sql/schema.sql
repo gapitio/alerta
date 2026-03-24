@@ -37,19 +37,16 @@ CREATE TABLE IF NOT EXISTS alerts (
     severity text,
     status text,
     service text[],
-    "group" text,
     value text,
     text text,
     tags text[],
     attributes jsonb,
     origin text,
-    type text,
     create_time timestamp without time zone,
     timeout integer,
     raw_data text,
     customer text,
     duplicate_count integer,
-    repeat boolean,
     previous_severity text,
     trend_indication text,
     receive_time timestamp without time zone,
@@ -60,13 +57,6 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS update_time timestamp without time zone;
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS custom_tags text[];
-ALTER TABLE alerts DROP COLUMN IF EXISTS correlate;
-ALTER TABLE alerts
-DROP COLUMN IF EXISTS "group",
-DROP COLUMN IF EXISTS "repeat",
-DROP COLUMN IF EXISTS "type",
-DROP COLUMN IF EXISTS "trend_indication"
-;
 
 -- remove alerts with status set to null
 DO $$
@@ -107,8 +97,7 @@ ALTER TABLE blackouts
 ADD COLUMN IF NOT EXISTS "user" text,
 ADD COLUMN IF NOT EXISTS create_time timestamp without time zone,
 ADD COLUMN IF NOT EXISTS text text,
-ADD COLUMN IF NOT EXISTS origin text,
-DROP COLUMN IF EXISTS "group";
+ADD COLUMN IF NOT EXISTS origin text;
 
 DROP TABLE IF EXISTS twilio_rules;
 
@@ -251,8 +240,6 @@ BEGIN
 EXCEPTION
     WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
 END$$;
-
-ALTER TABLE escalation_rules DROP COLUMN IF EXISTS "group";
 
 
 CREATE TABLE IF NOT EXISTS delayed_notifications (
