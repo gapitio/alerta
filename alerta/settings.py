@@ -148,6 +148,7 @@ ALLOWED_KEYCLOAK_ROLES = ['*']
 # OpenID Connect
 OIDC_ISSUER_URL = None
 OIDC_AUTH_URL = None
+OIDC_SCOPES = []
 OIDC_TOKEN_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'client_secret_jwt']
 OIDC_LOGOUT_URL = None
 OIDC_VERIFY_TOKEN = False

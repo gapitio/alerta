@@ -40,6 +40,7 @@ def config():
         'keycloak_url': current_app.config['KEYCLOAK_URL'],
         'keycloak_realm': current_app.config['KEYCLOAK_REALM'],
         'oidc_auth_url': current_app.config['OIDC_AUTH_URL'],
+        'oidc_scopes': current_app.config['OIDC_SCOPES'],
         'site_logo_url': current_app.config['SITE_LOGO_URL'],
         'timeouts': {
             'alert': current_app.config['ALERT_TIMEOUT'],
