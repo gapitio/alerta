@@ -256,7 +256,6 @@ CREATE TABLE IF NOT EXISTS notification_rules (
     service text[],
     resource text,
     event text,
-    "group" text,
     tags text[],
     customer text,
     "user" text,
@@ -428,7 +427,6 @@ DO $$
 BEGIN
     UPDATE public.notification_rules SET resource=NULL WHERE resource='';
     UPDATE public.notification_rules SET event=NULL WHERE event='';
-    ALTER TABLE notification_rules DROP COLUMN IF EXISTS "group";
     UPDATE notification_rules SET excluded_tags='{}' WHERE excluded_tags IS NULL;
     UPDATE notification_rules set triggers = ARRAY[('{}', '{}', '{}', null)::notification_triggers] WHERE triggers = '{}';
 
