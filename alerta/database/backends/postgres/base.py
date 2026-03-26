@@ -361,7 +361,7 @@ class Backend(Database):
                 (
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s,%(value{i})s, %(text{i})s,
-                    %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
+                    %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
                     %(tags{i})s::text[], (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
                     (%(history{i})s)::history, %(customer{i})s, %(origin{i})s
                 )
