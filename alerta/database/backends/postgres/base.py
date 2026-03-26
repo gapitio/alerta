@@ -266,7 +266,7 @@ class Backend(Database):
                SET status=%(status)s, service=%(service)s, value=%(value)s, text=%(text)s,
                    timeout=%(timeout)s, raw_data=%(raw_data)s,
                    last_receive_id=%(last_receive_id)s, last_receive_time=%(last_receive_time)s,
-                   tags=%(tags)s, attributes=attributes || %(attributes)s,
+                   tags=%(tags)s, attributes=%(attributes)s, origin=%(origin)s,
                    duplicate_count=duplicate_count + 1, {update_time}, history=(%(history)s || history)[1:{limit}]
              WHERE environment=%(environment)s
                AND resource=%(resource)s
@@ -289,8 +289,8 @@ class Backend(Database):
                    text=%(text)s, create_time=%(create_time)s, timeout=%(timeout)s, raw_data=%(raw_data)s,
                    duplicate_count=%(duplicate_count)s, previous_severity=%(previous_severity)s,
                    receive_time=%(receive_time)s, last_receive_id=%(last_receive_id)s,
-                   last_receive_time=%(last_receive_time)s, tags=%(tags)s,
-                   attributes=attributes || %(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}]
+                   last_receive_time=%(last_receive_time)s, tags=%(tags)s, origin=%(origin)s,
+                   attributes=%(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}], customer=%(customer)s
              WHERE environment=%(environment)s
                AND resource=%(resource)s
                AND (event=%(event)s AND severity!=%(severity)s)
@@ -317,9 +317,9 @@ class Backend(Database):
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s, %(value{i})s, %(text{i})s,
                     %(timeout{i})s, %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
-                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    %(tags{i})s::text[], (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
                     (%(history{i})s), %(customer{i})s, (%(create_time{i})s)::timestamp without time zone, %(previous_severity{i})s,
-                    (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s
+                    (%(receive_time{i})s)::timestamp without time zone, %(duplicate_count{i})s, %(origin{i})s
                 )
                 """
             )
@@ -327,11 +327,11 @@ class Backend(Database):
         update = f"""
             UPDATE alerts
                SET event=al.event, severity=al.severity, status=al.status, service=al.service, value=al.value, text=al.text,
-                   create_time=al.create_time, timeout=CASE WHEN al.status != ALL (ARRAY['ack', 'shelved']) THEN al.timeout ELSE alerts.timeout END, raw_data=al.raw_data, previous_severity=al.previous_severity,
+                   create_time=al.create_time, timeout=al.timeout, raw_data=al.raw_data, previous_severity=al.previous_severity,
                    receive_time=al.receive_time, last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
-                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   tags=al.tags, attributes=al.attributes,
                    duplicate_count=al.duplicate_count, update_time=COALESCE(al.update_time, alerts.update_time),
-                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
+                   history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END, origin=al.origin
             FROM (VALUES
                 {",".join(alerts_values)}
                 ) as al(
@@ -339,7 +339,7 @@ class Backend(Database):
                     status, service, value, text,
                     timeout, raw_data, last_receive_id, last_receive_time,
                     tags, attributes, update_time, history, customer, create_time, previous_severity,
-                    receive_time, duplicate_count
+                    receive_time, duplicate_count, origin
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource
@@ -362,8 +362,8 @@ class Backend(Database):
                     %(environment{i})s, %(resource{i})s, %(event{i})s, %(severity{i})s,
                     %(status{i})s,%(service{i})s,%(value{i})s, %(text{i})s,
                     %(raw_data{i})s, %(last_receive_id{i})s, (%(last_receive_time{i})s)::timestamp without time zone,
-                    %(tags{i})s, (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
-                    (%(history{i})s)::history, %(customer{i})s
+                    %(tags{i})s::text[], (%(attributes{i})s)::jsonb, (%(update_time{i})s)::timestamp without time zone,
+                    (%(history{i})s)::history, %(customer{i})s, %(origin{i})s
                 )
                 """
             )
@@ -373,7 +373,7 @@ class Backend(Database):
                SET status=al.status, service=al.service, value=al.value, text=al.text,
                    raw_data=al.raw_data,
                    last_receive_id=al.last_receive_id, last_receive_time=al.last_receive_time,
-                   tags=ARRAY(SELECT DISTINCT UNNEST(alerts.tags || al.tags)), attributes=alerts.attributes || al.attributes,
+                   tags=al.tags, attributes=al.attributes, origin=al.origin,
                    duplicate_count=alerts.duplicate_count + 1, update_time=COALESCE(al.update_time, alerts.update_time),
                    history=CASE WHEN al.history IS NULL THEN alerts.history ELSE (al.history || alerts.history)[1:{current_app.config['HISTORY_LIMIT']}] END
             FROM (VALUES
@@ -382,7 +382,7 @@ class Backend(Database):
                     environment, resource, event, severity,
                     status, service, value, text,
                     raw_data, last_receive_id, last_receive_time,
-                    tags, attributes, update_time, history, customer
+                    tags, attributes, update_time, history, customer, origin
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource

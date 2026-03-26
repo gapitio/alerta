@@ -146,13 +146,13 @@ class BuiltinsTestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['attributes']['acked-by'], 'admin@alerta.io')
 
-        # clear alert
+        # clear alert (acked-by attribute is deleted)
         response = self.client.post('/alert', json=self.ok_alert, headers=self.headers)
         self.assertEqual(response.status_code, 201)
         data = json.loads(response.data.decode('utf-8'))
         self.assertEqual(data['alert']['severity'], 'ok')
         self.assertEqual(data['alert']['status'], 'closed')
-        self.assertEqual(data['alert']['attributes']['acked-by'], 'admin@alerta.io')
+        self.assertNotIn('acked-by', data['alert']['attributes'])
 
         # critical alert (unacked)
         response = self.client.post('/alert', json=self.critical_alert, headers=self.headers)
