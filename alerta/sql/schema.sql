@@ -203,20 +203,20 @@ CREATE TABLE IF NOT EXISTS escalation_rules (
 
 DO $$
 BEGIN
-    ALTER TABLE escalation_rules ADD COLUMN tags_a advanced_tags[];
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "tags_a" already exists in escalation_rules.';
-END$$;
-DO $$
-BEGIN
-    UPDATE escalation_rules SET tags_a = array[(tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(tags) != pg_typeof(tags_a);
-    UPDATE escalation_rules set tags_a = tags::advanced_tags[] where pg_typeof(tags) = pg_typeof(tags_a);
-END$$;
-DO $$
-BEGIN
-    ALTER table escalation_rules DROP COLUMN "tags";
-    ALTER table escalation_rules RENAME COLUMN tags_a to tags;
-END$$;
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'escalation_rules'
+        AND column_name = 'tags'
+        AND udt_name = '_text'
+    ) THEN
+        ALTER TABLE escalation_rules
+        ALTER COLUMN tags TYPE advanced_tags[]
+        USING ARRAY[
+            ROW(tags, '{}')::advanced_tags
+        ];
+    END IF;
+END $$;
 
 DO $$
 BEGIN
@@ -269,22 +269,23 @@ CREATE TABLE IF NOT EXISTS notification_rules (
     channel_id text not null,
     FOREIGN key (channel_id) references notification_channels(id)
 );
+
 DO $$
 BEGIN
-    ALTER TABLE notification_rules ADD COLUMN tags_a advanced_tags[];
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "tags_a" already exists in notification_rules.';
-END$$;
-DO $$
-BEGIN
-    UPDATE notification_rules SET tags_a = array[(tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(tags) != pg_typeof(tags_a);
-    UPDATE notification_rules set tags_a = tags::advanced_tags[] where pg_typeof(tags) = pg_typeof(tags_a);
-END$$;
-DO $$
-BEGIN
-    ALTER table notification_rules DROP COLUMN "tags";
-    ALTER table notification_rules RENAME COLUMN tags_a to tags;
-END$$;
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'notification_rules'
+        AND column_name = 'tags'
+        AND udt_name = '_text'
+    ) THEN
+        ALTER TABLE notification_rules
+        ALTER COLUMN tags TYPE advanced_tags[]
+        USING ARRAY[
+            ROW(tags, '{}')::advanced_tags
+        ];
+    END IF;
+END $$;
 
 
 DO $$
@@ -299,83 +300,67 @@ BEGIN
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "use_on_call" already exists in notification_rules.';
 END$$;
-DO $$
-BEGIN
-    ALTER TABLE notification_rules ADD COLUMN advanced_severity notification_triggers[];
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "advanced_severity" already exists in notification_rules.';
-END$$;
 
 DO $$
 BEGIN
-    UPDATE notification_rules SET advanced_severity = '{}' WHERE use_advanced_severity = FALSE;
+  IF EXISTS (
+    SELECT *
+    FROM information_schema.columns
+    WHERE table_name = 'notification_rules'
+      AND column_name = 'advanced_severity'
+  ) THEN
+    ALTER TABLE notification_rules RENAME COLUMN advanced_severity TO triggers;
+  ELSE
+    ALTER TABLE notification_rules ADD COLUMN triggers notification_triggers[];
+  END IF;
 EXCEPTION
-    WHEN undefined_column THEN RAISE NOTICE 'column use_advanced_severity do no longer exist in notification_rules';
-END$$;
+    WHEN duplicate_column THEN RAISE NOTICE 'column "advanced_tags" did not get copied';
+END $$;
 
 DO $$
 BEGIN
-    ALTER TABLE notification_rules RENAME COLUMN advanced_severity to triggers;
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "triggers" already exists in notification_rules.';
-END$$;
-
-DO $$
-BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}',severity,'{}', null)::notification_triggers) where severity != '{}' and "status" = '{}' AND NOT use_advanced_severity;
-EXCEPTION
-    WHEN undefined_column THEN RAISE NOTICE 'column "severity" have already been dropped from notification_rules.';
-END$$;
-
-DO $$
-BEGIN
-    ALTER TABLE notification_rules ADD COLUMN excluded_tags text[];
+    ALTER TABLE notification_rules ADD COLUMN excluded_tags advanced_tags[];
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags" already exists in notification_rules.';
 END$$;
 
+-- Change old type of tags from text[] to advanced_tags
 DO $$
 BEGIN
-    ALTER TABLE notification_rules ADD COLUMN excluded_tags_a advanced_tags[];
-EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "excluded_tags_a" already exists in notification_rules.';
-END$$;
-DO $$
-BEGIN
-    UPDATE notification_rules SET excluded_tags_a = array[(excluded_tags, '{}')::advanced_tags]::advanced_tags[] where pg_typeof(excluded_tags) != pg_typeof(excluded_tags_a);
-    UPDATE notification_rules set excluded_tags_a = excluded_tags::advanced_tags[] where pg_typeof(excluded_tags) = pg_typeof(excluded_tags_a);
-END$$;
-DO $$
-BEGIN
-    ALTER table notification_rules DROP COLUMN "excluded_tags";
-    ALTER table notification_rules RENAME COLUMN excluded_tags_a to excluded_tags;
-END$$;
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'notification_rules'
+        AND column_name = 'excluded_tags'
+        AND udt_name = '_text'
+    ) THEN
+        ALTER TABLE notification_rules
+        ALTER COLUMN excluded_tags TYPE advanced_tags[]
+        USING ARRAY[
+            ROW(excluded_tags, '{}')::advanced_tags
+        ];
+    END IF;
+END $$;
 
+-- Move data from old severity and status columns into triggers column and drop severity and status columns
 DO $$
 BEGIN
-    ALTER TABLE notification_rules ADD COLUMN status text[];
-    UPDATE notification_rules SET status = '{}';
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'notification_rules'
+        AND column_name = 'use_advanced_severity'
+    ) THEN
+        UPDATE notification_rules set triggers = ARRAY[('{}',severity,'{}', null)::notification_triggers] where severity != '{}' and "status" = '{}' AND NOT use_advanced_severity;
+        UPDATE notification_rules set triggers = ARRAY[('{}','{}',status, null)::notification_triggers] where "status" != '{}' and severity = '{}' and not use_advanced_severity;
+        UPDATE notification_rules set triggers = ARRAY[('{}', severity, status, null)::notification_triggers] where "status" != '{}' and severity != '{}' and not use_advanced_severity;
+        UPDATE notification_rules as re set triggers = n.f from (SELECT "id", array_agg((tr.from_severity, tr.to_severity, b.status, tr.text)::notification_triggers) as f from notification_rules as b, unnest(triggers) as tr GROUP BY id) as n where "status" != '{}' and use_advanced_severity and n.id = re.id;
+        ALTER table notification_rules DROP COLUMN use_advanced_severity;
+        ALTER table notification_rules DROP COLUMN IF EXISTS severity;
+        ALTER table notification_rules DROP COLUMN IF EXISTS "status";
+    END IF;
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "status" already exists in notification_rules.';
-END$$;
-
-DO $$
-BEGIN
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}','{}',status, null)::notification_triggers) where "status" != '{}' and severity = '{}' and not use_advanced_severity;
-    UPDATE notification_rules set triggers = ARRAY_APPEND(triggers, ('{}', severity, status, null)::notification_triggers) where "status" != '{}' and severity != '{}' and not use_advanced_severity;
-    UPDATE notification_rules as re set triggers = n.f from (SELECT "id", array_agg((tr.from_severity, tr.to_severity, b.status, tr.text)::notification_triggers) as f from notification_rules as b, unnest(triggers) as tr GROUP BY id) as n where "status" != '{}' and use_advanced_severity and n.id = re.id;
-    ALTER table notification_rules DROP COLUMN "status";
-    ALTER table notification_rules DROP COLUMN severity;
-EXCEPTION
-    WHEN undefined_column THEN RAISE NOTICE 'column "status" and severity have already been dropped from notification_rules.';
-END$$;
-
-DO $$
-BEGIN
-    ALTER table notification_rules DROP COLUMN advanced_severity;
-    ALTER table notification_rules DROP COLUMN use_advanced_severity;
-EXCEPTION
-    WHEN undefined_column THEN RAISE NOTICE 'column advanced_severity and use_advanced_severity have already been dropped from notification_rules.';
+    WHEN undefined_column THEN RAISE WARNING 'unable to move data from notification_rules: severity and status because of missing data';
 END$$;
 
 DO $$
