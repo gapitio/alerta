@@ -244,6 +244,32 @@ class Database(Base):
     def get_alert_tags(self, query=None, topn=1000):
         raise NotImplementedError
 
+    # FILTER TABS
+
+    def get_filter_tabs(self):
+        raise NotImplementedError
+
+    def get_filter_tab(self):
+        raise NotImplementedError
+
+    def update_filter_tabs(self, tabs):
+        raise NotImplementedError
+
+    def update_filter_tab_indexes(self, tabs):
+        raise NotImplementedError
+
+    def create_filter_tab(self):
+        raise NotImplementedError
+
+    def create_filter_tabs(self):
+        raise NotImplementedError
+
+    def delete_filter_tab(self, id):
+        raise NotImplementedError
+
+    def delete_filter_tabs(self, ids: list[str]):
+        raise NotImplementedError
+
     # BLACKOUTS
 
     def create_blackout(self, blackout):
