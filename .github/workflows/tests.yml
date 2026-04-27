@@ -9,12 +9,12 @@ env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
 jobs:
-  test-postgres13:
+  test-postgres18:
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres:18.3
         env:
           POSTGRES_DB: alerta
           POSTGRES_USER: postgres
