@@ -1963,14 +1963,11 @@ class Backend(Database):
             SELECT *
             FROM on_calls
             WHERE ((start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s))
+            AND ((start_date IS NULL OR start_date <= %(date)s) AND (end_date IS NULL OR end_date >= %(date)s))
             AND (
-              (start_date = %(date)s) OR (start_date < %(date)s AND end_date >= %(date)s)
-              OR (
-                repeat_type = 'list'
-                AND (repeat_days IS NULL OR repeat_days='{}' OR ARRAY[%(day)s] <@ repeat_days)
+                (repeat_days IS NULL OR repeat_days='{}' OR ARRAY[%(day)s] <@ repeat_days)
                 AND (repeat_weeks IS NULL OR repeat_weeks='{}' OR ARRAY[%(week)s] <@ repeat_weeks)
                 AND (repeat_months IS NULL OR repeat_months='{}' OR ARRAY[%(month)s] <@ repeat_months)
-              )
             )
 
         """
