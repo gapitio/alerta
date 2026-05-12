@@ -55,7 +55,7 @@ class BuiltinsTestCase(unittest.TestCase):
         }
 
         self.ok_alert = {
-            'event': 'node_down',
+            'event': 'node_up',
             'resource': self.resource,
             'environment': 'Production',
             'service': ['Network'],

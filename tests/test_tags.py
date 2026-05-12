@@ -21,7 +21,7 @@ class TagsTestCase(unittest.TestCase):
         self.resource = str(uuid4()).upper()[:8]
 
         self.node_down_alert = {
-            'event': 'node',
+            'event': 'node_down',
             'resource': self.resource,
             'environment': 'Production',
             'service': ['Network'],
@@ -32,7 +32,7 @@ class TagsTestCase(unittest.TestCase):
         }
 
         self.node_up_alert = {
-            'event': 'node',
+            'event': 'node_up',
             'resource': self.resource,
             'environment': 'Production',
             'service': ['Network'],

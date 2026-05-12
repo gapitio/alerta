@@ -54,6 +54,9 @@ class Alert:
         self.event = event
         self.environment = kwargs.get('environment', None) or ''
         self.severity = kwargs.get('severity', None) or alarm_model.DEFAULT_NORMAL_SEVERITY
+        self.correlate = kwargs.get('correlate', None) or list()
+        if self.correlate and event not in self.correlate:
+            self.correlate.append(event)
         self.status = kwargs.get('status', None) or alarm_model.DEFAULT_STATUS
         self.service = kwargs.get('service', None) or list()
         self.value = kwargs.get('value', None)
@@ -81,6 +84,8 @@ class Alert:
 
     @classmethod
     def parse(cls, json: JSON) -> 'Alert':
+        if not isinstance(json.get('correlate', []), list):
+            raise ValueError('correlate must be a list')
         if not isinstance(json.get('service', []), list):
             raise ValueError('service must be a list')
         if not isinstance(json.get('tags', []), list):
@@ -96,6 +101,7 @@ class Alert:
             event=json.get('event', None),
             environment=json.get('environment', None),
             severity=json.get('severity', None),
+            correlate=json.get('correlate', list()),
             status=json.get('status', None),
             service=json.get('service', list()),
             value=json.get('value', None),
@@ -117,6 +123,7 @@ class Alert:
             'event': self.event,
             'environment': self.environment,
             'severity': self.severity,
+            'correlate': self.correlate,
             'status': self.status,
             'service': self.service,
             'value': self.value,
@@ -163,6 +170,7 @@ class Alert:
             event=doc.get('event', None),
             environment=doc.get('environment', None),
             severity=doc.get('severity', None),
+            correlate=doc.get('correlate', list()),
             status=doc.get('status', None),
             service=doc.get('service', list()),
             value=doc.get('value', None),
@@ -192,6 +200,7 @@ class Alert:
             event=rec.event,
             environment=rec.environment,
             severity=rec.severity,
+            correlate=rec.correlate,
             status=rec.status,
             service=rec.service,
             value=rec.value,

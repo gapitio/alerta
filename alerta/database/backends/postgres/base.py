@@ -205,7 +205,8 @@ class Backend(Database):
         select = """
             SELECT severity FROM alerts
              WHERE environment=%(environment)s AND resource=%(resource)s
-               AND (event=%(event)s AND severity!=%(severity)s)
+               AND ((event=%(event)s AND severity!=%(severity)s)
+                OR (event!=%(event)s AND %(event)s=ANY(correlate)))
                AND {customer}
             """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
         return self._fetchone(select, vars(alert)).severity
@@ -214,7 +215,7 @@ class Backend(Database):
         select = """
             SELECT status FROM alerts
              WHERE environment=%(environment)s AND resource=%(resource)s
-              AND event=%(event)s
+              AND (event=%(event)s OR %(event)s=ANY(correlate))
               AND {customer}
             """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
         return self._fetchone(select, vars(alert)).status
@@ -234,7 +235,8 @@ class Backend(Database):
         select = """
             SELECT * FROM alerts
              WHERE environment=%(environment)s AND resource=%(resource)s
-               AND (event=%(event)s AND severity!=%(severity)s)
+               AND ((event=%(event)s AND severity!=%(severity)s)
+                OR (event!=%(event)s AND %(event)s=ANY(correlate)))
                AND {customer}
         """.format(customer='customer=%(customer)s' if alert.customer else 'customer IS NULL')
         return self._fetchone(select, vars(alert))
@@ -293,7 +295,7 @@ class Backend(Database):
                    attributes=%(attributes)s, {update_time}, history=(%(history)s || history)[1:{limit}], customer=%(customer)s
              WHERE environment=%(environment)s
                AND resource=%(resource)s
-               AND (event=%(event)s AND severity!=%(severity)s)
+               AND ((event=%(event)s AND severity!=%(severity)s) OR (event!=%(event)s AND %(event)s=ANY(correlate)))
                AND {customer}
          RETURNING *
         """.format(
@@ -343,7 +345,7 @@ class Backend(Database):
                 )
              WHERE alerts.environment=al.environment
                AND alerts.resource=al.resource
-               AND (alerts.event=al.event AND alerts.severity!=al.severity)
+               AND ((alerts.event=al.event AND alerts.severity!=al.severity) OR (alerts.event!=al.event AND al.event=ANY(alerts.correlate)))
          RETURNING alerts.*
         """
         return self._updateall(update, objs, returning=True)
@@ -396,7 +398,7 @@ class Backend(Database):
         alerts_insert = ','.join([
             f"""
                 (
-                    %(id{i})s, %(resource{i})s, %(event{i})s, %(environment{i})s, %(severity{i})s, %(status{i})s,
+                    %(id{i})s, %(resource{i})s, %(event{i})s, %(environment{i})s, %(severity{i})s, %(correlate{i})s, %(status{i})s,
                     %(service{i})s, %(value{i})s, %(text{i})s, %(tags{i})s, %(attributes{i})s, %(origin{i})s,
                     %(create_time{i})s, %(timeout{i})s, %(raw_data{i})s, %(customer{i})s, %(duplicate_count{i})s,
                     %(previous_severity{i})s, %(receive_time{i})s, %(last_receive_id{i})s,
@@ -408,7 +410,7 @@ class Backend(Database):
             objs.update({f'{key}{i}': value for key, value in vars(alert).items()})
 
         insert = f"""
-            INSERT INTO alerts (id, resource, event, environment, severity, status, service,
+            INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service,
                 value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
                 duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
@@ -419,11 +421,11 @@ class Backend(Database):
 
     def create_alert(self, alert):
         insert = """
-            INSERT INTO alerts (id, resource, event, environment, severity, status, service,
+            INSERT INTO alerts (id, resource, event, environment, severity, correlate, status, service,
                 value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
                 duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history)
-            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(severity)s, %(status)s,
+            VALUES (%(id)s, %(resource)s, %(event)s, %(environment)s, %(severity)s, %(correlate)s, %(status)s,
                 %(service)s, %(value)s, %(text)s, %(tags)s, %(attributes)s, %(origin)s,
                 %(create_time)s, %(timeout)s, %(raw_data)s, %(customer)s, %(duplicate_count)s,
                 %(previous_severity)s, %(receive_time)s, %(last_receive_id)s,
@@ -599,7 +601,7 @@ class Backend(Database):
             select = '*'
         else:
             select = (
-                'id, resource, event, environment, severity, status, service, value, "text",'
+                'id, resource, event, environment, severity, correlate, status, service, value, "text",'
                 + 'tags, custom_tags, attributes, origin, create_time, timeout, {raw_data}, customer, duplicate_count,'
                 + 'previous_severity, receive_time, last_receive_id, last_receive_time, update_time,'
                 + '{history}'
@@ -627,7 +629,7 @@ class Backend(Database):
 
     def get_escalate(self):
         select = """
-            SELECT id, resource, event, environment, severity, status, service,
+            SELECT id, resource, event, environment, severity, correlate, status, service,
                 value, text, tags, attributes, origin, create_time, timeout, raw_data, customer,
                 duplicate_count, previous_severity, receive_time, last_receive_id,
                 last_receive_time, update_time, history
@@ -641,7 +643,7 @@ class Backend(Database):
             SELECT resource, environment, service, tags, attributes, origin, customer, h.*
               FROM alerts, unnest(history[1:{limit}]) h
              WHERE environment=%(environment)s AND resource=%(resource)s
-               AND h.event=%(event)s
+               AND (h.event=%(event)s OR %(event)s=ANY(correlate))
                AND {customer}
           ORDER BY update_time DESC
             """.format(

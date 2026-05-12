@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     event text NOT NULL,
     environment text,
     severity text,
+    correlate text[],
     status text,
     service text[],
     value text,
