@@ -31,6 +31,8 @@ VALID_PARAMS = [
     'updateTime',
 ]
 
+KEY_MAPPING = {'environments': 'environment'}
+
 
 class FilterTab:
 
@@ -71,6 +73,7 @@ class FilterTab:
             return date.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
         data = []
         for key, value in self.filter.items():
+            key = KEY_MAPPING[key] if key in KEY_MAPPING else key
             if key == 'dateRange':
                 if value == {}:
                     continue
