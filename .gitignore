@@ -114,3 +114,6 @@ pg-data/
 *.BAK
 *.log*
 .vscode
+
+# Development scripts
+dev
