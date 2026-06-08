@@ -74,6 +74,7 @@ ACTION_SHELVE = 'shelve'
 ACTION_UNSHELVE = 'unshelve'
 ACTION_TIMOUT = 'timeout'
 ACTION_OPEN = 'open'
+ACTION_CLOSE = 'close'
 
 
 class StateMachine(AlarmModel):
@@ -140,6 +141,11 @@ class StateMachine(AlarmModel):
                 return next_state('Operator Open, Any(*) to Open', current_severity, Status.Unack)
 
             return next_state('Operator Open, Any(*) to Open', current_severity, Status.Open)
+
+        if action == ACTION_CLOSE:
+            if state == Status.Closed:
+                raise InvalidAction('alert is already in closed')
+            return next_state('Operator Close, Any(*) to Closed', current_severity, Status.Closed)
 
         if action == ACTION_ACK:
             if state == Status.Open:
