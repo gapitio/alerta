@@ -86,13 +86,21 @@ class FilterTab:
                 if 'to' in value:
                     to_time = datetime.fromtimestamp(value['to'], tz=UTC)
                     data.append(('to-date', to_isoformat(to_time)))
-            if key == 'attributes':
-                for attr_key, attr_value in value.items():
-                    if isinstance(attr_value, list):
-                        for item in attr_value:
+            if 'attributes' in key:
+                if key == 'attributes':
+                    for attr_key, attr_value in value.items():
+                        if isinstance(attr_value, list):
+                            for item in attr_value:
+                                data.append((f'attributes.{attr_key}', item))
+                        else:
+                            data.append((f'attributes.{attr_key}', attr_value))
+                else:
+                    key, attr_key = key.split('.')
+                    if isinstance(value, list):
+                        for item in value:
                             data.append((f'attributes.{attr_key}', item))
                     else:
-                        data.append((f'attributes.{attr_key}', attr_value))
+                        data.append((f'attributes.{attr_key}', value))
             elif key not in VALID_PARAMS or isinstance(value, dict):
                 continue
             elif isinstance(value, list):
@@ -106,7 +114,7 @@ class FilterTab:
     def __repr__(self) -> str:
         return f'AlertTab(name={self.name}, index={self.index}, filter={self.filter},'
 
-    @ classmethod
+    @classmethod
     def from_db(cls, rec) -> 'FilterTab':
         return FilterTab(
             name=rec.name,
@@ -124,7 +132,7 @@ class FilterTab:
         return [FilterTab.from_db(tab) for tab in db.create_filter_tabs(tabs)]
 
     # get a filter tab
-    @ staticmethod
+    @staticmethod
     def find_by_id(id: str):
         return FilterTab.from_db(db.get_filter_tab(id))
 
@@ -140,7 +148,7 @@ class FilterTab:
     def update_indexes(tabs):
         return db.update_filter_tab_indexes(tabs)
 
-    @ staticmethod
+    @staticmethod
     def find_all() -> list['FilterTab']:
         return [
             FilterTab.from_db(notification_channel)
