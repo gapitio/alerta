@@ -32,6 +32,7 @@ VALID_PARAMS = [
 ]
 
 KEY_MAPPING = {'environments': 'environment'}
+NOT_WILCARDS_KEYS = ['duplicateCount', 'service', 'tags', 'tag', 'status']
 
 
 class FilterTab:
@@ -91,23 +92,23 @@ class FilterTab:
                     for attr_key, attr_value in value.items():
                         if isinstance(attr_value, list):
                             for item in attr_value:
-                                data.append((f'attributes.{attr_key}', item))
+                                data.append((f'attributes.{attr_key}', f'~{item}'))
                         else:
-                            data.append((f'attributes.{attr_key}', attr_value))
+                            data.append((f'attributes.{attr_key}', f'~{attr_value}'))
                 else:
                     key, attr_key = key.split('.')
                     if isinstance(value, list):
                         for item in value:
-                            data.append((f'attributes.{attr_key}', item))
+                            data.append((f'attributes.{attr_key}', f'~{item}'))
                     else:
-                        data.append((f'attributes.{attr_key}', value))
+                        data.append((f'attributes.{attr_key}', f'~{value}'))
             elif key not in VALID_PARAMS or isinstance(value, dict):
                 continue
             elif isinstance(value, list):
                 for val in value:
-                    data.append((key, val))
+                    data.append((key, val if key in NOT_WILCARDS_KEYS else f'~{val}'))
             else:
-                data.append(key, value)
+                data.append(key, value if key in NOT_WILCARDS_KEYS else f'~{value}')
 
         return MultiDict(data)
 
