@@ -32,7 +32,7 @@ VALID_PARAMS = [
 ]
 
 KEY_MAPPING = {'environments': 'environment'}
-NOT_WILCARDS_KEYS = ['duplicateCount', 'service', 'tags', 'tag', 'status']
+NOT_WILCARDS_KEYS = ['duplicateCount', 'service', 'tags', 'tag', 'status', 'environment', 'environments', 'customer']
 
 
 class FilterTab:
