@@ -177,14 +177,7 @@ def set_status(alert_id):
         raise ApiError('failed to set status', 500)
 
 
-# action alert
-@api.route('/alert/<alert_id>/action', methods=['OPTIONS', 'PUT'])
-@cross_origin()
-@permission(Scope.write_alerts)
-@timer(status_timer)
-@jsonp
-def action_alert(alert_id):
-    action = request.json.get('action', None)
+def handle_action(alert_id, action):
     text = request.json.get('text', f'{action} operator action')
     timeout = request.json.get('timeout', None)
 
@@ -227,15 +220,81 @@ def action_alert(alert_id):
         raise ApiError('failed to action alert', 500)
 
 
-# action alert
-@api.route('/alerts/action', methods=['OPTIONS', 'PUT'])
+@api.route('/alert/<alert_id>/action/ack', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_ack)
+@timer(status_timer)
+@jsonp
+def ack_alert(alert_id):
+    return handle_action(alert_id, 'ack')
+
+
+@api.route('/alert/<alert_id>/action/unack', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_unack)
+@timer(status_timer)
+@jsonp
+def unack_alert(alert_id):
+    return handle_action(alert_id, 'unack')
+
+
+@api.route('/alert/<alert_id>/action/shelve', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_shelve)
+@timer(status_timer)
+@jsonp
+def shelve_alert(alert_id):
+    return handle_action(alert_id, 'shelve')
+
+
+@api.route('/alert/<alert_id>/action/unshelve', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_unshelve)
+@timer(status_timer)
+@jsonp
+def unshelve_alert(alert_id):
+    return handle_action(alert_id, 'unshelve')
+
+
+# @api.route('/alert/<alert_id>/action/delete', methods=['OPTIONS', 'PUT'])
+# @cross_origin()
+# @permission(Scope.write_alerts_actions_delete)
+# @timer(status_timer)
+# @jsonp
+# def delete_alert(alert_id):
+#     return handle_action(alert_id, 'delete')
+
+
+@api.route('/alert/<alert_id>/action/open', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_open)
+@timer(status_timer)
+@jsonp
+def open_alert(alert_id):
+    return handle_action(alert_id, 'open')
+
+
+@api.route('/alert/<alert_id>/action/close', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_close)
+@timer(status_timer)
+@jsonp
+def close_alert(alert_id):
+    return handle_action(alert_id, 'close')
+
+
+@api.route('/alert/<alert_id>/action', methods=['OPTIONS', 'PUT'])
 @cross_origin()
 @permission(Scope.write_alerts)
 @timer(status_timer)
 @jsonp
-def action_alerts():
-    alert_ids = request.json.get('alerts')
+def action_alert(alert_id):
     action = request.json.get('action', None)
+    return handle_action(alert_id, action)
+
+
+def actions(action: str):
+    alert_ids = request.json.get('alerts')
     text = request.json.get('text', f'{action} operator action')
     timeout = request.json.get('timeout', None)
 
@@ -276,6 +335,72 @@ def action_alerts():
         return jsonify(status='ok')
     else:
         raise ApiError('failed to action alert', 500)
+
+# action alert
+
+
+@api.route('/alerts/action', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts)
+@timer(status_timer)
+@jsonp
+def action_alerts():
+    action = request.json.get('action', None)
+    return actions(action)
+
+
+@api.route('/alerts/action/ack', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_ack)
+@timer(status_timer)
+@jsonp
+def ack_alerts():
+    return actions('ack')
+
+
+@api.route('/alerts/action/unack', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_unack)
+@timer(status_timer)
+@jsonp
+def unack_alerts():
+    return actions('unack')
+
+
+@api.route('/alerts/action/close', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_close)
+@timer(status_timer)
+@jsonp
+def close_alerts():
+    return actions('close')
+
+
+@api.route('/alerts/action/open', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_open)
+@timer(status_timer)
+@jsonp
+def open_alerts():
+    return actions('open')
+
+
+@api.route('/alerts/action/shelve', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_shelve)
+@timer(status_timer)
+@jsonp
+def shelve_alerts():
+    return actions('shelve')
+
+
+@api.route('/alerts/action/unshelve', methods=['OPTIONS', 'PUT'])
+@cross_origin()
+@permission(Scope.write_alerts_actions_unshelve)
+@timer(status_timer)
+@jsonp
+def unshelve_alerts():
+    return actions('unshelve')
 
 
 # tag
