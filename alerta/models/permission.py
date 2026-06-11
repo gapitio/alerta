@@ -97,17 +97,23 @@ class Permission:
             return True
         if want_scope in have_scopes or want_scope.split(':')[0] in have_scopes or want_scope.split('.')[0] in have_scopes:
             return True
-        elif want_scope.startswith('read'):
+        if '.' in want_scope:
+            s = want_scope.split('.')
+            b = s.pop(0)
+            for a in s:
+                b = f"{b}.{a}"
+                if b in have_scopes:
+                    return True
+        if want_scope.startswith('read'):
             return cls.is_in_scope(want_scope.replace('read', 'write'), have_scopes)
-        elif want_scope.startswith('write'):
+        if want_scope.startswith('write'):
             return cls.is_in_scope(want_scope.replace('write', 'admin'), have_scopes)
-        elif want_scope.startswith('delete'):
+        if want_scope.startswith('delete'):
             if want_scope in current_app.config['DELETE_SCOPES']:
                 return cls.is_in_scope(want_scope.replace('delete', 'admin'), have_scopes)
             else:
                 return cls.is_in_scope(want_scope.replace('delete', 'write'), have_scopes)
-        else:
-            return False
+        return False
 
     @classmethod
     def lookup(cls, login: str, roles: List[str]) -> List[Scope]:
