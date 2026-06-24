@@ -446,8 +446,8 @@ class NotificationRules(QueryBuilder):
         # field (column, sort-by, direction)
         'id': ('id', None, 0),
         'channel': ('channel_id', 'channel_id', 1),
-        'active': ('active', None, 0),
-        'priority': ('priority', 'priority', 1),
+        'active': ('active', 'active', -1),
+        'reactivate': ('reactivate', 'reactivate', 1),
         'name': ('name', 'name', 1),
         'environment': ('environment', 'environment', 1),
         'service': ('service', 'service', 1),
@@ -455,16 +455,20 @@ class NotificationRules(QueryBuilder):
         'event': ('event', 'event', 1),
         'tag': ('tags', None, 0),  # filter
         'tags': (None, 'tags', 1),  # sort-by
+        'excludedTags': (None, 'excluded_tags', 1),  # sort-by
         'customer': ('customer', 'customer', 1),
-        'user': ('user', 'user', 1),
+        'user': ('user', '"user"', 1),
         'createTime': ('create_time', 'create_time', -1),
         'startTime': ('start_time', 'start_time', -1),
         'endTime': ('end_time', 'end_time', -1),
         'days': ('days', 'days', -1),
         'receivers': ('receivers', 'receivers', -1),
         'severity': ('severity', 'severity', -1),
-        'channel_id': ('channel_id', 'channel_id', 1),
+        'channelId': ('channel_id', 'channel_id', 1),
         'text': ('text', 'text', 1),
+        'useOnCall': (None, 'use_oncall', -1),
+        'triggers': (None, 'triggers', -1),
+        'delayTime': (None, 'delay_time', 1),
     }
 
     @staticmethod
