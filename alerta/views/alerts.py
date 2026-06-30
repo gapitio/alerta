@@ -180,6 +180,8 @@ def set_status(alert_id):
 def handle_action(alert_id, action):
     text = request.json.get('text', f'{action} operator action')
     timeout = request.json.get('timeout', None)
+    if timeout is not None and int(timeout) < 0:
+        raise ApiError(f"illegal negative timeout ({timeout})")
 
     if not action:
         raise ApiError("must supply 'action' as json data", 400)
@@ -297,6 +299,8 @@ def actions(action: str):
     alert_ids = request.json.get('alerts')
     text = request.json.get('text', f'{action} operator action')
     timeout = request.json.get('timeout', None)
+    if timeout is not None and int(timeout) < 0:
+        raise ApiError(f"illegal negative timeout ({timeout})")
 
     if not alert_ids:
         raise ApiError("must supply 'alert IDs' as json data", 400)
