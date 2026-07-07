@@ -89,13 +89,17 @@ class Alert:
             raise ValueError('attributes must be a JSON object')
         if json.get('customer', None) == '':
             raise ValueError('customer must not be an empty string')
+        json_severity = json.get('severity', alarm_model.DEFAULT_NORMAL_SEVERITY)
+        severity = json_severity if json_severity is None or alarm_model.name == 'ANSI/ISA 18.2' else json_severity.lower()
+        if severity is not None and severity not in alarm_model.Severity.keys():
+            raise ValueError(f'Severity "{severity}" is not one of: {[str(key) for key in alarm_model.Severity.keys()]}')
 
         return Alert(
             id=json.get('id', None),
             resource=json.get('resource', None),
             event=json.get('event', None),
             environment=json.get('environment', None),
-            severity=json.get('severity', None),
+            severity=severity,
             status=json.get('status', None),
             service=json.get('service', list()),
             value=json.get('value', None),
