@@ -92,8 +92,21 @@ class QueryBuilder:
                     qvars[column] = values[1]
             elif field.startswith('attributes.'):
                 column = field.replace('attributes.', '')
-                value = value[0]
-                if value.startswith('~!'):
+                value = value[0] if len(value) == 1 else value
+                if type(value) is list and len(value) > 1:
+                    values = [[], []]
+                    for v in value:
+                        if '!' in v[::1]:
+                            values[1].append(v[2::] if v.startswith('~!') else v[1::])
+                        else:
+                            values[0].append(v[1::] if v.startswith('~') else v)
+                    if len(values[0]):
+                        query.append(f'AND "attributes"::jsonb ->> \'{column}\' ~* (%(attr_regex_{column})s)')
+                        qvars['attr_regex_' + column] = '|'.join([v.lstrip('~') for v in values[0]])
+                    if len(values[1]):
+                        query.append(f'AND "attributes"::jsonb ->> \'{column}\' !~* (%(attr_not_regex_{column})s)')
+                        qvars['attr_not_regex_' + column] = '|'.join([v.lstrip('~!') for v in values[1]])
+                elif value.startswith('~!'):
                     query.append(f'AND "attributes"::jsonb ->> \'{column}\' NOT ILIKE %(attr_{column})s')
                     qvars['attr_' + column] = '%' + value[2:] + '%'
                 elif value.startswith('~'):
