@@ -104,9 +104,9 @@ def get_notification_rule(notification_rule_id):
 @jsonp
 def get_notification_rule_history(notification_rule_id):
     notification_rule = NotificationRule.find_by_id(notification_rule_id)
-    total = notification_rule.history_count()
-    paging = Page.from_params(request.args, total)
     if notification_rule:
+        total = notification_rule.history_count()
+        paging = Page.from_params(request.args, total)
         notification_rule_history = [h.serialize for h in notification_rule.get_notification_rule_history(page=paging.page, page_size=paging.page_size)]
         return jsonify(
             status='ok',
