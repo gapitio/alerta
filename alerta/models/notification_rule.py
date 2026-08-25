@@ -212,7 +212,7 @@ class NotificationRule:
     def users(self):
         groups = [NotificationGroup.find_by_id(group_id) for group_id in self.group_ids]
         group_users = [db.get_notification_group_users(group.id) for group in groups if group is not None]
-        users = {User.find_by_email(user_id).notification_info for user_id in self.users_emails}
+        users = {User.find_by_email(user_id).notification_info for user_id in self.users_emails if user_id is not None}
         for group in groups:
             if group is None:
                 continue
