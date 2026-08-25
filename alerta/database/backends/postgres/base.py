@@ -1733,17 +1733,17 @@ class Backend(Database):
 # NOTIFICATION SEND
     def get_notification_sends(self):
         select_users = """
-            SELECT name, email FROM users
-            WHERE email NOT IN (select user_email from notification_sends where user_email is not null)
+            SELECT name, id FROM users
+            WHERE id NOT IN (select user_id from notification_sends where user_id is not null)
         """
         users = self._fetchall(select_users, [])
         if len(users):
-            insert_users = 'INSERT INTO notification_sends (id, user_name, user_email, mail, sms) VALUES'
+            insert_users = 'INSERT INTO notification_sends (id, user_name, user_id, mail, sms) VALUES'
             users_data = {}
             for user in users:
                 index = users.index(user)
-                insert_users += f'(%(email_{index})s, %(name_{index})s, %(email_{index})s, false, false),'
-                users_data = {**users_data, **{f'email_{index}': user.email, f'name_{index}': user.name, f'id_{index}': str(uuid4())}}
+                insert_users += f'(%(id_{index})s, %(name_{index})s, %(email_{index})s, false, false),'
+                users_data = {**users_data, **{f'email_{index}': user.id, f'name_{index}': user.name, f'id_{index}': str(uuid4())}}
             insert_users = insert_users[:-1] + 'RETURNING *'
             self._insert(insert_users, users_data)
 
