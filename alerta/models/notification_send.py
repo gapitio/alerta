@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Tuple, Union
 
 from alerta.app import db
+from alerta.models.user import User
 
 JSON = Dict[str, Any]
 
@@ -70,7 +71,12 @@ class NotificationSend:
 class NotificationSendInfo(NotificationSend):
     def __init__(self, **kwargs):
         NotificationSend.__init__(self, **kwargs)
-        self.email = kwargs.get('email')
+        self.user_id = kwargs.get('user_id')
+
+    @property
+    def email(self) -> str | None:
+        user = User.find_by_id(self.user_id) if self.user_id else None
+        return user.email if user else None
 
     @classmethod
     def from_db(cls, r: Tuple):
@@ -80,7 +86,7 @@ class NotificationSendInfo(NotificationSend):
             group_name=r.group_name,
             mail=r.mail,
             sms=r.sms,
-            email=r.user_email
+            user_id=r.user_id
         )
 
     @staticmethod

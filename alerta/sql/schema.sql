@@ -592,7 +592,7 @@ END$$;
 CREATE TABLE IF NOT EXISTS notification_sends(
     id TEXT PRIMARY KEY,
     user_name TEXT,
-    user_email TEXT REFERENCES users(email) ON DELETE CASCADE,
+    user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     group_name text REFERENCES notification_groups(name) ON DELETE CASCADE,
     mail BOOLEAN,
     sms BOOLEAN
@@ -601,9 +601,11 @@ CREATE TABLE IF NOT EXISTS notification_sends(
 DO $$
 BEGIN
     ALTER TABLE notification_sends DROP CONSTRAINT notification_sends_user_email_fkey;
-    ALTER TABLE notification_sends ADD CONSTRAINT notification_sends_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) ON UPDATE CASCADE ON DELETE CASCADE;
+    ALTER TABLE notification_sends ADD COLUMN user_id TEXT UNIQUE REFERENCES users(id) ON DELETE CASCADE;
+    UPDATE notification_sends SET user_id = (SELECT id FROM users WHERE email = notification_sends.user_email);
+    ALTER TABLE notification_sends DROP COLUMN user_email;
 EXCEPTION
-    WHEN duplicate_column THEN RAISE NOTICE 'column "phone_number" already exists in users.';
+    WHEN undefined_object THEN RAISE NOTICE 'already removed old column user_email.';
 END$$;
 DO $$
 BEGIN
