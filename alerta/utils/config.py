@@ -72,6 +72,8 @@ class Config:
         config['ALLOWED_OIDC_ROLES'] = get_config('ALLOWED_OIDC_ROLES', default=[], type=list, config=config)
         config['OIDC_SCOPES'] = get_config('OIDC_SCOPES', default=[], type=list, config=config)
 
+        config['OIDC_VERIFY_SSL'] = get_config('OIDC_VERIFY_SSL', default=True, type=bool, config=config)
+
         config['CORS_ORIGINS'] = get_config('CORS_ORIGINS', default=[], type=list, config=config)
 
         config['HEARTBEAT_URL'] = get_config('HEARTBEAT_URL', default=None, type=str, config=config)

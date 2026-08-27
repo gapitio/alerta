@@ -152,6 +152,7 @@ OIDC_SCOPES = []
 OIDC_TOKEN_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'client_secret_jwt']
 OIDC_LOGOUT_URL = None
 OIDC_VERIFY_TOKEN = False
+OIDC_VERIFY_SSL = True
 OIDC_ROLE_CLAIM = OIDC_CUSTOM_CLAIM = 'roles'  # JWT claim name whose value is used in role mapping
 OIDC_GROUP_CLAIM = 'groups'  # JWT claim name whose value is used in customer mapping
 ALLOWED_OIDC_ROLES = ALLOWED_GITLAB_GROUPS or ALLOWED_KEYCLOAK_ROLES or ['*']
