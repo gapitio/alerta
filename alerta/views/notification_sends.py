@@ -62,7 +62,7 @@ def notification_send(notification_channel_id):
     users = [NotificationSendInfo.find_by_id(notification['id']).email for notification in data['notifications'] if notification['type'] == 'User']
     groups = [notification['id'] for notification in data['notifications'] if notification['type'] == 'Group']
     try:
-        notification_rule = NotificationRule.parse({'usersEmails': users, 'groupIds': groups, 'receivers': [], 'text': data['text'], 'channelId': notification_channel_id, 'environment': plugins.config.get('DEFAULT_ENVIRONMENT')})
+        notification_rule = NotificationRule.parse({'usersEmails': users, 'groupIds': groups, 'receivers': [], 'text': data['text'], 'subject': data.get('subject'), 'channelId': notification_channel_id, 'environment': plugins.config.get('DEFAULT_ENVIRONMENT')})
     except Exception as e:
         raise ApiError(str(e), 400)
     try:
