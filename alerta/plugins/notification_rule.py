@@ -278,7 +278,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
 
 def handle_test(channel: NotificationChannel, info: NotificationRule, config):
     message = info.text if info.text != '' else 'this is a test message for testing a notification_channel in alerta'
-    subject = info.subject if info.subject != '' else 'Alerta Test Notification'
+    subject = info.subject if info.subject != '' and info.subject is not None else 'Alerta Test Notification'
     fernet = Fernet(config['NOTIFICATION_KEY'])
     channel = update_bearer(channel, fernet)
     handle_channel(message, channel, info, info.users, fernet, 'Test Notification Channel', subject)
