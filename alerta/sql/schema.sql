@@ -290,6 +290,12 @@ END $$;
 
 DO $$
 BEGIN
+    ALTER TABLE notification_rules ADD COLUMN "subject" text;
+EXCEPTION
+    WHEN duplicate_column THEN RAISE NOTICE 'column "subject" already exists in notification_rules.';
+END$$;
+DO $$
+BEGIN
     ALTER TABLE notification_rules ADD COLUMN delay_time interval;
 EXCEPTION
     WHEN duplicate_column THEN RAISE NOTICE 'column "delay_time" already exists in notification_rules.';

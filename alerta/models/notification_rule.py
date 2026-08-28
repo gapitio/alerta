@@ -190,6 +190,7 @@ class NotificationRule:
             kwargs['create_time'] if 'create_time' in kwargs else datetime.now(UTC)
         )
         self.text = kwargs.get('text', None)
+        self.subject = kwargs.get('subject', None)
 
         if self.environment:
             self.priority = 1
@@ -269,6 +270,7 @@ class NotificationRule:
             else None,
             user=json.get('user', None),
             text=json.get('text', None),
+            subject=json.get('subject', None),
             days=json.get('days', None),
         )
         return notification_rule
@@ -299,6 +301,7 @@ class NotificationRule:
             'createTime': self.create_time,
             'reactivate': self.reactivate,
             'text': self.text,
+            'subject': self.subject,
             'startTime': self.start_time.strftime('%H:%M')
             if self.start_time is not None
             else None,
@@ -354,6 +357,7 @@ class NotificationRule:
             create_time=doc.get('createTime', None),
             reactivate=doc.get('reactivate', None),
             text=doc.get('text', None),
+            subject=doc.get('subject', None),
             start_time=(
                 datetime.strptime(
                     f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M'
@@ -400,6 +404,7 @@ class NotificationRule:
             create_time=rec.create_time,
             reactivate=rec.reactivate,
             text=rec.text,
+            subject=rec.subject,
             start_time=rec.start_time,
             end_time=rec.end_time,
             days=rec.days,

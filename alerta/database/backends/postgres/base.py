@@ -1356,9 +1356,9 @@ class Backend(Database):
     def create_notification_rule(self, notification_rule):
         insert = """
             INSERT INTO notification_rules (id, name, active, priority, environment, service, resource, event, tags, reactivate, excluded_tags, delay_time,
-                customer, "user", create_time, start_time, end_time, days, receivers, users_emails, group_ids, use_oncall, text, channel_id, triggers)
+                customer, "user", create_time, start_time, end_time, days, receivers, users_emails, group_ids, use_oncall, text, subject, channel_id, triggers)
             VALUES (%(id)s, %(name)s, %(active)s, %(priority)s, %(environment)s, %(service)s, %(resource)s, %(event)s, %(tags)s, %(reactivate)s, %(excluded_tags)s, %(delay_time)s,
-                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(users_emails)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
+                %(customer)s, %(user)s, %(create_time)s, %(start_time)s, %(end_time)s, %(days)s, %(receivers)s, %(users_emails)s, %(group_ids)s, %(use_oncall)s, %(text)s, %(subject)s, %(channel_id)s, %(triggers)s::notification_triggers[] )
             RETURNING *
         """
         return self._insert(insert, vars(notification_rule))
@@ -1617,6 +1617,8 @@ class Backend(Database):
             update += 'triggers=%(triggers)s::notification_triggers[], '
         if 'text' in kwargs:
             update += 'text=%(text)s, '
+        if 'subject' in kwargs:
+            update += 'subject=%(subject)s, '
         if 'channelId' in kwargs:
             update += 'channel_id=%(channelId)s,'
         if 'active' in kwargs:
