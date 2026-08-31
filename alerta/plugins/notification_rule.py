@@ -123,22 +123,22 @@ def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers
     return requests.post(f'{channel.host}', data, headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
 
 
-def send_smtp_mail(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, **kwargs):
+def send_smtp_mail(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, subject: str, **kwargs):
     server = smtplib.SMTP_SSL(channel.host)
     api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
     server.login(api_sid, api_token)
-    server.sendmail(channel.sender, list(receivers), f"From: {channel.sender}\nTo: {','.join(receivers)}\nSubject: Alerta\n\n{message}")
+    server.sendmail(channel.sender, list(receivers), f"From: {channel.sender}\nTo: {','.join(receivers)}\nSubject: {subject}\n\n{message}")
     server.quit()
 
 
-def send_email(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, **kwargs):
+def send_email(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, subject: str, **kwargs):
     data = {
         'personalizations': [
             {'to': [{'email': email} for email in receivers]}
         ],
         'from': {'email': channel.sender},
-        'subject': 'Alerta',
+        'subject': subject,
         'content': [{'type': 'text/html', 'value': message.replace('\n', '<br>')}],
     }
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
@@ -193,7 +193,7 @@ def delay_notification(alert: Alert, notification_rule: NotificationRule):
     }).create()
 
 
-def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[NotificationInfo]', fernet: Fernet, alert: str):
+def handle_channel(message: str, channel: NotificationChannel, notification_rule: NotificationRule, users: 'set[NotificationInfo]', fernet: Fernet, alert: str, subject: str):
     notification_type = channel.type
     phone_numbers = {*notification_rule.receivers, *[f'{user.country_code}{user.phone_number}' for user in users if user.phone_number is not None]}
     mails = {*[receiver.lower() for receiver in notification_rule.receivers], *[user.email.lower() for user in users if user.email is not None]}
@@ -202,7 +202,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
         if len(mails) == 0:
             return
         try:
-            response = send_email(message, channel, mails, fernet)
+            response = send_email(message, channel, mails, fernet, subject)
             if response.status_code != 202:
                 data = response.json()['errors'][0]
                 log_notification(False, message, channel, notification_rule.id, alert, mails, f'Got status code {response.status_code}: {data["message"]}')
@@ -217,7 +217,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
         if len(mails) == 0:
             return
         try:
-            send_smtp_mail(message, channel, mails, fernet)
+            send_smtp_mail(message, channel, mails, fernet, subject)
             log_notification(True, message, channel, notification_rule.id, alert, mails)
         except InvalidToken:
             log_notification(False, message, channel, notification_rule.id, alert, mails, 'NotificationChannel: Failed to decrypt authentication keys')
@@ -278,9 +278,10 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
 
 def handle_test(channel: NotificationChannel, info: NotificationRule, config):
     message = info.text if info.text != '' else 'this is a test message for testing a notification_channel in alerta'
+    subject = info.subject if info.subject != '' and info.subject is not None else 'Alerta Test Notification'
     fernet = Fernet(config['NOTIFICATION_KEY'])
     channel = update_bearer(channel, fernet)
-    handle_channel(message, channel, info, info.users, fernet, 'Test Notification Channel')
+    handle_channel(message, channel, info, info.users, fernet, 'Test Notification Channel', subject)
 
 
 def get_notification_trigger_text(rule: NotificationRule, alert: Alert, status: str):
@@ -294,19 +295,21 @@ def get_notification_trigger_text(rule: NotificationRule, alert: Alert, status: 
 def handle_notifications(alert: 'Alert', notifications: 'list[tuple[NotificationRule,NotificationChannel, list[set[NotificationInfo | None]]]]', on_users: 'list[set[NotificationInfo | None]]', fernet: Fernet, app_context, status: str = ''):
     app_context.push()
     standard_message = '%(environment)s: %(severity)s alert for %(service)s - %(resource)s is %(event)s'
+    default_subject = 'Alerta Notification'
     for notification_rule, channel, users in notifications:
         if channel is None:
             return
 
         if notification_rule.use_oncall:
             users.update(on_users)
-        msg_obj = {**alert.serialize, 'status': status} if status != '' else alert.serialize
+        msg_obj = get_message_obj({**alert.serialize, 'status': status} if status != '' else alert.serialize)
         text = get_notification_trigger_text(notification_rule, alert, status)
         message = (
             text if text != '' and text is not None else standard_message
-        ) % get_message_obj(msg_obj)
+        ) % msg_obj
+        subject = (notification_rule.subject if notification_rule.subject != '' and notification_rule.subject is not None else default_subject) % msg_obj
 
-        handle_channel(message, channel, notification_rule, users, fernet, alert.id)
+        handle_channel(message, channel, notification_rule, users, fernet, alert.id, subject)
 
 
 def handle_alert(alert: Alert, config, stat: str = ''):
