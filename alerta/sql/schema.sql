@@ -538,6 +538,7 @@ CREATE TABLE IF NOT EXISTS keys (
     customer text
 );
 
+UPDATE keys SET scopes = string_to_array(regexp_replace(array_to_string(scopes, ','), 'notification_', 'notification.', 'g'), ',') WHERE scopes::text LIKE '%notification_%';
 
 CREATE TABLE IF NOT EXISTS metrics (
     "group" text NOT NULL,
