@@ -33,7 +33,7 @@ def get_oidc_configuration(app):
     discovery_doc_url = issuer_url.strip('/') + '/.well-known/openid-configuration'
 
     try:
-        r = requests.get(discovery_doc_url, timeout=2)
+        r = requests.get(discovery_doc_url, timeout=2, verify=app.config['OIDC_VERIFY_SSL'])
         config = r.json()
     except Exception as e:
         raise ApiError(f'Could not get OpenID configuration from well known URL: {str(e)}', 503)
@@ -48,7 +48,7 @@ def get_oidc_configuration(app):
     if app.config['OIDC_VERIFY_TOKEN']:
         try:
             jwks_uri = config['jwks_uri']
-            r = requests.get(jwks_uri, timeout=2)
+            r = requests.get(jwks_uri, timeout=2, verify=app.config['OIDC_VERIFY_SSL'])
             keys = {k['kid']: RSAAlgorithm.from_jwk(json.dumps(k)) for k in r.json()['keys']}
         except Exception as e:
             raise ApiError(f'Could not get OpenID JWT Key Set from JWKS URL: {str(e)}', 503)
@@ -90,11 +90,11 @@ def openid():
 
     if preferred_token_auth_method == 'client_secret_basic':
         auth = (request.json['clientId'], current_app.config['OAUTH2_CLIENT_SECRET'])
-        r = requests.post(token_endpoint, data, auth=auth)
+        r = requests.post(token_endpoint, data, auth=auth, verify=current_app.config['OIDC_VERIFY_SSL'])
     elif preferred_token_auth_method == 'client_secret_post':
         data['client_id'] = request.json['clientId']
         data['client_secret'] = current_app.config['OAUTH2_CLIENT_SECRET']
-        r = requests.post(token_endpoint, data)
+        r = requests.post(token_endpoint, data, verify=current_app.config['OIDC_VERIFY_SSL'])
     elif preferred_token_auth_method == 'client_secret_jwt':
         now = datetime.now(UTC)
         payload = dict(
@@ -112,7 +112,7 @@ def openid():
         )
         data['client_assertion_type'] = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
         data['client_assertion'] = client_assertion
-        r = requests.post(token_endpoint, data)
+        r = requests.post(token_endpoint, data, verify=current_app.config['OIDC_VERIFY_SSL'])
     else:
         raise ApiError(f"Token endpoint auth method '{preferred_token_auth_method}' is not supported by Alerta.", 400)
     token = r.json()
@@ -143,7 +143,7 @@ def openid():
 
     try:
         headers = {'Authorization': f"{token.get('token_type', 'Bearer')} {token['access_token']}"}
-        r = requests.get(userinfo_endpoint, headers=headers)
+        r = requests.get(userinfo_endpoint, headers=headers, verify=current_app.config['OIDC_VERIFY_SSL'])
         userinfo = r.json()
     except Exception:
         raise ApiError('No access token in OpenID Connect token response.')
