@@ -173,14 +173,15 @@ def openid():
     else:
         user = User.find_by_id(id=subject)
 
+    roles = custom_claims[role_claim] if len(custom_claims[role_claim]) > 0 else current_app.config['USER_ROLES']
+
     if not user:
         user = User(id=subject, name=name, login=login, password='', email=email,
-                    roles=current_app.config['USER_ROLES'], text='', email_verified=email_verified)
+                    roles=roles, text='', email_verified=email_verified)
         user.create()
     else:
-        user.update(login=login, email=email, email_verified=email_verified)
+        user.update(login=login, email=email, email_verified=email_verified, roles=roles)
 
-    roles = custom_claims[role_claim] + user.roles
     groups = custom_claims[group_claim]
 
     if user.id != subject:
