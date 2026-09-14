@@ -1844,6 +1844,7 @@ class AuthProvidersTestCase(unittest.TestCase):
             'OIDC_ISSUER_URL': 'https://dev-490527.okta.com/oauth2/default',
             'OAUTH2_CLIENT_ID': '0oac5s46zwh5crGiH356',
             'OAUTH2_CLIENT_SECRET': 'oauth2-client-secret',
+            'USER_ROLES': ['Everyone'],
             'OIDC_ROLE_CLAIM': 'groups',
             # 'OIDC_CUSTOM_CLAIM': 'groups',
             'CUSTOMER_VIEWS': True,
