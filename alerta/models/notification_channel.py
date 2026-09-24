@@ -40,13 +40,13 @@ class NotificationChannel:
             api_sid=fernet.encrypt(str(json['apiSid']).encode()).decode() if 'apiSid' in json else None,
             sender=json['sender'],
             host=json.get('host', None),
-            platform_id=json.get('platfromId', None),
+            platform_id=json.get('platformId', None),
             platform_partner_id=json.get('platfromPartnerId', None),
             customer=json.get('customer', None),
             verify=json.get('verify', None),
         )
 
-    @ property
+    @property
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
@@ -97,7 +97,7 @@ class NotificationChannel:
             more += f'customer={self.customer}, '
         return f'NotificationChannel(id={self.id}, type={self.type}, sender={self.sender}, {more}'
 
-    @ classmethod
+    @classmethod
     def from_document(cls, doc: Dict[str, Any]) -> 'NotificationChannel':
         return NotificationChannel(
             id=doc.get('id', None) or doc.get('_id'),
@@ -114,7 +114,7 @@ class NotificationChannel:
             bearer_timeout=doc.get('bearer_timeout', None),
         )
 
-    @ classmethod
+    @classmethod
     def from_record(cls, rec) -> 'NotificationChannel':
         return NotificationChannel(
             id=rec.id,
@@ -131,7 +131,7 @@ class NotificationChannel:
             bearer_timeout=rec.bearer_timeout,
         )
 
-    @ classmethod
+    @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationChannel':
         if isinstance(r, dict):
             return cls.from_document(r)
@@ -143,18 +143,18 @@ class NotificationChannel:
         return NotificationChannel.from_db(db.create_notification_channel(self))
 
     # get a notification rule
-    @ staticmethod
+    @staticmethod
     def find_by_id(id: str, customers: 'list[str]|None' = None) -> Optional['NotificationChannel']:
         return NotificationChannel.from_db(db.get_notification_channel(id, customers))
 
-    @ staticmethod
+    @staticmethod
     def find_all(query: 'Query|None' = None, page: int = 1, page_size: int = 1000) -> List['NotificationChannel']:
         return [
             NotificationChannel.from_db(notification_channel)
             for notification_channel in db.get_notification_channels(query, page, page_size)
         ]
 
-    @ staticmethod
+    @staticmethod
     def count(query: 'Query|None' = None) -> int:
         return db.get_notification_channels_count(query)
 
