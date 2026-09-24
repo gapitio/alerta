@@ -54,9 +54,10 @@ def make_call(message: str, channel: NotificationChannel, receiver: str, fernet:
     twiml_message = f'<Response><Pause/><Say>{remove_unspeakable_chr(message)}</Say></Response>'
     data = {'Twiml': twiml_message, 'From': channel.sender, 'To': receiver}
     api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
+    account_sid = channel.platform_id or api_sid
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
     send_sms(message, channel, receiver, fernet)
-    return requests.post(f'{TWILIO_BASE_URL}/{api_sid}/Calls.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
+    return requests.post(f'{TWILIO_BASE_URL}/{account_sid}/Calls.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
 
 
 def send_sms(message: str, channel: NotificationChannel, receiver: str, fernet: Fernet, **kwargs):
@@ -64,8 +65,9 @@ def send_sms(message: str, channel: NotificationChannel, receiver: str, fernet: 
     body = message if len(message) <= TWILIO_MAX_SMS_LENGTH else restricted_message[: restricted_message.rfind(' ')] + ' ...'
     data = {'Body': body, 'From': channel.sender, 'To': receiver}
     api_sid = fernet.decrypt(channel.api_sid.encode()).decode()
+    account_sid = channel.platform_id or api_sid
     api_token = fernet.decrypt(channel.api_token.encode()).decode()
-    return requests.post(f'{TWILIO_BASE_URL}/{api_sid}/Messages.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
+    return requests.post(f'{TWILIO_BASE_URL}/{account_sid}/Messages.json', data=data, headers={'Content-Encoding': 'application/json'}, auth=(api_sid, api_token))
 
 
 def update_bearer(channel: NotificationChannel, fernet):
