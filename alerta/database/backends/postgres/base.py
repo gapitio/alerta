@@ -621,7 +621,7 @@ class Backend(Database):
             SELECT {select}
               FROM alerts {join}
              WHERE {query.where}
-          ORDER BY {query.sort or 'last_receive_time'}
+          ORDER BY {query.sort or 'last_receive_time'}, id
         """
         return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
 
