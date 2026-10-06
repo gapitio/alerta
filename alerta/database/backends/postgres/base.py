@@ -2269,7 +2269,7 @@ class Backend(Database):
 
     def get_users_emails(self):
         select = """
-            SELECT email, name FROM users
+            SELECT email, name, phone_number, country FROM users
         """
         se = self._fetchall(select, {})
         return se
