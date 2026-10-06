@@ -173,6 +173,8 @@ jobs:
             python3-dev \
             libldap2-dev \
             libsasl2-dev \
+            libxml2 \
+            libxslt-dev \
             xmlsec1
       - name: Set up Python 3.14
         uses: actions/setup-python@v5
