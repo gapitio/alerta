@@ -21,6 +21,8 @@ RUN apt-get update && \
     build-essential \
     curl \
     gnupg2 \
+    libxml2 \
+    libxslt-dev \
     libldap2-dev \
     libpq-dev \
     libsasl2-dev \
