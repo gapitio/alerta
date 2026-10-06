@@ -180,7 +180,7 @@ class User:
 
     @staticmethod
     def get_emails():
-        return [{'email': u.email, 'name': u.name} for u in db.get_users_emails()]
+        return [{'email': u.email, 'name': u.name, 'phoneNumber': NotificationInfo(country=u.country).country_code + u.phone_number if u.country and u.phone_number else None} for u in db.get_users_emails()]
 
     @staticmethod
     def find_by_username(username: str) -> Optional['User']:
