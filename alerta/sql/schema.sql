@@ -463,6 +463,8 @@ END$$;
 UPDATE on_calls SET users_emails='{}' WHERE users_emails IS NULL;
 ALTER TABLE on_calls DROP COLUMN IF EXISTS user_ids;
 
+ALTER TABLE on_calls ADD COLUMN IF NOT EXISTS "offset" INTERVAL DEFAULT '0 minutes';
+
 
 CREATE TABLE IF NOT EXISTS notification_groups(
     id text PRIMARY KEY,

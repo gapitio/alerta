@@ -1963,9 +1963,9 @@ class Backend(Database):
     def create_on_call(self, on_call):
         insert = """
             INSERT INTO on_calls (id, users_emails, group_ids, "start_date", end_date, start_time, end_time, "user", customer,
-                repeat_type, repeat_days, repeat_weeks, repeat_months)
+                repeat_type, repeat_days, repeat_weeks, repeat_months, "offset")
             VALUES (%(id)s, %(users_emails)s, %(group_ids)s, %(start_date)s, %(end_date)s, %(start_time)s, %(end_time)s, %(user)s, %(customer)s,
-                %(repeat_type)s, %(repeat_days)s, %(repeat_weeks)s, %(repeat_months)s)
+                %(repeat_type)s, %(repeat_days)s, %(repeat_weeks)s, %(repeat_months)s, '%(offset)s minutes')
             RETURNING *
         """
         return self._insert(insert, vars(on_call))
@@ -2008,16 +2008,65 @@ class Backend(Database):
         date_data['date'] = alert.create_time.date()
         date_data['time'] = alert.create_time.time()
         date_data['day'] = alert.create_time.strftime('%a')
+        next_day = alert.create_time + timedelta(1)
+        date_data['nextDay'] = next_day.strftime('%a')
+        date_data['nextDate'] = next_day.date()
+        previous_day = alert.create_time - timedelta(1)
+        date_data['previousDay'] = previous_day.strftime('%a')
+        date_data['previousDate'] = previous_day.date()
         _year, date_data['week'], _day_number = alert.create_time.isocalendar()
         date_data['month'] = alert.create_time.strftime('%b')
         select = """
-            SELECT *
+            WITH previousDay AS (
+                SELECT * from on_calls
+                WHERE
+                ("offset" < '0 minutes' AND (end_time < end_time + "offset" OR start_time < start_time + "offset"))
+                AND (
+                    (repeat_days IS NOT NULL AND repeat_days != '{}' AND ARRAY[%(previousDay)s] <@ repeat_days)
+                    OR ((start_date IS NOT NULL OR end_date IS NOT NULL) AND (start_date IS NULL OR start_date <= %(previousDate)s) AND (end_date IS NULL OR end_date >= %(previousDate)s))
+                )
+                AND (start_time IS NULL OR start_time <= %(time)s OR NOT ("offset" < '0 minutes' AND start_time < start_time + "offset"))
+                AND (end_time IS NULL OR end_time >= %(time)s OR NOT ("offset" < '0 minutes' AND end_time < end_time + "offset"))
+            ),
+            nextDay AS (
+                SELECT * from on_calls
+                WHERE
+                ("offset" > '0 minutes' AND (end_time > end_time + "offset" OR start_time > start_time + "offset"))
+                AND (
+                    (repeat_days IS NOT NULL AND repeat_days != '{}' AND ARRAY[%(nextDay)s] <@ repeat_days)
+                    OR ((start_date IS NOT NULL OR end_date IS NOT NULL) AND (start_date IS NULL OR start_date <= %(nextDate)s) AND (end_date IS NULL OR end_date >= %(nextDate)s))
+                )
+                AND (start_time IS NULL OR start_time <= %(time)s OR NOT ("offset" > '0 minutes' AND start_time > start_time + "offset"))
+                AND (end_time IS NULL OR end_time >= %(time)s OR NOT ("offset" > '0 minutes' AND end_time > end_time + "offset"))
+            ),
+            currentDay as (
+                SELECT * from on_calls
+                WHERE (repeat_days IS NULL OR repeat_days = '{}' OR ARRAY[%(day)s] <@ repeat_days)
+                AND ((start_date IS NULL OR start_date <= %(date)s) AND (end_date IS NULL OR end_date >= %(date)s))
+                AND (
+                    start_time IS NULL
+                    OR ("offset" > '0m' AND '24:00' - start_time <= "offset" AND start_time + "offset" <= %(time)s + "offset")
+                    OR ("offset" < '0m' AND start_time < '0m' - "offset" AND start_time - "offset" <= %(time)s - "offset")
+                    OR ('24:00' - start_time > "offset" AND start_time >= '0m' - "offset" AND start_time <= %(time)s)
+                )
+                AND (
+                    end_time is NULL
+                    OR ("offset" > '0 minutes' AND '24:00' - end_time <= "offset" AND end_time - "offset" >= %(time)s - "offset")
+                    OR ("offset" < '0 minutes' AND end_time <= '0m' - "offset" AND end_time + "offset" >= %(time)s + "offset")
+                    OR ('24:00' - end_time > "offset" AND end_time > '0m' + "offset" AND end_time >= %(time)s)
+                )
+            )
+
+
+            SELECT DISTINCT ON (on_calls.id) *
             FROM on_calls
-            WHERE ((start_time IS NULL OR start_time <= %(time)s) AND (end_time IS NULL OR end_time > %(time)s))
-            AND ((start_date IS NULL OR start_date <= %(date)s) AND (end_date IS NULL OR end_date >= %(date)s))
+            WHERE (
+                on_calls.id IN (SELECT id FROM previousDay)
+                OR on_calls.id IN (SELECT id FROM nextDay)
+                OR on_calls.id IN (SELECT id FROM currentDay)
+            )
             AND (
-                (repeat_days IS NULL OR repeat_days='{}' OR ARRAY[%(day)s] <@ repeat_days)
-                AND (repeat_weeks IS NULL OR repeat_weeks='{}' OR ARRAY[%(week)s] <@ repeat_weeks)
+                (repeat_weeks IS NULL OR repeat_weeks='{}' OR ARRAY[%(week)s] <@ repeat_weeks)
                 AND (repeat_months IS NULL OR repeat_months='{}' OR ARRAY[%(month)s] <@ repeat_months)
             )
 
@@ -2053,6 +2102,8 @@ class Backend(Database):
             update += 'repeat_weeks=%(repeatWeeks)s, '
         if 'repeatMonths' in kwargs:
             update += 'repeat_months=%(repeatMonths)s,'
+        if 'offset' in kwargs:
+            update += "\"offset\"='%(offset)s minutes',"
 
         update += """
             "user"=COALESCE(%(user)s, "user")
