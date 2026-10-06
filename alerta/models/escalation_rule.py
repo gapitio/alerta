@@ -306,7 +306,7 @@ class EscalationRule:
     def count(query: Query = None) -> int:
         return db.get_escalation_rules_count(query)
 
-    @ staticmethod
+    @staticmethod
     def find_all_active() -> 'list[Alert]':
         return [Alert.parse(alert if isinstance(alert, dict) else alert_from_record(alert)) for alert in db.get_escalation_alerts()]
 

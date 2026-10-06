@@ -25,7 +25,7 @@ class NotificationDelay:
             delay_time=json['delay_time']
         )
 
-    @ property
+    @property
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
@@ -37,7 +37,7 @@ class NotificationDelay:
     def __repr__(self) -> str:
         return f'NotificationDelay(id={self.id}'
 
-    @ classmethod
+    @classmethod
     def from_document(cls, doc: Dict[str, Any]) -> 'NotificationDelay':
         return NotificationDelay(
             id=doc.get('id', None) or doc.get('_id'),
@@ -46,7 +46,7 @@ class NotificationDelay:
             delay_time=doc['delay_time']
         )
 
-    @ classmethod
+    @classmethod
     def from_record(cls, rec) -> 'NotificationDelay':
         return NotificationDelay(
             id=rec.id,
@@ -55,7 +55,7 @@ class NotificationDelay:
             delay_time=rec.delay_time
         )
 
-    @ classmethod
+    @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationDelay':
         if isinstance(r, dict):
             return cls.from_document(r)
@@ -66,28 +66,28 @@ class NotificationDelay:
     def create(self) -> 'NotificationDelay':
         return NotificationDelay.from_db(db.create_delayed_notification(self))
 
-    @ staticmethod
+    @staticmethod
     def find_by_id(id) -> Optional['NotificationDelay']:
         return NotificationDelay.from_db(db.get_delayed_notification(id))
 
-    @ staticmethod
+    @staticmethod
     def find_firing() -> List['NotificationDelay']:
         return [NotificationDelay.from_db(notification_delay) for notification_delay in db.get_delayed_notifications_firing(datetime.now(UTC))]
 
-    @ staticmethod
+    @staticmethod
     def delete_alert(alert_id) -> List['NotificationDelay']:
         return db.delete_delayed_notifications_alert(alert_id)
 
     def delete(self) -> Optional['NotificationDelay']:
         return db.delete_delayed_notification(self.id)
 
-    @ staticmethod
+    @staticmethod
     def find_all(query: 'Query|None' = None, page: int = 1, page_size: int = 1000) -> List['NotificationDelay']:
         return [
             NotificationDelay.from_db(notification_delay)
             for notification_delay in db.get_delayed_notifications(query, page, page_size)
         ]
 
-    @ staticmethod
+    @staticmethod
     def count(query: 'Query|None' = None) -> int:
         return db.get_delayed_notifications_count(query)

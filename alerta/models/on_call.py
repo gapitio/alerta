@@ -48,7 +48,7 @@ class OnCall:
                 users.add(User.find_by_id(user.id).notification_info)
         return users
 
-    @ classmethod
+    @classmethod
     def parse(cls, json: JSON) -> 'OnCall':
         users_emails = json.get('usersEmails', [])
         group_ids = json.get('groupIds', [])
@@ -88,7 +88,7 @@ class OnCall:
         )
         return on_call
 
-    @ property
+    @property
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
@@ -121,7 +121,7 @@ class OnCall:
             more,
         )
 
-    @ classmethod
+    @classmethod
     def from_document(cls, doc: Dict[str, Any]) -> 'OnCall':
         return OnCall(
             id=doc.get('id', None) or doc.get('_id'),
@@ -155,7 +155,7 @@ class OnCall:
             user=doc.get('user'),
         )
 
-    @ classmethod
+    @classmethod
     def from_record(cls, rec) -> 'OnCall':
         return OnCall(
             id=rec.id,
@@ -176,7 +176,7 @@ class OnCall:
             user=rec.user,
         )
 
-    @ classmethod
+    @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'OnCall':
         if isinstance(r, dict):
             return cls.from_document(r)
@@ -188,19 +188,19 @@ class OnCall:
         return OnCall.from_db(db.create_on_call(self))
 
     # get a notification rule
-    @ staticmethod
+    @staticmethod
     def find_by_id(id: str, customers: List[str] = None) -> Optional['OnCall']:
         return OnCall.from_db(db.get_on_call(id, customers))
 
-    @ staticmethod
+    @staticmethod
     def find_all(query: Query = None, page: int = 1, page_size: int = 1000) -> List['OnCall']:
         return [OnCall.from_db(on_call) for on_call in db.get_on_calls(query, page, page_size)]
 
-    @ staticmethod
+    @staticmethod
     def count(query: Query = None) -> int:
         return db.get_on_calls_count(query)
 
-    @ staticmethod
+    @staticmethod
     def find_all_active(alert: 'Alert') -> 'list[OnCall]':
         return [OnCall.from_db(db_oncall) for db_oncall in db.get_on_calls_active(alert)]
 

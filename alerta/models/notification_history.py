@@ -40,7 +40,7 @@ class NotificationHistory:
             error=json.get('error')
         )
 
-    @ property
+    @property
     def serialize(self) -> Dict[str, Any]:
         return {
             'id': self.id,
@@ -60,7 +60,7 @@ class NotificationHistory:
     def __repr__(self) -> str:
         return f'NotificationHistory(id={self.id}'
 
-    @ classmethod
+    @classmethod
     def from_document(cls, doc: Dict[str, Any]) -> 'NotificationHistory':
         return NotificationHistory(
             id=doc.get('id', None) or doc.get('_id'),
@@ -77,7 +77,7 @@ class NotificationHistory:
             error=doc.get('error', None)
         )
 
-    @ classmethod
+    @classmethod
     def from_record(cls, rec) -> 'NotificationHistory':
         return NotificationHistory(
             id=rec.id,
@@ -94,7 +94,7 @@ class NotificationHistory:
             error=rec.error
         )
 
-    @ classmethod
+    @classmethod
     def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationHistory':
         if isinstance(r, dict):
             return cls.from_document(r)
@@ -106,18 +106,18 @@ class NotificationHistory:
         return NotificationHistory.from_db(db.create_notification_history(self))
 
     # get a notification rule
-    @ staticmethod
+    @staticmethod
     def find_by_id(id: str, customers: 'list[str]|None' = None) -> Optional['NotificationHistory']:
         return NotificationHistory.from_db(db.get_notification_history(id, customers))
 
-    @ staticmethod
+    @staticmethod
     def find_all(query: 'Query|None' = None, page: int = 1, page_size: int = 1000) -> List['NotificationHistory']:
         return [
             NotificationHistory.from_db(notification_history)
             for notification_history in db.get_notifications_history(query, page, page_size)
         ]
 
-    @ staticmethod
+    @staticmethod
     def count(query: 'Query|None' = None) -> int:
         return db.get_notifications_history_count(query)
 
