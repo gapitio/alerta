@@ -28,6 +28,7 @@ class OnCall:
         self.repeat_days = kwargs.get('repeat_days')
         self.repeat_weeks = kwargs.get('repeat_weeks')
         self.repeat_months = kwargs.get('repeat_months')
+        self.offset = kwargs.get('offset') or 0
 
         self.customer = kwargs.get('customer')
         self.user = kwargs.get('user')
@@ -85,6 +86,7 @@ class OnCall:
             repeat_months=json.get('repeatMonths'),
             customer=json.get('customer'),
             user=json.get('user'),
+            offset=json.get('offset')
         )
         return on_call
 
@@ -99,6 +101,7 @@ class OnCall:
             'endDate': self.end_date,
             'startTime': self.start_time.strftime('%H:%M') if self.start_time is not None else None,
             'endTime': self.end_time.strftime('%H:%M') if self.end_time is not None else None,
+            'offset': self.offset,
             'repeatType': self.repeat_type,
             'repeatDays': self.repeat_days,
             'repeatWeeks': self.repeat_weeks,
@@ -152,6 +155,7 @@ class OnCall:
             # repeat_every_x_week=doc.get("repeatEveryXWeek"),
             # repeat_every_x_month=doc.get("repeatEveryXMonth"),
             customer=doc.get('customer'),
+            offset=doc.get('offset'),
             user=doc.get('user'),
         )
 
@@ -169,6 +173,7 @@ class OnCall:
             repeat_days=rec.repeat_days,
             repeat_weeks=rec.repeat_weeks,
             repeat_months=rec.repeat_months,
+            offset=int(rec.offset.total_seconds() / 60),
             # repeat_every_x_day=rec.repeat_every_x_day,
             # repeat_every_x_week=rec.repeat_every_x_week,
             # repeat_every_x_month=rec.repeat_every_x_month,

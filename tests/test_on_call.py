@@ -341,6 +341,6480 @@ class OnCallTestCase(unittest.TestCase):
             map(get_id, active_oncalls),
         )
 
+    def test_time_repeat(self):
+        day_oncall = {
+            'startTime': '08:00',
+            'endTime': '16:00',
+            'offset': 120,
+            'usersEmails': ['test'],
+            'repeatDays': ['Mon'],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        # tests for a monday
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        # tests for day before a monday
+
+        self.prod_alert['createTime'] = '2026-09-27T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        # test for day after monday
+
+        self.prod_alert['createTime'] = '2026-09-29T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_repeat_offset(self):
+        day_oncall = {
+            'startTime': '05:00',
+            'endTime': '04:59',
+            'offset': -300,
+            'usersEmails': ['test'],
+            'repeatDays': ['Mon'],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+        self.prod_alert['createTime'] = '2026-09-27T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+        self.prod_alert['createTime'] = '2026-09-29T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_repeat(self):
+        day_oncall = {
+            'startTime': '22:00',
+            'endTime': '21:59',
+            'offset': 120,
+            'usersEmails': ['test'],
+            'repeatDays': ['Mon'],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+        self.prod_alert['createTime'] = '2026-09-27T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_date_offset(self):
+        day_oncall = {
+            'startDate': '2026-09-28',
+            'endDate': '2026-09-28',
+            'startTime': '05:00',
+            'endTime': '04:59',
+            'offset': -300,
+            'usersEmails': ['test'],
+            'repeatDays': [],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+        self.prod_alert['createTime'] = '2026-09-27T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_times(self):
+        day_oncall = {
+            'startTime': '08:00',
+            'endTime': '16:00',
+            'offset': 120,
+            'usersEmails': ['test'],
+            'repeatDays': [],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_times_offset(self):
+        day_oncall = {
+            'startTime': '08:00',
+            'endTime': '16:00',
+            'offset': -300,
+            'usersEmails': ['test'],
+            'repeatDays': [],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T00:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T00:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T01:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T03:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T04:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T05:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T06:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T07:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T08:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T09:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T10:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T11:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T13:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T14:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T15:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T16:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T18:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T19:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T20:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T21:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T22:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:00:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-28T23:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_endtime(self):
+        day_oncall = {
+            'endTime': '16:00',
+            'offset': 120,
+            'usersEmails': ['test'],
+            'repeatDays': [],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+    def test_endtime_offset(self):
+        day_oncall = {
+            'endTime': '16:00',
+            'offset': -300,
+            'usersEmails': ['test'],
+            'repeatDays': [],
+            'repeatWeeks': None,
+            'repeatMonths': None,
+        }
+
+        data = self.create_api_obj('/oncalls', day_oncall, self.headers)
+        on_call_id = data['id']
+
+        self.prod_alert['createTime'] = '2026-09-28T02:30:00.000Z'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T02:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-27T12:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T12:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T17:30:00.000Z'
+        self.prod_alert['severity'] = 'warning'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
+        self.prod_alert['createTime'] = '2026-09-29T22:30:00.000Z'
+        self.prod_alert['severity'] = 'critical'
+        data = self.create_api_obj('/alert', self.prod_alert, self.headers)
+        active_oncalls = self.create_api_obj('/oncalls/active', data['alert'], self.headers, 200)['onCalls']
+        self.assertNotIn(
+            on_call_id,
+            map(get_id, active_oncalls)
+        )
+
     def test_delete_on_call(self):
         now = datetime.now()
         on_call = {
