@@ -520,7 +520,7 @@ class Alert:
             hist = [{'id': a['id'], 'history': [RichHistory.from_db(hist) for hist in a['history']]} for a in res]
             return hist
         except Exception as e:
-            print(e)
+            current_app.logger.error(f'Failed to get alert history: {e}')
 
     # list alert history
     @staticmethod
