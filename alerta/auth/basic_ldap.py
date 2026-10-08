@@ -103,8 +103,14 @@ def login():
         elif len(result) == 0:
             raise ApiError('invalid username or password', 401)
         user_dn = result[0][0]
-        name = result[0][1][current_app.config['LDAP_USER_NAME_ATTR']][0].decode('utf-8', 'ignore')
-        email = result[0][1][current_app.config['LDAP_USER_EMAIL_ATTR']][0].decode('utf-8', 'ignore')
+
+        try:
+            name = result[0][1][current_app.config['LDAP_USER_NAME_ATTR']][0].decode('utf-8', 'ignore')
+            email = result[0][1][current_app.config['LDAP_USER_EMAIL_ATTR']][0].decode('utf-8', 'ignore')
+        except KeyError as e:
+            current_app.logger.error(f'Unable to login with LDAP: User {login} is missing required attribute {e}')
+            raise ApiError(f'Unable to login: User is missing required attribute {e}', 422)
+
         email_verified = bool(email)
     else:
         if '%' in current_app.config['LDAP_DOMAINS'][domain]:
