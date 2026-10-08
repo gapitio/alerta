@@ -550,6 +550,8 @@ def search_alerts():
 
         total = sum(severity_count.values())
         paging = Page.from_params(request.args, total)
+        if str(request.args.get('page-size')).lower() == 'all':
+            paging.page_size = total
         alerts = Alert.find_all(query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
     except (UndefinedColumn, CannotCoerce) as e:
         e.cursor.connection.rollback()
