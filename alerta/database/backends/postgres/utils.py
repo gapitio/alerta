@@ -19,7 +19,7 @@ Query.__new__.__defaults__ = ('1=1', {}, '(select 1)', 'status')  # type: ignore
 EXCLUDE_FROM_QUERY = [
     '_', 'callback', 'token', 'api-key', 'q', 'q.df', 'id', 'from-date', 'to-date',
     'sort-by', 'group-by', 'page', 'page-size', 'limit', 'show-raw-data', 'show-history',
-    'sent'
+    'sent', 'return-keys'
 ]
 
 

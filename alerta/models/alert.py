@@ -1,5 +1,6 @@
 import os
 import platform
+import re
 import sys
 from datetime import UTC, datetime
 from typing import Optional  # noqa
@@ -19,6 +20,84 @@ from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
 NoneType = type(None)
+
+
+class CustomAlert:
+    def __init__(self, return_keys: List[str], **kwargs):
+        self.return_keys = return_keys
+        self.id = kwargs.get('id')
+        self.resource = kwargs.get('resource')
+        self.event = kwargs.get('event')
+        self.environment = kwargs.get('environment')
+        self.severity = kwargs.get('severity')
+        self.status = kwargs.get('status')
+        self.service = kwargs.get('service')
+        self.value = kwargs.get('value')
+        self.text = kwargs.get('text')
+        self.tags = kwargs.get('tags')
+        self.tags = kwargs.get('tags')
+        self.custom_tags = kwargs.get('custom_tags')
+        self.attributes = {
+            **kwargs.get('attributes', {}),
+            **{key.replace('attributes.', ''): kwargs[key] for key in return_keys if key.startswith('attributes.')}
+        }
+        self.origin = kwargs.get('origin')
+        self.create_time = kwargs.get('create_time')
+        self.day = kwargs.get('day')
+        self.time = kwargs.get('time')
+        self.timeout = kwargs.get('timeout')
+        self.raw_data = kwargs.get('raw_data')
+        self.customer = kwargs.get('customer')
+
+        self.duplicate_count = kwargs.get('duplicate_count', None)
+        self.repeat = None
+        self.previous_severity = kwargs.get('previous_severity', None)
+        self.receive_time = kwargs.get('receive_time', None) or datetime.now(UTC)
+        self.last_receive_id = kwargs.get('last_receive_id', None)
+        self.last_receive_time = kwargs.get('last_receive_time', None)
+        self.update_time = kwargs.get('update_time', None)
+        self.history = kwargs.get('history', None) or list()
+
+    @property
+    def serialize(self) -> Dict[str, Any]:
+        keys = {key: self.__getattribute__(key)for key in self.return_keys if not key.startswith('attributes.')}
+        attributes = {'attributes': self.attributes} if self.attributes else None
+        return {**keys, **attributes} if attributes else {**keys}
+
+    @staticmethod
+    def find_all(return_keys: List[str], query: Query = None, raw_data: bool = False, history: bool = False, page: int = 1, page_size: int = 1000) -> List['Alert']:
+        allowed_keys = [
+            'id','resource',
+            'event',
+            'environment',
+            'severity',
+            'status',
+            'service',
+            'value',
+            'text',
+            'tags',
+            'custom_tags',
+            'attributes',
+            'origin',
+            'create_time',
+            'timeout',
+            'raw_data',
+            'customer',
+            'duplicate_count',
+            'previous_severity',
+            'receive_time',
+            'last_receive_id',
+            'last_receive_time',
+            'update_time',
+            'history',
+        ]
+        keys = [*[key for key in return_keys if key in allowed_keys], *[re.search(r'(?=attributes\.)[\w_. ]+', key).group() for key in return_keys if key.startswith('attributes.')]]
+        return [CustomAlert.from_record(keys, alert) for alert in db.get_alerts(query, raw_data, history, page, page_size, keys)]
+
+    @classmethod
+    def from_record(cls, return_keys: List[str], rec) -> 'Alert':
+        data = {key: getattr(rec, key.replace('.', '_').replace(' ', '_').lower()) for key in return_keys}
+        return CustomAlert(return_keys, **data)
 
 
 class Alert:
