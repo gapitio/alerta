@@ -1,3 +1,4 @@
+import re
 import threading
 import time
 from collections import defaultdict, namedtuple
@@ -593,9 +594,19 @@ class Backend(Database):
         """.format(limit=current_app.config['HISTORY_LIMIT'])
         return self._updateone(update, {'id': id, 'like_id': id + '%', 'history': history}, returning=True)
 
-    def get_alerts(self, query=None, raw_data=False, history=False, page=None, page_size=None):
+    def get_alerts(self, query=None, raw_data=False, history=False, page=None, page_size=None, return_keys=None):
         query = query or Query()
-        if raw_data and history:
+        mappedKeys = {}
+        if return_keys:
+            allowed_keys = ['resource', 'event', 'environment', 'severity', 'status', 'service', 'value', '"text"', 'tags', 'custom_tags', 'attributes', 'origin', 'create_time', 'timeout', 'raw_data', 'customer', 'duplicate_count', 'previous_severity', 'receive_time', 'last_receive_id', 'last_receive_time', 'update_time', 'history']
+            attribute_keys = [re.search(r'(?=attributes\.)[\w_. ]+', key).group() for key in return_keys if key.startswith('attributes.')]
+            keys = [
+                *[f'"{key}"' for key in return_keys if key in allowed_keys],
+                *[f'attributes ->> %({key})s as {key.replace('.', '_').replace(' ', '_')}' for key in attribute_keys]
+            ]
+            mappedKeys = {key: key.replace('attributes.', '') for key in return_keys if key.startswith('attributes.')}
+            select = 'id, ' + ', '.join(keys) if len(keys) > 0 else 'id'
+        elif raw_data and history:
             select = '*'
         else:
             select = (
@@ -623,7 +634,7 @@ class Backend(Database):
              WHERE {query.where}
           ORDER BY {query.sort or 'last_receive_time'}, id
         """
-        return self._fetchall(select, query.vars, limit=page_size, offset=(page - 1) * page_size)
+        return self._fetchall(select, {**query.vars, **mappedKeys}, limit=page_size, offset=(page - 1) * page_size)
 
     def get_escalate(self):
         select = """

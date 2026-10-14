@@ -11,7 +11,7 @@ from alerta.auth.decorators import permission
 from alerta.exceptions import (AlertaException, ApiError, BlackoutPeriod,
                                ForwardingLoop, HeartbeatReceived,
                                InvalidAction, RateLimit, RejectException)
-from alerta.models.alert import Alert
+from alerta.models.alert import Alert, CustomAlert
 from alerta.models.enums import Scope
 from alerta.models.metrics import Timer, timer
 from alerta.models.note import Note
@@ -544,6 +544,7 @@ def search_alerts():
     query = qb.alerts.from_params(request.args, customers=g.customers, query_time=query_time)
     show_raw_data = request.args.get('show-raw-data', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
     show_history = request.args.get('show-history', default=False, type=lambda x: x.lower() in ['true', 't', '1', 'yes', 'y', 'on'])
+    return_keys = request.args.getlist('return-keys')
     try:
         severity_count = Alert.get_counts_by_severity(query)
         status_count = Alert.get_counts_by_status(query)
@@ -552,13 +553,31 @@ def search_alerts():
         paging = Page.from_params(request.args, total)
         if str(request.args.get('page-size')).lower() == 'all':
             paging.page_size = total
-        alerts = Alert.find_all(query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
+        alerts = None
+        custom_alerts = None
+        if len(return_keys) > 0:
+            custom_alerts = CustomAlert.find_all(return_keys, query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
+        else:
+            alerts = Alert.find_all(query, raw_data=show_raw_data, history=show_history, page=paging.page, page_size=paging.page_size)
     except (UndefinedColumn, CannotCoerce) as e:
         e.cursor.connection.rollback()
         current_app.logger.info(f'Alert search failed with message: {e.diag.message_primary}. HINT: {e.diag.message_hint}')
         return jsonify(status='error', name='Alert Search', message=f'{e.diag.message_primary}. HINT: {e.diag.message_hint}'), 400
-
-    if alerts:
+    if custom_alerts:
+        return jsonify(
+            status='ok',
+            page=paging.page,
+            pageSize=paging.page_size,
+            pages=paging.pages,
+            more=paging.has_more,
+            alerts=[custom_alert.serialize for custom_alert in custom_alerts],
+            total=total,
+            statusCounts=status_count,
+            severityCounts=severity_count,
+            lastTime=max([custom_alert.last_receive_time for custom_alert in custom_alerts]) if 'last_receive_time' in return_keys else query_time,
+            autoRefresh=Switch.find_by_name('auto-refresh-allow').is_on
+        )
+    elif alerts:
         return jsonify(
             status='ok',
             page=paging.page,
