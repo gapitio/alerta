@@ -1,23 +1,16 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app
-from strenum import StrEnum
 
 from alerta.app import db
 from alerta.database.base import Query
+from alerta.models.enums import BlackoutStatus
 from alerta.utils.format import DateTime
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
-
-
-class BlackoutStatus(StrEnum):
-
-    Pending = 'pending'
-    Active = 'active'
-    Expired = 'expired'
 
 
 class Blackout:
@@ -157,53 +150,26 @@ class Blackout:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Blackout':
-        return Blackout(
-            id=doc.get('id', None) or doc.get('_id'),
-            priority=doc.get('priority', None),
-            environment=doc['environment'],
-            service=doc.get('service', list()),
-            resource=doc.get('resource', None),
-            event=doc.get('event', None),
-            tags=doc.get('tags', list()),
-            origin=doc.get('origin', None),
-            customer=doc.get('customer', None),
-            start_time=doc.get('startTime', None),
-            end_time=doc.get('endTime', None),
-            duration=doc.get('duration', None),
-            remaining=doc.get('remaining', None),
-            user=doc.get('user', None),
-            create_time=doc.get('createTime', None),
-            text=doc.get('text', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Blackout':
-        return Blackout(
-            id=rec.id,
-            priority=rec.priority,
-            environment=rec.environment,
-            service=rec.service,
-            resource=rec.resource if rec.resource != '' else None,
-            event=rec.event if rec.event != '' else None,
-            tags=rec.tags,
-            origin=rec.origin if rec.origin != '' else None,
-            customer=rec.customer,
-            start_time=rec.start_time.replace(tzinfo=UTC) if rec.start_time is not None else None,
-            end_time=rec.end_time.replace(tzinfo=UTC) if rec.end_time is not None else None,
-            duration=rec.duration,
-            remaining=rec.remaining,
-            user=rec.user,
-            create_time=rec.create_time,
-            text=rec.text
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Blackout':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Blackout']:
+        if r is not None:
+            return Blackout(
+                id=r.id,
+                priority=r.priority,
+                environment=r.environment,
+                service=r.service,
+                resource=r.resource if r.resource != '' else None,
+                event=r.event if r.event != '' else None,
+                tags=r.tags,
+                origin=r.origin if r.origin != '' else None,
+                customer=r.customer,
+                start_time=r.start_time.replace(tzinfo=UTC) if r.start_time is not None else None,
+                end_time=r.end_time.replace(tzinfo=UTC) if r.end_time is not None else None,
+                duration=r.duration,
+                remaining=r.remaining,
+                user=r.user,
+                create_time=r.create_time,
+                text=r.text
+            )
 
     # create a blackout
     def create(self) -> 'Blackout':

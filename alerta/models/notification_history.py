@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -61,45 +61,22 @@ class NotificationHistory:
         return f'NotificationHistory(id={self.id}'
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationHistory':
-        return NotificationHistory(
-            id=doc.get('id', None) or doc.get('_id'),
-            sent=doc['sent'],
-            message=doc['message'],
-            channel=doc['channel'],
-            rule=doc['rule'],
-            alert=doc['alert'],
-            receiver=doc['receiver'],
-            sender=doc['sender'],
-            sent_time=doc['sent_time'],
-            confirmed=doc['confirmed'],
-            confirmed_time=doc['confirmed_time'],
-            error=doc.get('error', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationHistory':
-        return NotificationHistory(
-            id=rec.id,
-            sent=rec.sent,
-            message=rec.message,
-            channel=rec.channel,
-            rule=rec.rule,
-            alert=rec.alert,
-            receiver=rec.receiver,
-            sender=rec.sender,
-            sent_time=rec.sent_time,
-            confirmed=rec.confirmed,
-            confirmed_time=rec.confirmed_time,
-            error=rec.error
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationHistory':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationHistory']:
+        if r is not None:
+            return NotificationHistory(
+                id=r.id,
+                sent=r.sent,
+                message=r.message,
+                channel=r.channel,
+                rule=r.rule,
+                alert=r.alert,
+                receiver=r.receiver,
+                sender=r.sender,
+                sent_time=r.sent_time,
+                confirmed=r.confirmed,
+                confirmed_time=r.confirmed_time,
+                error=r.error
+            )
 
     # create a notification rule
     def create(self) -> 'NotificationHistory':

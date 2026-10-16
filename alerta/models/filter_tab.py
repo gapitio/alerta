@@ -116,11 +116,11 @@ class FilterTab:
         return f'AlertTab(name={self.name}, index={self.index}, filter={self.filter},'
 
     @classmethod
-    def from_db(cls, rec) -> 'FilterTab':
+    def from_db(cls, r) -> 'FilterTab':
         return FilterTab(
-            name=rec.name,
-            index=rec.index,
-            filter=rec.filter
+            name=r.name,
+            index=r.index,
+            filter=r.filter
         )
 
     # create a filter tab

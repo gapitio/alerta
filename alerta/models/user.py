@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app
@@ -125,51 +125,25 @@ class User:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'User':
-        return User(
-            id=doc.get('id', None) or doc.get('_id'),
-            name=doc.get('name', None),
-            login=doc.get('login', None) or doc.get('email', None) or 'n/a',
-            password=doc.get('password', None),
-            email=doc.get('email', None),
-            phone_number=doc.get('phoneNumber', None),
-            country=doc.get('country', None),
-            status=doc.get('status', None),
-            roles=doc.get('roles', list()),
-            attributes=doc.get('attributes', dict()),
-            create_time=doc.get('createTime', None),
-            last_login=doc.get('lastLogin', None),
-            text=doc.get('text', None),
-            update_time=doc.get('updateTime', None),
-            email_verified=doc.get('email_verified', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'User':
-        return User(
-            id=rec.id,
-            name=rec.name,
-            login=rec.login or rec.email or 'n/a',
-            password=rec.password,
-            email=rec.email,
-            phone_number=rec.phone_number,
-            country=rec.country,
-            status=rec.status,
-            roles=rec.roles,
-            attributes=dict(rec.attributes),
-            create_time=rec.create_time,
-            last_login=rec.last_login,
-            text=rec.text,
-            update_time=rec.update_time,
-            email_verified=rec.email_verified
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'User':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['User']:
+        if r is not None:
+            return User(
+                id=r.id,
+                name=r.name,
+                login=r.login or r.email or 'n/a',
+                password=r.password,
+                email=r.email,
+                phone_number=r.phone_number,
+                country=r.country,
+                status=r.status,
+                roles=r.roles,
+                attributes=dict(r.attributes),
+                create_time=r.create_time,
+                last_login=r.last_login,
+                text=r.text,
+                update_time=r.update_time,
+                email_verified=r.email_verified
+            )
 
     def create(self) -> 'User':
         return User.from_db(db.create_user(self))

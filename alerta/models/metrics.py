@@ -40,33 +40,15 @@ class Gauge:
         )
 
     @classmethod
-    def from_document(cls, doc):
-        return Gauge(
-            group=doc.get('group'),
-            name=doc.get('name'),
-            title=doc.get('title', None),
-            description=doc.get('description', None),
-            value=doc.get('value', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return Gauge(
-            group=rec.group,
-            name=rec.name,
-            title=rec.title,
-            description=rec.description,
-            value=rec.value
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
-        else:
-            return
+        if r is not None:
+            return Gauge(
+                group=r.group,
+                name=r.name,
+                title=r.title,
+                description=r.description,
+                value=r.value
+            )
 
     def set(self, value):
         self.value = value
@@ -113,33 +95,15 @@ class Counter:
         )
 
     @classmethod
-    def from_document(cls, doc):
-        return Counter(
-            group=doc.get('group'),
-            name=doc.get('name'),
-            title=doc.get('title', None),
-            description=doc.get('description', None),
-            count=doc.get('count', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return Counter(
-            group=rec.group,
-            name=rec.name,
-            title=rec.title,
-            description=rec.description,
-            count=rec.count
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
-        else:
-            return
+        if r is not None:
+            return Counter(
+                group=r.group,
+                name=r.name,
+                title=r.title,
+                description=r.description,
+                count=r.count
+            )
 
     def inc(self, count=1):
         c = Counter.from_db(db.inc_counter(Counter(
@@ -197,35 +161,16 @@ class Timer:
         )
 
     @classmethod
-    def from_document(cls, doc):
-        return Timer(
-            group=doc.get('group'),
-            name=doc.get('name'),
-            title=doc.get('title', None),
-            description=doc.get('description', None),
-            count=doc.get('count', None),
-            total_time=doc.get('totalTime', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return Timer(
-            group=rec.group,
-            name=rec.name,
-            title=rec.title,
-            description=rec.description,
-            count=rec.count,
-            total_time=rec.total_time
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
-        else:
-            return
+        if r is not None:
+            return Timer(
+                group=r.group,
+                name=r.name,
+                title=r.title,
+                description=r.description,
+                count=r.count,
+                total_time=r.total_time
+            )
 
     def _time_in_millis(self):
         return int(round(time.time() * 1000))

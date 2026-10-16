@@ -3,6 +3,26 @@ import re
 from strenum import StrEnum
 
 
+class BlackoutStatus(StrEnum):
+
+    Pending = 'pending'
+    Active = 'active'
+    Expired = 'expired'
+
+
+class HeartbeatStatus(StrEnum):
+
+    OK = 'ok'
+    Slow = 'slow'
+    Expired = 'expired'  # aka 'stale'
+
+
+class ApiKeyStatus(StrEnum):
+
+    Active = 'active'
+    Expired = 'expired'
+
+
 class Severity(StrEnum):
 
     Security = 'security'

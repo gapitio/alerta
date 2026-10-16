@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -52,31 +52,15 @@ class NotificationGroup:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationGroup':
-        return NotificationGroup(
-            id=doc.get('id', None) or doc.get('_id'),
-            name=doc.get('name'),
-            users_emails=doc.get('users_emails'),
-            phone_numbers=doc.get('phone_numbers'),
-            mails=doc.get('mails'),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationGroup':
-        return NotificationGroup(
-            id=rec.id,
-            name=rec.name,
-            users_emails=rec.users_emails,
-            phone_numbers=rec.phone_numbers,
-            mails=rec.mails,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationGroup':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationGroup']:
+        if r is not None:
+            return NotificationGroup(
+                id=r.id,
+                name=r.name,
+                users_emails=r.users_emails,
+                phone_numbers=r.phone_numbers,
+                mails=r.mails,
+            )
 
     # create a notification rule
     def create(self) -> 'NotificationGroup':

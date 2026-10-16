@@ -2,25 +2,18 @@ import os
 import platform
 import sys
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app
-from strenum import StrEnum
 
 from alerta.app import db
 from alerta.database.base import Query
+from alerta.models.enums import HeartbeatStatus
 from alerta.utils.format import DateTime
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
-
-
-class HeartbeatStatus(StrEnum):
-
-    OK = 'ok'
-    Slow = 'slow'
-    Expired = 'expired'  # aka 'stale'
 
 
 class Heartbeat:
@@ -114,43 +107,21 @@ class Heartbeat:
             self.id, self.origin, self.create_time, self.timeout, self.customer)
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Heartbeat':
-        return Heartbeat(
-            id=doc.get('id', None) or doc.get('_id'),
-            origin=doc.get('origin', None),
-            tags=doc.get('tags', list()),
-            attributes=doc.get('attributes', dict()),
-            event_type=doc.get('type', None),
-            create_time=doc.get('createTime', None),
-            timeout=doc.get('timeout', None),
-            receive_time=doc.get('receiveTime', None),
-            latency=doc.get('latency', None),
-            since=doc.get('since', None),
-            customer=doc.get('customer', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Heartbeat':
-        return Heartbeat(
-            id=rec.id,
-            origin=rec.origin,
-            tags=rec.tags,
-            attributes=dict(getattr(rec, 'attributes') or ()),
-            event_type=rec.type,
-            create_time=rec.create_time.replace(tzinfo=UTC) if rec.create_time is not None else None,
-            timeout=rec.timeout,
-            receive_time=rec.receive_time.replace(tzinfo=UTC) if rec.receive_time is not None else None,
-            latency=rec.latency,
-            since=rec.since,
-            customer=rec.customer
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Heartbeat':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Heartbeat']:
+        if r is not None:
+            return Heartbeat(
+                id=r.id,
+                origin=r.origin,
+                tags=r.tags,
+                attributes=dict(getattr(r, 'attributes') or ()),
+                event_type=r.type,
+                create_time=r.create_time.replace(tzinfo=UTC) if r.create_time is not None else None,
+                timeout=r.timeout,
+                receive_time=r.receive_time.replace(tzinfo=UTC) if r.receive_time is not None else None,
+                latency=r.latency,
+                since=r.since,
+                customer=r.customer
+            )
 
     # create/update a heartbeat
     def create(self) -> 'Heartbeat':

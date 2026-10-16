@@ -36,11 +36,8 @@ setuptools.setup(
         'requests',
         'requests-hawk',
         'sentry-sdk[flask]>=0.10.2',
+        'psycopg2'
     ],
-    extras_require={
-        'mongodb': ['pymongo'],
-        'postgres': ['psycopg2']
-    },
     include_package_data=True,
     zip_safe=False,
     entry_points={

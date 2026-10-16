@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, time, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -30,25 +30,19 @@ class AdvancedTags:
             self.all, self.any)
 
     @classmethod
-    def from_document(cls, doc):
+    def parse(cls, obj: dict):
         return AdvancedTags(
-            all=doc.get('all', list()),
-            any=doc.get('any', list()),
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return AdvancedTags(
-            all=rec.all,
-            any=rec.any,
+            all=obj.get('all'),
+            any=obj.get('any'),
         )
 
     @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+        if r is not None:
+            return AdvancedTags(
+                all=r.all,
+                any=r.any,
+            )
 
 
 class NotificationTriggers:
@@ -72,29 +66,24 @@ class NotificationTriggers:
             self.from_severity, self.to_severity, self.status, self.text)
 
     @classmethod
-    def from_document(cls, doc):
-        return NotificationTriggers(
-            from_severity=doc.get('from_severity', list()),
-            to_severity=doc.get('to_severity', list()),
-            status=doc.get('status', list()),
-            text=doc.get('text')
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return NotificationTriggers(
-            from_severity=rec.from_severity,
-            to_severity=rec.to_severity,
-            status=rec.status,
-            text=rec.text
-        )
+    def parse(cls, r: dict):
+        if r is not None:
+            return NotificationTriggers(
+                from_severity=r.get('from_severity', []),
+                to_severity=r.get('to_severity', []),
+                status=r.get('status', []),
+                text=r.get('text')
+            )
 
     @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+        if r is not None:
+            return NotificationTriggers(
+                from_severity=r.from_severity,
+                to_severity=r.to_severity,
+                status=r.status,
+                text=r.text
+            )
 
 
 class NotificationRuleHistory:
@@ -122,33 +111,16 @@ class NotificationRuleHistory:
             self.id, self.type, self.rule_id)
 
     @classmethod
-    def from_document(cls, doc):
-        return NotificationRuleHistory(
-            id=doc.get('id'),
-            rule_id=doc.get('rule_id'),
-            user=doc.get('user'),
-            update_type=doc.get('type'),
-            create_time=doc.get('create_time'),
-            data=doc.get('data')
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return NotificationRuleHistory(
-            id=rec.id,
-            rule_id=rec.rule_id,
-            user=rec.user,
-            update_type=rec.type,
-            create_time=rec.create_time,
-            data=rec.rule_data
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+        if r is not None:
+            return NotificationRuleHistory(
+                id=r.id,
+                rule_id=r.rule_id,
+                user=r.user,
+                update_type=r.type,
+                create_time=r.create_time,
+                data=r.rule_data
+            )
 
 
 class NotificationRule:
@@ -333,89 +305,36 @@ class NotificationRule:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationRule':
-        return NotificationRule(
-            id=doc.get('id', None) or doc.get('_id'),
-            name=doc.get('name', None),
-            active=doc.get('active', True),
-            priority=doc.get('priority', None),
-            environment=doc['environment'],
-            delay_time=doc.get('delayTime', None),
-            channel_id=doc['channelId'],
-            receivers=doc.get('receivers') or list(),
-            users_emails=doc.get('usersEmails'),
-            group_ids=doc.get('groupIds'),
-            use_oncall=doc.get('useOnCall', False),
-            service=doc.get('service', list()),
-            triggers=[NotificationTriggers.from_db(trigger) for trigger in doc.get('triggers', [])],
-            resource=doc.get('resource', None),
-            event=doc.get('event', None),
-            tags=[AdvancedTags.from_db(tag) for tag in doc.get('tags', [])],
-            excluded_tags=[AdvancedTags.from_db(tag) for tag in doc.get('excludedTags', [])],
-            customer=doc.get('customer', None),
-            user=doc.get('user', None),
-            create_time=doc.get('createTime', None),
-            reactivate=doc.get('reactivate', None),
-            text=doc.get('text', None),
-            subject=doc.get('subject', None),
-            start_time=(
-                datetime.strptime(
-                    f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M'
-                ).time()
-                if doc['startTime'] is not None
-                else None
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationRule']:
+        if r is not None:
+            return NotificationRule(
+                id=r.id,
+                name=r.name,
+                active=r.active,
+                priority=r.priority,
+                environment=r.environment,
+                delay_time=r.delay_time,
+                channel_id=r.channel_id,
+                receivers=r.receivers,
+                users_emails=r.users_emails,
+                group_ids=r.group_ids,
+                use_oncall=r.use_oncall,
+                service=r.service,
+                triggers=[NotificationTriggers.from_db(trigger) for trigger in r.triggers or []],
+                resource=r.resource,
+                event=r.event,
+                tags=[AdvancedTags.from_db(tag) for tag in r.tags or []],
+                excluded_tags=[AdvancedTags.from_db(tag) for tag in r.excluded_tags or []],
+                customer=r.customer,
+                user=r.user,
+                create_time=r.create_time,
+                reactivate=r.reactivate,
+                text=r.text,
+                subject=r.subject,
+                start_time=r.start_time,
+                end_time=r.end_time,
+                days=r.days,
             )
-            if 'startTime' in doc
-            else None,
-            end_time=(
-                datetime.strptime(
-                    f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M'
-                ).time()
-                if doc['endTime'] is not None
-                else None
-            )
-            if 'endTime' in doc
-            else None,
-            days=doc.get('days', None),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationRule':
-        return NotificationRule(
-            id=rec.id,
-            name=rec.name,
-            active=rec.active,
-            priority=rec.priority,
-            environment=rec.environment,
-            delay_time=rec.delay_time,
-            channel_id=rec.channel_id,
-            receivers=rec.receivers,
-            users_emails=rec.users_emails,
-            group_ids=rec.group_ids,
-            use_oncall=rec.use_oncall,
-            service=rec.service,
-            triggers=[NotificationTriggers.from_db(trigger) for trigger in rec.triggers or []],
-            resource=rec.resource,
-            event=rec.event,
-            tags=[AdvancedTags.from_db(tag) for tag in rec.tags or []],
-            excluded_tags=[AdvancedTags.from_db(tag) for tag in rec.excluded_tags or []],
-            customer=rec.customer,
-            user=rec.user,
-            create_time=rec.create_time,
-            reactivate=rec.reactivate,
-            text=rec.text,
-            subject=rec.subject,
-            start_time=rec.start_time,
-            end_time=rec.end_time,
-            days=rec.days,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationRule':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
 
     # create a notification rule
     def create(self) -> 'NotificationRule':
@@ -482,13 +401,13 @@ class NotificationRule:
     def update(self, **kwargs) -> 'NotificationRule':
         triggers = kwargs.get('triggers')
         if triggers is not None:
-            kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
+            kwargs['triggers'] = [NotificationTriggers.parse(trigger) for trigger in triggers]
         tags = kwargs.get('tags')
         if tags is not None:
-            kwargs['tags'] = [AdvancedTags.from_document(tag) for tag in tags]
+            kwargs['tags'] = [AdvancedTags.parse(tag) for tag in tags]
         excluded = kwargs.get('excludedTags')
         if excluded is not None:
-            kwargs['excludedTags'] = [AdvancedTags.from_document(tag) for tag in excluded]
+            kwargs['excludedTags'] = [AdvancedTags.parse(tag) for tag in excluded]
         rule = NotificationRule.from_db(db.update_notification_rule(self.id, **kwargs))
         return rule
 

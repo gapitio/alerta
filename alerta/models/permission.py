@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app
@@ -43,27 +43,13 @@ class Permission:
         return f'Perm(id={self.id!r}, match={self.match!r}, scopes={self.scopes!r})'
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Permission':
-        return Permission(
-            id=doc.get('id', None) or doc.get('_id'),
-            match=doc.get('match', None),
-            scopes=[Scope(s) for s in doc.get('scopes', list())]
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Permission':
-        return Permission(
-            id=rec.id,
-            match=rec.match,
-            scopes=[Scope(s) for s in rec.scopes]
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Permission':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Permission']:
+        if r is not None:
+            return Permission(
+                id=r.id,
+                match=r.match,
+                scopes=[Scope(s) for s in r.scopes]
+            )
 
     def create(self) -> 'Permission':
         return Permission.from_db(db.create_perm(self))

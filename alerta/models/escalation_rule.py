@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, time, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -214,72 +214,28 @@ class EscalationRule:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'EscalationRule':
-        return EscalationRule(
-            id=doc.get('id', None) or doc.get('_id'),
-            active=doc.get('active', True),
-            priority=doc.get('priority', None),
-            environment=doc['environment'],
-            ttime=doc['time'],
-            service=doc.get('service', list()),
-            triggers=[NotificationTriggers.from_db(trigger) for trigger in doc.get('triggers', [])],
-            resource=doc.get('resource', None),
-            event=doc.get('event', None),
-            tags=[AdvancedTags.from_db(tag) for tag in doc.get('tags', [])],
-            excluded_tags=[AdvancedTags.from_db(tag) for tag in doc.get('excludedTags', [])],
-            customer=doc.get('customer', None),
-            user=doc.get('user', None),
-            create_time=doc.get('createTime', None),
-            start_time=(
-                datetime.strptime(
-                    f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M'
-                ).time()
-                if doc['startTime'] is not None
-                else None
+    def from_db(cls, r: Tuple | None) -> Optional['EscalationRule']:
+        if r is not None:
+            return EscalationRule(
+                id=r.id,
+                active=r.active,
+                priority=r.priority,
+                environment=r.environment,
+                ttime=r.time,
+                service=r.service,
+                triggers=[NotificationTriggers.from_db(trigger) for trigger in r.triggers or []],
+                use_advanced_severity=r.use_advanced_severity,
+                resource=r.resource,
+                event=r.event,
+                tags=[AdvancedTags.from_db(tag) for tag in r.tags or []],
+                excluded_tags=[AdvancedTags.from_db(tag) for tag in r.excluded_tags or []],
+                customer=r.customer,
+                user=r.user,
+                create_time=r.create_time,
+                start_time=r.start_time,
+                end_time=r.end_time,
+                days=r.days,
             )
-            if 'startTime' in doc
-            else None,
-            end_time=(
-                datetime.strptime(
-                    f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M'
-                ).time()
-                if doc['endTime'] is not None
-                else None
-            )
-            if 'endTime' in doc
-            else None,
-            days=doc.get('days', None),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'EscalationRule':
-        return EscalationRule(
-            id=rec.id,
-            active=rec.active,
-            priority=rec.priority,
-            environment=rec.environment,
-            ttime=rec.time,
-            service=rec.service,
-            triggers=[NotificationTriggers.from_db(trigger) for trigger in rec.triggers or []],
-            use_advanced_severity=rec.use_advanced_severity,
-            resource=rec.resource,
-            event=rec.event,
-            tags=[AdvancedTags.from_db(tag) for tag in rec.tags or []],
-            excluded_tags=[AdvancedTags.from_db(tag) for tag in rec.excluded_tags or []],
-            customer=rec.customer,
-            user=rec.user,
-            create_time=rec.create_time,
-            start_time=rec.start_time,
-            end_time=rec.end_time,
-            days=rec.days,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'EscalationRule':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
 
     # create a notification rule
     def create(self) -> 'EscalationRule':
@@ -308,18 +264,18 @@ class EscalationRule:
 
     @staticmethod
     def find_all_active() -> 'list[Alert]':
-        return [Alert.parse(alert if isinstance(alert, dict) else alert_from_record(alert)) for alert in db.get_escalation_alerts()]
+        return [Alert.parse(alert_from_record(alert)) for alert in db.get_escalation_alerts()]
 
     def update(self, **kwargs) -> 'EscalationRule':
         triggers = kwargs.get('triggers')
         if triggers is not None:
-            kwargs['triggers'] = [NotificationTriggers.from_document(trigger) for trigger in triggers]
+            kwargs['triggers'] = [NotificationTriggers.parse(trigger) for trigger in triggers]
         tags = kwargs.get('tags')
         if tags is not None:
-            kwargs['tags'] = [AdvancedTags.from_document(tag) for tag in tags]
+            kwargs['tags'] = [AdvancedTags.parse(tag) for tag in tags]
         excluded = kwargs.get('excludedTags')
         if excluded is not None:
-            kwargs['excludedTags'] = [AdvancedTags.from_document(tag) for tag in excluded]
+            kwargs['excludedTags'] = [AdvancedTags.parse(tag) for tag in excluded]
         return EscalationRule.from_db(db.update_escalation_rule(self.id, **kwargs))
 
     def delete(self) -> bool:

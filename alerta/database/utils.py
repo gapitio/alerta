@@ -6,8 +6,7 @@ from pyparsing import ParseException
 from werkzeug.datastructures import MultiDict
 
 from alerta.exceptions import ApiError
-from alerta.models.blackout import BlackoutStatus
-from alerta.models.key import ApiKeyStatus
+from alerta.models.enums import ApiKeyStatus, BlackoutStatus
 from alerta.utils.format import DateTime
 
 from .queryparser import QueryParser
@@ -24,6 +23,29 @@ EXCLUDE_FROM_QUERY = [
 
 
 class QueryBuilder:
+    def __init__(self, app=None):
+        self.app = None
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app):
+
+        self.alerts = Alerts
+        self.history = History
+        self.blackouts = Blackouts
+        self.notification_channels = NotificationChannels
+        self.notification_delay = NotificationDelays
+        self.notification_rules = NotificationRules
+        self.notification_history = NotificationHistory
+        self.escalation_rules = EscalationRules
+        self.on_calls = OnCalls
+        self.notification_groups = NotificationGroups
+        self.heartbeats = Heartbeats
+        self.keys = ApiKeys
+        self.users = Users
+        self.groups = Groups
+        self.perms = Permissions
+        self.customers = Customers
 
     @staticmethod
     def sort_by_columns(params, valid_params):

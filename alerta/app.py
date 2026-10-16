@@ -7,7 +7,8 @@ from flask_cors import CORS
 from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from alerta.database.base import Database, QueryBuilder
+from alerta.database.base import Database
+from alerta.database.utils import QueryBuilder
 from alerta.exceptions import ExceptionHandlers
 from alerta.models.alarms import AlarmModel
 from alerta.models.enums import Scope
@@ -60,6 +61,7 @@ def create_app(config_override: Dict[str, Any] = None, environment: str = None) 
     hooks.init_app(app)
     audit.init_app(app)
     alarm_model.init_app(app)
+    app.extensions['alarm_model'] = alarm_model
     Scope.init_app(app)
 
     cors.init_app(app)

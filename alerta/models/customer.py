@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -38,27 +38,13 @@ class Customer:
             self.id, self.match, self.customer)
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Customer':
-        return Customer(
-            id=doc.get('id', None) or doc.get('_id'),
-            match=doc.get('match', None),
-            customer=doc.get('customer', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Customer':
-        return Customer(
-            id=rec.id,
-            match=rec.match,
-            customer=rec.customer
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Customer':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Customer']:
+        if r is not None:
+            return Customer(
+                id=r.id,
+                match=r.match,
+                customer=r.customer
+            )
 
     def create(self) -> 'Customer':
         return Customer.from_db(db.create_customer(self))

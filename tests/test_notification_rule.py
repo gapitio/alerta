@@ -289,6 +289,8 @@ class NotificationRuleTestCase(unittest.TestCase):
             'environment': 'Development',
             'event': None,
             'tags': [{'all': []}],
+            'excludedTags': [{'all': []}],
+            'triggers': [{'from_severity': ['critical']}],
             'endTime': '22:00',
         }
         data = self.update_api_obj('/notificationrules/' + notification_rule_id, update, self.headers)
@@ -299,8 +301,17 @@ class NotificationRuleTestCase(unittest.TestCase):
         self.assertEqual(data['notificationRule']['resource'], 'node404')
         self.assertEqual(data['notificationRule']['service'], ['Network', 'Web'])
         self.assertEqual(data['notificationRule']['startTime'], '00:00')
+        self.assertEqual(data['notificationRule']['triggers'], [{'from_severity': ['critical'], 'to_severity': [], 'status': [], 'text': None}])
+        self.assertEqual(data['notificationRule']['excludedTags'], [{'all': [], 'any': []}])
+        self.assertEqual(data['notificationRule']['tags'], [{'all': [], 'any': []}])
         self.assertEqual(data['notificationRule']['endTime'], '22:00')
 
+        data = self.create_api_obj('/alert', {**self.dev_alert, 'severity': 'critical'}, self.headers)
+        active_notification_rules = self.create_api_obj('/notificationrules/active', data['alert'], self.headers, 200)['notificationRules']
+        self.assertNotIn(
+            notification_rule_id,
+            map(get_id, active_notification_rules),
+        )
         data = self.create_api_obj('/alert', self.dev_alert, self.headers)
         active_notification_rules = self.create_api_obj('/notificationrules/active', data['alert'], self.headers, 200)['notificationRules']
         self.assertIn(
