@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -125,68 +125,24 @@ class OnCall:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'OnCall':
-        return OnCall(
-            id=doc.get('id', None) or doc.get('_id'),
-            users_emails=doc.get('usersEmails'),
-            group_ids=doc.get('groupIds'),
-            start_date=doc['startDate'].date().isoformat() if doc.get('startDate') is not None else None,
-            end_date=doc['endDate'].date().isoformat() if doc.get('endDate') is not None else None,
-            start_time=(
-                datetime.strptime(f'{doc["startTime"]:.2f}'.replace('.', ':'), '%H:%M').time()
-                if doc['startTime'] is not None
-                else None
+    def from_db(cls, r: Tuple | None) -> Optional['OnCall']:
+        if r is not None:
+            return OnCall(
+                id=r.id,
+                users_emails=r.users_emails,
+                group_ids=r.group_ids,
+                start_date=r.start_date.strftime('%Y-%m-%d') if r.start_date is not None else r.start_date,
+                end_date=r.end_date.strftime('%Y-%m-%d') if r.end_date is not None else r.end_date,
+                start_time=r.start_time,
+                end_time=r.end_time,
+                repeat_type=r.repeat_type,
+                repeat_days=r.repeat_days,
+                repeat_weeks=r.repeat_weeks,
+                repeat_months=r.repeat_months,
+                offset=int(r.offset.total_seconds() / 60),
+                customer=r.customer,
+                user=r.user,
             )
-            if 'startTime' in doc
-            else None,
-            end_time=(
-                datetime.strptime(f'{doc["endTime"]:.2f}'.replace('.', ':'), '%H:%M').time()
-                if doc['endTime'] is not None
-                else None
-            )
-            if 'endTime' in doc
-            else None,
-            days=doc.get('days', None),
-            repeat_type=doc.get('repeatType'),
-            repeat_days=doc.get('repeatDays'),
-            repeat_weeks=doc.get('repeatWeeks'),
-            repeat_months=doc.get('repeatMonths'),
-            # repeat_every_x_day=doc.get("repeatEveryXDay"),
-            # repeat_every_x_week=doc.get("repeatEveryXWeek"),
-            # repeat_every_x_month=doc.get("repeatEveryXMonth"),
-            customer=doc.get('customer'),
-            offset=doc.get('offset'),
-            user=doc.get('user'),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'OnCall':
-        return OnCall(
-            id=rec.id,
-            users_emails=rec.users_emails,
-            group_ids=rec.group_ids,
-            start_date=rec.start_date.strftime('%Y-%m-%d') if rec.start_date is not None else rec.start_date,
-            end_date=rec.end_date.strftime('%Y-%m-%d') if rec.end_date is not None else rec.end_date,
-            start_time=rec.start_time,
-            end_time=rec.end_time,
-            repeat_type=rec.repeat_type,
-            repeat_days=rec.repeat_days,
-            repeat_weeks=rec.repeat_weeks,
-            repeat_months=rec.repeat_months,
-            offset=int(rec.offset.total_seconds() / 60),
-            # repeat_every_x_day=rec.repeat_every_x_day,
-            # repeat_every_x_week=rec.repeat_every_x_week,
-            # repeat_every_x_month=rec.repeat_every_x_month,
-            customer=rec.customer,
-            user=rec.user,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'OnCall':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
 
     # create a notification rule
     def create(self) -> 'OnCall':

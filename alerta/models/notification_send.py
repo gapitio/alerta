@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from alerta.app import db
 from alerta.models.user import User
@@ -33,31 +33,15 @@ class NotificationSend:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationSend':
-        return NotificationSend(
-            id=doc.get('id', None) or doc.get('_id'),
-            user_name=doc.get('user_name'),
-            group_name=doc.get('group_name'),
-            mail=doc.get('mail'),
-            sms=doc.get('sms'),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationSend':
-        return NotificationSend(
-            id=rec.id,
-            user_name=rec.user_name,
-            group_name=rec.group_name,
-            mail=rec.mail,
-            sms=rec.sms,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationSend':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationSend']:
+        if r is not None:
+            return NotificationSend(
+                id=r.id,
+                user_name=r.user_name,
+                group_name=r.group_name,
+                mail=r.mail,
+                sms=r.sms,
+            )
 
     @staticmethod
     def find_all() -> List['NotificationSend']:
@@ -79,7 +63,7 @@ class NotificationSendInfo(NotificationSend):
         return user.email if user else None
 
     @classmethod
-    def from_db(cls, r: Tuple):
+    def from_db(cls, r: Tuple | None):
         return NotificationSendInfo(
             id=r.id,
             user_name=r.user_name,

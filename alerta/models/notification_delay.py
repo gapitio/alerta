@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from alerta.app import db
@@ -38,29 +38,14 @@ class NotificationDelay:
         return f'NotificationDelay(id={self.id}'
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationDelay':
-        return NotificationDelay(
-            id=doc.get('id', None) or doc.get('_id'),
-            alert_id=doc['alert_id'],
-            notification_rule_id=doc['notification_rule_id'],
-            delay_time=doc['delay_time']
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationDelay':
-        return NotificationDelay(
-            id=rec.id,
-            alert_id=rec.alert_id,
-            notification_rule_id=rec.notification_rule_id,
-            delay_time=rec.delay_time
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationDelay':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationDelay']:
+        if r is not None:
+            return NotificationDelay(
+                id=r.id,
+                alert_id=r.alert_id,
+                notification_rule_id=r.notification_rule_id,
+                delay_time=r.delay_time
+            )
 
     # create a notification rule
     def create(self) -> 'NotificationDelay':

@@ -38,41 +38,20 @@ class History:
             self.id, self.event, self.severity, self.status, self.change_type)
 
     @classmethod
-    def from_document(cls, doc):
-        return History(
-            id=doc.get('id', None),
-            event=doc.get('event'),
-            severity=doc.get('severity', None),
-            status=doc.get('status', None),
-            value=doc.get('value', None),
-            text=doc.get('text', None),
-            change_type=doc.get('type', None),
-            update_time=doc.get('updateTime', None),
-            user=doc.get('user', None),
-            timeout=doc.get('timeout', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return History(
-            id=rec.id,
-            event=rec.event,
-            severity=rec.severity,
-            status=rec.status,
-            value=rec.value,
-            text=rec.text,
-            change_type=rec.type,
-            update_time=rec.update_time,
-            user=getattr(rec, 'user', None),
-            timeout=getattr(rec, 'timeout', None)
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+        if r is not None:
+            return History(
+                id=r.id,
+                event=r.event,
+                severity=r.severity,
+                status=r.status,
+                value=r.value,
+                text=r.text,
+                change_type=r.type,
+                update_time=r.update_time,
+                user=getattr(r, 'user', None),
+                timeout=getattr(r, 'timeout', None)
+            )
 
 
 class RichHistory:
@@ -139,53 +118,25 @@ class RichHistory:
                    self.status, self.timeout, self.change_type, self.customer)
 
     @classmethod
-    def from_document(cls, doc):
-        return RichHistory(
-            id=doc.get('id', None) or doc.get('_id'),
-            resource=doc.get('resource', None),
-            event=doc.get('event', None),
-            environment=doc.get('environment', None),
-            severity=doc.get('severity', None),
-            status=doc.get('status', None),
-            service=doc.get('service', list()),
-            value=doc.get('value', None),
-            text=doc.get('text', None),
-            tags=doc.get('tags', list()),
-            attributes=doc.get('attributes', dict()),
-            origin=doc.get('origin', None),
-            update_time=doc.get('updateTime', None),
-            user=doc.get('user', None),
-            timeout=doc.get('timeout', None),
-            change_type=doc.get('type', None),
-            customer=doc.get('customer', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec):
-        return RichHistory(
-            id=rec.id,
-            alert_id=getattr(rec, 'alert_id', None),
-            resource=rec.resource,
-            event=rec.event,
-            environment=rec.environment,
-            severity=rec.severity,
-            status=rec.status,
-            service=rec.service,
-            value=rec.value,
-            text=rec.text,
-            tags=rec.tags,
-            attributes=dict(rec.attributes),
-            origin=rec.origin,
-            update_time=rec.update_time,
-            user=getattr(rec, 'user', None),
-            timeout=getattr(rec, 'timeout', None),
-            change_type=rec.type,
-            customer=rec.customer
-        )
-
-    @classmethod
     def from_db(cls, r):
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+        if r is not None:
+            return RichHistory(
+                id=r.id,
+                alert_id=getattr(r, 'alert_id', None),
+                resource=r.resource,
+                event=r.event,
+                environment=r.environment,
+                severity=r.severity,
+                status=r.status,
+                service=r.service,
+                value=r.value,
+                text=r.text,
+                tags=r.tags,
+                attributes=dict(r.attributes),
+                origin=r.origin,
+                update_time=r.update_time,
+                user=getattr(r, 'user', None),
+                timeout=getattr(r, 'timeout', None),
+                change_type=r.type,
+                customer=r.customer
+            )

@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from cryptography.fernet import Fernet
@@ -98,45 +98,22 @@ class NotificationChannel:
         return f'NotificationChannel(id={self.id}, type={self.type}, sender={self.sender}, {more}'
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'NotificationChannel':
-        return NotificationChannel(
-            id=doc.get('id', None) or doc.get('_id'),
-            _type=doc['type'],
-            api_token=doc['apiToken'],
-            api_sid=doc.get('apiSid', None),
-            sender=doc['sender'],
-            host=doc.get('host', None),
-            platform_id=doc.get('platfromId', None),
-            platform_partner_id=doc.get('platfromPartnerId', None),
-            customer=doc.get('customer', None),
-            verify=doc.get('verify', None),
-            bearer=doc.get('bearer', None),
-            bearer_timeout=doc.get('bearer_timeout', None),
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'NotificationChannel':
-        return NotificationChannel(
-            id=rec.id,
-            _type=rec.type,
-            api_token=rec.api_token,
-            api_sid=rec.api_sid,
-            sender=rec.sender,
-            host=rec.host,
-            platform_id=rec.platform_id,
-            platform_partner_id=rec.platform_partner_id,
-            customer=rec.customer,
-            verify=rec.verify,
-            bearer=rec.bearer,
-            bearer_timeout=rec.bearer_timeout,
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'NotificationChannel':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['NotificationChannel']:
+        if r is not None:
+            return NotificationChannel(
+                id=r.id,
+                _type=r.type,
+                api_token=r.api_token,
+                api_sid=r.api_sid,
+                sender=r.sender,
+                host=r.host,
+                platform_id=r.platform_id,
+                platform_partner_id=r.platform_partner_id,
+                customer=r.customer,
+                verify=r.verify,
+                bearer=r.bearer,
+                bearer_timeout=r.bearer_timeout,
+            )
 
     # create a notification rule
     def create(self) -> 'NotificationChannel':

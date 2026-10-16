@@ -1,22 +1,14 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
-
-from strenum import StrEnum
 
 from alerta.app import db, key_helper
 from alerta.database.base import Query
-from alerta.models.enums import Scope
+from alerta.models.enums import ApiKeyStatus, Scope
 from alerta.utils.format import DateTime
 from alerta.utils.response import absolute_url
 
 JSON = Dict[str, Any]
-
-
-class ApiKeyStatus(StrEnum):
-
-    Active = 'active'
-    Expired = 'expired'
 
 
 class ApiKey:
@@ -98,40 +90,19 @@ class ApiKey:
             self.key, self.status, self.user, self.scopes, self.expire_time, self.customer)
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'ApiKey':
-        return ApiKey(
-            id=doc.get('id', None) or doc.get('_id'),
-            key=doc.get('key', None) or doc.get('_id'),
-            user=doc.get('user', None),
-            scopes=[Scope(s) for s in doc.get('scopes', list())] or key_helper.type_to_scopes(
-                doc.get('user', None), doc.get('type', None)) or list(),
-            text=doc.get('text', None),
-            expire_time=doc.get('expireTime', None),
-            count=doc.get('count', None),
-            last_used_time=doc.get('lastUsedTime', None),
-            customer=doc.get('customer', None)
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'ApiKey':
-        return ApiKey(
-            id=rec.id,
-            key=rec.key,
-            user=rec.user,
-            scopes=[Scope(s) for s in rec.scopes],  # legacy type => scopes conversion only required for mongo documents
-            text=rec.text,
-            expire_time=rec.expire_time.replace(tzinfo=UTC) if rec.expire_time is not None else None,
-            count=rec.count,
-            last_used_time=rec.last_used_time,
-            customer=rec.customer
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'ApiKey':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['ApiKey']:
+        if r is not None:
+            return ApiKey(
+                id=r.id,
+                key=r.key,
+                user=r.user,
+                scopes=[Scope(s) for s in r.scopes],  # legacy type => scopes conversion only required for mongo documents
+                text=r.text,
+                expire_time=r.expire_time.replace(tzinfo=UTC) if r.expire_time is not None else None,
+                count=r.count,
+                last_used_time=r.last_used_time,
+                customer=r.customer
+            )
 
     def create(self) -> 'ApiKey':
         """

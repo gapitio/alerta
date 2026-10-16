@@ -4,7 +4,7 @@ import re
 import sys
 from datetime import UTC, datetime
 from typing import Optional  # noqa
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 from uuid import uuid4
 
 from flask import current_app, g
@@ -92,10 +92,10 @@ class CustomAlert:
             'history',
         ]
         keys = [*[key for key in return_keys if key in allowed_keys], *[re.search(r'(?=attributes\.)[\w_. ]+', key).group() for key in return_keys if key.startswith('attributes.')]]
-        return [CustomAlert.from_record(keys, alert) for alert in db.get_alerts(query, raw_data, history, page, page_size, keys)]
+        return [CustomAlert.from_db(keys, alert) for alert in db.get_alerts(query, raw_data, history, page, page_size, keys)]
 
     @classmethod
-    def from_record(cls, return_keys: List[str], rec) -> 'Alert':
+    def from_db(cls, return_keys: List[str], rec) -> 'Alert':
         data = {key: getattr(rec, key.replace('.', '_').replace(' ', '_').lower()) for key in return_keys}
         return CustomAlert(return_keys, **data)
 
@@ -239,69 +239,34 @@ class Alert:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Alert':
-        return Alert(
-            id=doc.get('id', None) or doc.get('_id'),
-            resource=doc.get('resource', None),
-            event=doc.get('event', None),
-            environment=doc.get('environment', None),
-            severity=doc.get('severity', None),
-            status=doc.get('status', None),
-            service=doc.get('service', list()),
-            value=doc.get('value', None),
-            text=doc.get('text', None),
-            tags=doc.get('tags', list()),
-            custom_tags=doc.get('custom_tags', list()),
-            attributes=doc.get('attributes', dict()),
-            origin=doc.get('origin', None),
-            create_time=doc.get('createTime', None),
-            timeout=doc.get('timeout', None),
-            raw_data=doc.get('rawData', None),
-            customer=doc.get('customer', None),
-            duplicate_count=doc.get('duplicateCount', None),
-            previous_severity=doc.get('previousSeverity', None),
-            receive_time=doc.get('receiveTime', None),
-            last_receive_id=doc.get('lastReceiveId', None),
-            last_receive_time=doc.get('lastReceiveTime', None),
-            update_time=doc.get('updateTime', None),
-            history=[History.from_db(h) for h in doc.get('history', list())]
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Alert':
-        return Alert(
-            id=rec.id,
-            resource=rec.resource,
-            event=rec.event,
-            environment=rec.environment,
-            severity=rec.severity,
-            status=rec.status,
-            service=rec.service,
-            value=rec.value,
-            text=rec.text,
-            tags=rec.tags,
-            custom_tags=rec.custom_tags,
-            attributes=dict(rec.attributes),
-            origin=rec.origin,
-            create_time=rec.create_time,
-            timeout=rec.timeout,
-            raw_data=rec.raw_data,
-            customer=rec.customer,
-            duplicate_count=rec.duplicate_count,
-            previous_severity=rec.previous_severity,
-            receive_time=rec.receive_time,
-            last_receive_id=rec.last_receive_id,
-            last_receive_time=rec.last_receive_time,
-            update_time=getattr(rec, 'update_time'),
-            history=[History.from_db(h) for h in rec.history]
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Alert':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Alert']:
+        if r is not None:
+            return Alert(
+                id=r.id,
+                resource=r.resource,
+                event=r.event,
+                environment=r.environment,
+                severity=r.severity,
+                status=r.status,
+                service=r.service,
+                value=r.value,
+                text=r.text,
+                tags=r.tags,
+                custom_tags=r.custom_tags,
+                attributes=dict(r.attributes),
+                origin=r.origin,
+                create_time=r.create_time,
+                timeout=r.timeout,
+                raw_data=r.raw_data,
+                customer=r.customer,
+                duplicate_count=r.duplicate_count,
+                previous_severity=r.previous_severity,
+                receive_time=r.receive_time,
+                last_receive_id=r.last_receive_id,
+                last_receive_time=r.last_receive_time,
+                update_time=getattr(r, 'update_time'),
+                history=[History.from_db(h) for h in r.history]
+            )
 
     def is_duplicate(self) -> Optional['Alert']:
         """Return duplicate alert or None"""

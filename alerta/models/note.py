@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import g
@@ -70,39 +70,19 @@ class Note:
         )
 
     @classmethod
-    def from_document(cls, doc: Dict[str, Any]) -> 'Note':
-        return Note(
-            id=doc.get('id', None) or doc.get('_id'),
-            text=doc.get('text', None),
-            user=doc.get('user', None),
-            attributes=doc.get('attributes', dict()),
-            note_type=doc.get('type', None),
-            create_time=doc.get('createTime'),
-            update_time=doc.get('updateTime'),
-            alert=doc.get('alert'),
-            customer=doc.get('customer')
-        )
-
-    @classmethod
-    def from_record(cls, rec) -> 'Note':
-        return Note(
-            id=rec.id,
-            text=rec.text,
-            user=rec.user,
-            attributes=dict(rec.attributes),
-            note_type=rec.type,
-            create_time=rec.create_time,
-            update_time=rec.update_time,
-            alert=rec.alert,
-            customer=rec.customer
-        )
-
-    @classmethod
-    def from_db(cls, r: Union[Dict, Tuple]) -> 'Note':
-        if isinstance(r, dict):
-            return cls.from_document(r)
-        elif isinstance(r, tuple):
-            return cls.from_record(r)
+    def from_db(cls, r: Tuple | None) -> Optional['Note']:
+        if r is not None:
+            return Note(
+                id=r.id,
+                text=r.text,
+                user=r.user,
+                attributes=dict(r.attributes),
+                note_type=r.type,
+                create_time=r.create_time,
+                update_time=r.update_time,
+                alert=r.alert,
+                customer=r.customer
+            )
 
     def create(self) -> 'Note':
         return Note.from_db(db.create_note(self))
