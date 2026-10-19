@@ -1,7 +1,7 @@
 from collections import namedtuple
+from datetime import UTC
 from typing import Any, Dict  # noqa
 
-import pytz
 from pyparsing import ParseException
 from werkzeug.datastructures import MultiDict
 
@@ -232,10 +232,10 @@ class History(QueryBuilder):
 
         if from_date:
             query.append('AND h.update_time > %(from_date)s')
-            qvars['from_date'] = from_date.replace(tzinfo=pytz.utc)
+            qvars['from_date'] = from_date.replace(tzinfo=UTC)
         if to_date:
             query.append('AND h.update_time <= %(to_date)s')
-            qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
+            qvars['to_date'] = to_date.replace(tzinfo=UTC)
 
         # id
         ids = params.getlist('id')
@@ -319,10 +319,10 @@ class Alerts(QueryBuilder):
 
         if from_date:
             query.append('AND last_receive_time > %(from_date)s')
-            qvars['from_date'] = from_date.replace(tzinfo=pytz.utc)
+            qvars['from_date'] = from_date.replace(tzinfo=UTC)
         if to_date:
             query.append('AND last_receive_time <= %(to_date)s')
-            qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
+            qvars['to_date'] = to_date.replace(tzinfo=UTC)
 
         # id
         ids = params.getlist('id')
@@ -575,10 +575,10 @@ class NotificationHistory(QueryBuilder):
 
         if from_date:
             query.append('AND sent_time > %(from_date)s')
-            qvars['from_date'] = from_date.replace(tzinfo=pytz.utc)
+            qvars['from_date'] = from_date.replace(tzinfo=UTC)
         if to_date:
             query.append('AND sent_time <= %(to_date)s')
-            qvars['to_date'] = to_date.replace(tzinfo=pytz.utc)
+            qvars['to_date'] = to_date.replace(tzinfo=UTC)
 
         # customer
         if customers:

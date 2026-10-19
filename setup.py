@@ -30,7 +30,6 @@ setuptools.setup(
         'mohawk',
         'PyJWT>=2.8.0',
         'pyparsing',
-        'pytz',
         'PyYAML',
         'requests',
         'requests-hawk',
