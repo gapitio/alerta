@@ -1,10 +1,8 @@
 from typing import Any, Dict
 
-import sentry_sdk
 from flask import Flask
 from flask_compress import Compress
 from flask_cors import CORS
-from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from alerta.database.base import Database
@@ -21,10 +19,6 @@ from alerta.utils.mailer import Mailer
 from alerta.utils.plugin import Plugins
 from alerta.utils.tracing import Tracing
 from alerta.utils.webhook import CustomWebhooks
-from alerta.version import __version__
-
-# Sentry will read the DSN from SENTRY_DSN environment variable.
-sentry_sdk.init(integrations=[FlaskIntegration()], release=__version__)
 
 config = Config()
 tracing = Tracing()

@@ -33,7 +33,6 @@ setuptools.setup(
         'PyYAML',
         'requests',
         'requests-hawk',
-        'sentry-sdk[flask]>=0.10.2',
         'psycopg2'
     ],
     include_package_data=True,
