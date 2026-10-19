@@ -30,7 +30,6 @@ setuptools.setup(
         'mohawk',
         'PyJWT>=2.0.0',
         'pyparsing',
-        'python-dateutil',
         'pytz',
         'PyYAML',
         'requests',
