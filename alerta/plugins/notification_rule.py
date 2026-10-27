@@ -259,7 +259,7 @@ def handle_channel(message: str, channel: NotificationChannel, notification_rule
                 log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error=response.content.decode())
             else:
                 LOG.info(response.content)
-                log_notification(True, message, channel, notification_rule.id, alert, [number])
+                log_notification(True, message, channel, notification_rule.id, alert, phone_numbers)
         except InvalidToken:
             log_notification(False, message, channel, notification_rule.id, alert, phone_numbers, error='NotificationChannel: Failed to decrypt authentication keys')
             LOG.error('NotificationChannel: Failed to decrypt authentication keys. Hint: check that NOTIFICATION_KEY environment variable is set and unchanged since the channel was made')
