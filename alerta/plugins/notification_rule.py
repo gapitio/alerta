@@ -22,7 +22,7 @@ TWILIO_MAX_SMS_LENGTH = 1600
 TWILIO_BASE_URL = 'https://api.twilio.com/2010-04-01/Accounts'
 
 LINK_MOBILITY_XML = """
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <SESSION>
   <CLIENT>%(username)s</CLIENT>
   <PW>%(password)s</PW>
@@ -121,8 +121,8 @@ def send_link_mobility_xml(message: str, channel: NotificationChannel, receivers
 
     data = xml_string.replace('{', '%(').replace('}', ')s') % content
 
-    headers = {'Content-Type': 'application/xml'}
-    return requests.post(f'{channel.host}', data, headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
+    headers = {'Content-Type': 'application/xml; charset=UTF-8'}
+    return requests.post(f'{channel.host}', data.encode('utf-8'), headers=headers, verify=channel.verify if channel.verify is None or channel.verify.lower() != 'false' else False)
 
 
 def send_smtp_mail(message: str, channel: NotificationChannel, receivers: set, fernet: Fernet, subject: str, **kwargs):
