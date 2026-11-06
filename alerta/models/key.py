@@ -96,7 +96,7 @@ class ApiKey:
                 id=r.id,
                 key=r.key,
                 user=r.user,
-                scopes=[Scope(s) for s in r.scopes],  # legacy type => scopes conversion only required for mongo documents
+                scopes=[Scope(s) for s in r.scopes],
                 text=r.text,
                 expire_time=r.expire_time.replace(tzinfo=UTC) if r.expire_time is not None else None,
                 count=r.count,

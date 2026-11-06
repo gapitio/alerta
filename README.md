@@ -19,25 +19,24 @@ The Alerta monitoring tool was developed with the following aims in mind:
 Requirements
 ------------
 
-Release 9 only supports Python 3.9 or higher.
+Release 9 only supports Python 3.11 or higher.
 
-The only mandatory dependency is MongoDB or PostgreSQL. Everything else is optional.
-
-- Postgres version 13 or better
-- MongoDB version 6.0 or better
+The only mandatory dependency is PostgreSQL version 13 or better. Everything else is optional.
 
 Installation
 ------------
 
-To install MongoDB on Debian/Ubuntu run:
+To install PostgreSQL on Debian/Ubuntu run:
 
-    $ sudo apt-get install -y mongodb-org
-    $ mongod
+    $ sudo apt-get install -y postgresql libpq-dev
 
-To install MongoDB on CentOS/RHEL run:
+To install PostgreSQL on CentOS/RHEL run:
 
-    $ sudo yum install -y mongodb
-    $ mongod
+    $ sudo yum install -y postgresql-server postgresql-devel
+    $ sudo postgresql-setup --initdb
+    $ sudo systemctl start postgresql
+
+The `libpq-dev` / `postgresql-devel` packages are needed to build `psycopg2`.
 
 To install the Alerta server and client run:
 
@@ -54,7 +53,7 @@ To install the web console run:
     >> browse to http://localhost:8000
 
 ### Docker
-Alerta and MongoDB can also run using Docker containers, see [alerta/docker-alerta](https://github.com/alerta/docker-alerta).
+Alerta and PostgreSQL can also run using Docker containers, see [alerta/docker-alerta](https://github.com/alerta/docker-alerta).
 
 Configuration
 -------------
@@ -80,13 +79,11 @@ To run in development mode, listening on port 5000:
     $ pip install -e .
     $ flask run
 
-To run in development mode, listening on port 8080, using Postgres and
-reporting errors to [Sentry](https://sentry.io):
+To run in development mode, listening on port 8080, using a specific Postgres database:
 
     $ export FLASK_APP=alerta FLASK_DEBUG=1
     $ export DATABASE_URL=postgres://localhost:5432/alerta5
-    $ export SENTRY_DSN=https://8b56098250544fb78b9578d8af2a7e13:fa9d628da9c4459c922293db72a3203f@sentry.io/153768
-    $ pip install -e .[postgres]
+    $ pip install -e .
     $ flask run --debugger --port 8080 --with-threads --reload
 
 Troubleshooting
@@ -109,19 +106,12 @@ JavaScript logging, network problems and API error responses.
 Tests
 -----
 
-To run the *all* the tests there must be a local Postgres
-and MongoDB database running. Then run:
+To run the tests there must be a local Postgres database running. Then run:
 
-    $ TOXENV=ALL make test
-
-To just run the Postgres or MongoDB tests run:
-
-    $ TOXENV=postgres make test
-    $ TOXENV=mongodb make test
+    $ make test
 
 To run a single test run something like:
 
-    $ TOXENV="mongodb -- tests/test_search.py::QueryParserTestCase::test_boolean_operators" make test
     $ TOXENV="postgres -- tests/test_queryparser.py::PostgresQueryTestCase::test_boolean_operators" make test
 
 Cloud Deployment
