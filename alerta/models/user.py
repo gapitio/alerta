@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from flask import current_app
-from strenum import StrEnum
 
 from alerta.app import db
 from alerta.auth import utils

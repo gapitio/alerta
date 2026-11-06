@@ -1,6 +1,5 @@
 import re
-
-from strenum import StrEnum
+from enum import StrEnum
 
 
 class BlackoutStatus(StrEnum):
