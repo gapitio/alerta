@@ -5,25 +5,12 @@
 
 ### Install database backend
 
-Either Postgres or MongoDB need to be available.
+Postgres needs to be available.
 
 To install Postgres on macOS run:
 
 ```bash
 $ brew install postgresql
-```
-
-To install MongoDB on macOS run:
-
-```bash
-$ brew tap mongodb/brew
-$ brew install mongodb-community@4.4
-```
-
-Add `mongod` to your path and run:
-
-```bash
-$ mongod --config /usr/local/etc/mongod.conf
 ```
 
 ### Install packages

@@ -102,14 +102,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.alerts.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND "status"=ANY(%(status)s)\nAND "environment" ILIKE %(environment)s')
-            self.assertEqual(query.vars, {'status': ['open', 'ack'], 'environment': '%DEV%'})
-            self.assertEqual(query.sort, 's.code DESC,last_receive_time ASC')
-        else:
-            import re
-            self.assertEqual(query.where, {'status': {'$in': ['open', 'ack']}, 'environment': {'$regex': re.compile('DEV', re.IGNORECASE)}, 'group': {'$ne': 'Network'}})
-            self.assertEqual(query.sort, [('code', -1), ('lastReceiveTime', 1)])
+        self.assertEqual(query.where, '1=1\nAND "status"=ANY(%(status)s)\nAND "environment" ILIKE %(environment)s')
+        self.assertEqual(query.vars, {'status': ['open', 'ack'], 'environment': '%DEV%'})
+        self.assertEqual(query.sort, 's.code DESC,last_receive_time ASC')
 
     def test_alerts_attributes(self):
 
@@ -117,11 +112,8 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.alerts.from_params(search_params)
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertIn('AND attributes @> %(attr_country_code)s', query.where)
-            self.assertEqual(query.vars, {'attr_country_code': {'country_code': 'US'}})
-        else:
-            self.assertEqual(query.where, {'attributes.country_code': 'US'})
+        self.assertIn('AND attributes @> %(attr_country_code)s', query.where)
+        self.assertEqual(query.vars, {'attr_country_code': {'country_code': 'US'}})
 
     def test_blackouts_filter(self):
 
@@ -259,13 +251,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.heartbeats.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1')
-            self.assertEqual(query.vars, {})
-            self.assertEqual(query.sort, 'latency DESC')
-        else:
-            self.assertEqual(query.where, {})  # heartbeat status is a special case
-            self.assertEqual(query.sort, [('latency', -1)])
+        self.assertEqual(query.where, '1=1')
+        self.assertEqual(query.vars, {})
+        self.assertEqual(query.sort, 'latency DESC')
 
     def test_keys_filter(self):
 
@@ -395,13 +383,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.users.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND "status"=%(status)s')
-            self.assertEqual(query.vars, {'status': 'inactive'})
-            self.assertEqual(query.sort, 'last_login ASC')
-        else:
-            self.assertEqual(query.where, {'status': 'inactive'})
-            self.assertEqual(query.sort, [('lastLogin', 1)])
+        self.assertEqual(query.where, '1=1\nAND "status"=%(status)s')
+        self.assertEqual(query.vars, {'status': 'inactive'})
+        self.assertEqual(query.sort, 'last_login ASC')
 
     def test_groups_filter(self):
 
@@ -448,13 +432,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.groups.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1')
-            self.assertEqual(query.vars, {})
-            self.assertEqual(query.sort, 'count DESC')
-        else:
-            self.assertEqual(query.where, {})
-            self.assertEqual(query.sort, [('count', -1)])
+        self.assertEqual(query.where, '1=1')
+        self.assertEqual(query.vars, {})
+        self.assertEqual(query.sort, 'count DESC')
 
     def test_perms_filter(self):
 
@@ -501,13 +481,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.perms.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND scopes && %(scopes)s')
-            self.assertEqual(query.vars, {'scopes': ['read']})
-            self.assertEqual(query.sort, 'match ASC')
-        else:
-            self.assertEqual(query.where, {'scopes': 'read'})
-            self.assertEqual(query.sort, [('match', 1)])
+        self.assertEqual(query.where, '1=1\nAND scopes && %(scopes)s')
+        self.assertEqual(query.vars, {'scopes': ['read']})
+        self.assertEqual(query.sort, 'match ASC')
 
     def test_customers_filter(self):
 
@@ -555,13 +531,9 @@ class SearchTestCase(unittest.TestCase):
         with self.app.test_request_context():
             query = qb.customers.from_params(search_params)  # noqa
 
-        if self.app.config['DATABASE_URL'].startswith('postgres'):
-            self.assertEqual(query.where, '1=1\nAND "match"=ANY(%(match)s)')
-            self.assertEqual(query.vars, {'match': ['keycloak-role', 'github-org', 'gitlab-group']})
-            self.assertEqual(query.sort, 'customer DESC')
-        else:
-            self.assertEqual(query.where, {'match': {'$in': ['keycloak-role', 'github-org', 'gitlab-group']}})
-            self.assertEqual(query.sort, [('customer', -1)])
+        self.assertEqual(query.where, '1=1\nAND "match"=ANY(%(match)s)')
+        self.assertEqual(query.vars, {'match': ['keycloak-role', 'github-org', 'gitlab-group']})
+        self.assertEqual(query.sort, 'customer DESC')
 
 
 class QueryParserTestCase(unittest.TestCase):
