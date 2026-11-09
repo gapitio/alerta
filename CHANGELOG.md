@@ -1,3 +1,406 @@
+# Changelog
+
+This repository is a fork of [alerta/alerta](https://github.com/alerta/alerta),
+based on upstream release 9.0.3. The sections below list the changes made in the
+Gapit fork, by fork release tag. Releases v3.0.0, v3.1.4 and v3.2.2 were tagged
+from side branches; their changes also appear in the mainline releases around them.
+Build, CI, style and test-only commits are not listed.
+
+The upstream Alerta changelog follows after the fork releases.
+
+## v4.1.2 (2026-09-25)
+
+### Feat
+
+- Add default sort on id to keep the same order when sorting keys have duplicates (#180)
+
+## v4.1.1 (2026-09-24)
+
+### Feat
+
+- Add support for using API-keys for twilio channels (#179)
+
+## v4.1.0 (2026-09-08)
+
+### Feat
+
+- Add config parameter for oidc ssl verify (#177)
+- Add subject field for emails (#176)
+- Change notification_sends to use user_id instead of user email (#174)
+- Add support for multiple values for attribute columns (#172)
+- Only allow alert severities from alarm model (#171)
+- Add more sorting for notificationrules (#169)
+- Add scopes for alert actions (#168)
+- Add close action to alerta_isa_18_2 alarm model (#164)
+
+### Fix
+
+- Auto update old noitification scopes in notification keys (#178)
+- Remove lookup of user if email is none in notification-rule (#175)
+- Return 404 when receiving unknown id (#173)
+- Do not allow negative action timeout (#170)
+- Add environment and customer as none wilcards (#167)
+- Add wildcards for filter count (#166)
+- Add correct count of attributes in filter tab count (#165)
+- Rename environments to environment in filtertab count (#163)
+
+## v4.0.1 (2026-04-27)
+
+No user-facing changes (build/CI only).
+
+## v4.0.0 (2026-04-27)
+
+### Feat
+
+- Add filter tabs for alert and history views (#162)
+- Remove repeat-type and use and function for all fields (#161)
+- Update all fields of duplicate and correlated alerts (#151)
+- Add oidc scopes (#159)
+- Change timeout to shelved/acked timeouts (#156)
+- Remove group, repeat, trendindication and type from alerts (#154)
+- Remove unused functions of alarm model (#155)
+- Remove correlate of events (#153)
+- Update datetime.utcnow to datetime.now(UTC) (#152)
+
+### Fix
+
+- Remove temporary columns when restructuring in schema (#160)
+- Remove drop of groups in notification rules (#158)
+- Remove drop of unused columns (#157)
+
+## v3.2.2 (2026-04-27)
+
+### Feat
+
+- Remove repeat-type and use and function for all fields
+
+## v3.2.1 (2026-02-02)
+
+No user-facing changes (build/CI only).
+
+## v3.2.0 (2026-02-02)
+
+### Feat
+
+- Add alert_id to keep track of which alert a history belongs to (#150)
+- Add bulk action, bulk post alerts, and bulk delete of alerts (#148)
+- Add export of manual setup (#147)
+- Add config for hiding pages in navigation bar (#144)
+
+### Fix
+
+- Add h"." in history filter for columns appearing in alert and history (#149)
+- Select only distinct notification groups (#146)
+- Remove notifications without any receivers (#145)
+
+## v3.1.4 (2025-12-04)
+
+### Fix
+
+- Select only distinct notification groups
+
+## v3.1.3 (2025-11-17)
+
+### Fix
+
+- Update email of notification rules/groups when updating user email (#143)
+
+## v3.1.2 (2025-11-12)
+
+### Fix
+
+- Get user_email instead of relying on ID to be correct (#142)
+
+## v3.1.1 (2025-11-10)
+
+No user-facing changes (build/CI only).
+
+## v3.1.0 (2025-11-10)
+
+### Feat
+
+- Change \n with <br> in sendgrid messages (#139)
+- Add better filters (#137)
+- Heartbeats (#136)
+- Add new tagging structure for alerts (#135)
+- Add views for getting alerts that will trigger notification from notification rule (#133)
+
+### Fix
+
+- Change getUserById to getUserByEmail in oncall users (#141)
+- Change database update query to use usersEmail
+- Change users to emails users in backend (#140)
+- Remove admin:users from notification rules, groups and oncalls (#138)
+- Remove group ids when deleting notification group (#134)
+
+## v3.0.0 (2025-10-31)
+
+### Feat
+
+- Initial 3.0.0 release
+- Heartbeats (#136)
+- Add new tagging structure for alerts (#135)
+- Add views for getting alerts that will trigger notification from notification rule (#133)
+
+### Fix
+
+- Remove group ids when deleting notification group (#134)
+
+### Refactor
+
+- Reverse default sort of severity column
+
+## v2.2.3 (2025-05-27)
+
+### Fix
+
+- Remove null status from alerts table when starting alerta (#132)
+
+## v2.2.2 (2025-05-12)
+
+No user-facing changes (build/CI only).
+
+## v2.2.1 (2025-05-12)
+
+### Fix
+
+- Add update bearer in test notification channel (#131)
+
+## v2.2.0 (2025-05-06)
+
+### Feat
+
+- Add not(!) function for service, tags, roles, scopes and tag filters (#130)
+
+### Fix
+
+- Add query to show alerts history based on environment filter (#128)
+- Add auto update of notification_sends when user email or notification group is changed
+
+### Refactor
+
+- Add filter search for each alerts column (#129)
+- Add Heartbeats to default of ALLOWED_ENVIRONMENTS setting
+
+## v2.1.0 (2025-03-14)
+
+### Feat
+
+- Add notification rule history (#127)
+- Add notification send for sending custom sms and mail to users and notification groups (#125)
+- Add notes plugin that removes notes if alarm received normal severity
+- Add advanced tags to escalation rules
+- Add filter for sent status in notification history
+- Add and/all and or/any function for excluded_tags in notification rules
+- Add and/all and or/any function for tags in notification rules
+
+### Fix
+
+- Add status check for alert.status when picking trigger text
+- Notification plugin chooses correct trigger text for status and severity triggers
+- Add email/phone number from users in notification test (#124)
+- Add status checks for plugins and alert model
+- Add time check for escalation rules
+- Change logic of excluded tags to have or logic between entries in the list
+- Add and function between all and any fields of groups excluded tags for notification rules
+- Add support for adding tags in list instead of using advanced tags
+- Make email addresses lower case in notification rule plugin to remove duplicate email addresses
+- Add all phone numbers and emails from notification groups
+- Add name for subqueries
+- Move update of excluded tags to after add of excluded tags
+- Add notification history for smtp
+- Log error instead of sending requests to channels whose authentication keys fail to decrypt
+
+### Refactor
+
+- Remove print of receivers in notification rule plugin
+- Replace sendgrid package with simple requests
+- Replace twilio package with simple requests
+
+## v2.0.3 (2024-11-05)
+
+### Fix
+
+- Remove + 'd' from mylink tokens
+
+## v2.0.2 (2024-11-04)
+
+### Feat
+
+- Add phone_numbers and email to notification groups
+
+### Fix
+
+- Add , at end of each line for update of notification_groups
+- Initialize notification_groups phone_numbers and mails as empty arrays
+- Add error handling with info log for searching
+- Set defualt status first time receiveing with normal severity
+
+## v2.0.1 (2024-10-07)
+
+### Fix
+
+- Update mylink bearer 10 min before timeout
+
+## v2.0.0 (2024-09-26)
+
+### Feat
+
+- Add text field for each advaned severity trigger
+- Add csv export/download for report of top n offenders, standing and flapping
+
+### Fix
+
+- Remove empty triggers
+- Add all checks for advanced_severities to same clause
+- Add update of rules with status and use_advanced_severity
+- Add check for use_advanced_severity when transfering status and severity
+- Remove advanced severity columns
+- Add trigger for status and severity
+- Make trigger attributes optional when sending in new notification rule with triggers
+- Add reset av triggers to own clause to not fail rename of advanced_severity
+- Remove advanced_severity when not used in upgrade of db
+- Check for null values in triggers when evaluating active notification rules
+
+### Refactor
+
+- Rename advancedseverity to triggers
+
+## v1.6.2 (2024-07-02)
+
+No user-facing changes (build/CI only).
+
+## v1.6.1 (2024-07-02)
+
+### Feat
+
+- Add gapit version to config view
+- Add ldap_email_edit to config view
+- Add setting for ldap email edit
+
+### Fix
+
+- Remove untested link_mobility notification type
+
+## v1.6.0 (2024-06-12)
+
+### Feat
+
+- Add notification delay
+
+### Fix
+
+- Return count of notification history instead of count of notification group
+- Add brackets for on_users set
+- Remove null variables from excluded_tags
+
+## v1.5.1 (2024-05-15)
+
+### Feat
+
+- Add excluded tags to notification rules
+
+### Fix
+
+- Show enforced delete scope of alerts
+- Change handling of actions in alerta ISA 18 2 alarm model
+
+## v1.5.0 (2024-04-22)
+
+### Feat
+
+- Add notification history
+
+### Fix
+
+- Add notification history to schema
+
+## v1.4.3 (2024-04-16)
+
+### Fix
+
+- Check status without ignoring active
+
+## v1.4.2 (2024-04-16)
+
+### Feat
+
+- Add mylink as notification channel
+
+## v1.4.1 (2024-04-16)
+
+### Feat
+
+- Add searchable fields to notification rules
+
+## v1.4.0 (2024-04-16)
+
+### Feat
+
+- Add reactivate date for notification rules
+- Add status as field for notificaon rules
+- Add custom name for notification rules
+- Seperate notification groups from user contol
+
+### Fix
+
+- Remove empty strings in NR to not make them useless
+
+## v1.3.2 (2024-04-16)
+
+### Feat
+
+- Add better history pagination
+- Add setting for max history page size
+- Add escalation rules
+- Add escalation of alarms
+- Add combination of alerta and isa alarmModel
+- Add testing of notification channel
+- Add user, group in notification rule plugin
+- Add users, groups, mute to notification rule
+- Add link mobility xml
+- Add postgres support for link mobility sms
+- Add advanced severity notification rules
+- Add smtp notification channel
+- Add oncall functionality
+- Add support for notification rules in mongodb
+- Integrate notification rules and channels
+- Add method to change sms/call text in api
+- Integrate Twilio rules (model, plugin and API)
+
+### Fix
+
+- Add default inform severity
+- Add open and unack actions to alert_isa_18_2
+- Add views import for ISA_18_2 alarm model
+- Update mongodb backend
+- Twilio call missing fernet
+- Add mongodb support for getting users
+- Make copy of xml instead of mutating
+- Add correct return of active state
+- Add ssl verify option for link_mobility
+- Update of advanced severity
+- Add error logging on link_mobility_xml
+- Add logging of link_mobility_xml
+- Fix wrong host parameter in link_mobility_xml
+- Fix wrong Authorization header
+- Docker build and running through image
+- Serialize platform id correctly
+- Fix error when advanced severity is null
+- Add encrypted channel login info
+- Error in schema.sql
+- Remove channel type constrain
+- Set max twilio sms length to 1600
+- Message support for array and dict selection
+- Fix problem with finding active twilio rules
+
+### Refactor
+
+- Rename twilio_rules to notification_rules
+- Remove unused code
+
+# Upstream Alerta
+
 ## v9.0.1 (2023-06-22)
 
 ### Feat

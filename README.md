@@ -1,10 +1,121 @@
-Alerta Release 9.1
-==================
+Alerta API — Gapit fork
+=======================
 
-[![Actions Status](https://github.com/alerta/alerta/workflows/CI%20Tests/badge.svg)](https://github.com/alerta/alerta/actions)
-[![Slack chat](https://img.shields.io/badge/chat-on%20slack-blue?logo=slack)](https://slack.alerta.dev)
-[![Coverage Status](https://coveralls.io/repos/github/alerta/alerta/badge.svg?branch=master)](https://coveralls.io/github/alerta/alerta?branch=master)
-[![Docker Pulls](https://img.shields.io/docker/pulls/alerta/alerta-web.svg)](https://hub.docker.com/r/alerta/alerta-web)
+[![Tests](https://github.com/gapitio/alerta/actions/workflows/tests.yml/badge.svg)](https://github.com/gapitio/alerta/actions/workflows/tests.yml)
+
+> **This repository is a fork of [alerta/alerta](https://github.com/alerta/alerta).**
+> It is maintained by [Gapit](https://github.com/gapitio) and tracks upstream
+> release **9.0.3**, with a set of additional features focused on notifications,
+> on-call handling, escalation and alarm management. Credit for the original
+> Alerta server goes to Nick Satterly and the upstream contributors.
+
+Docker images are published to `ghcr.io/gapitio/alerta-api` on every tag.
+
+What this fork adds
+-------------------
+
+### Notifications
+
+*   **Notification rules** (`/notificationrules`) – send notifications when alerts
+    match a rule. Rules can match on environment, service, resource, event, tags
+    (with `all`/`any` and negation `!`), excluded tags, severity/status
+    **triggers** (each with its own message text), users, notification groups,
+    time windows and days. Rules can be muted/deactivated and given a
+    **reactivate date**, and have a custom name and searchable fields. The
+    alerts a rule would trigger on can be listed via
+    `/notificationrules/<id>/alerts`.
+*   **Notification channels** (`/notificationchannels`) – the delivery backends a
+    rule sends through. Supported channel types:
+    *   Twilio SMS and voice call (auth token or API key)
+    *   SendGrid e-mail (with subject field)
+    *   SMTP e-mail
+    *   Link Mobility (XML)
+    *   MyLink SMS
+
+    Channel credentials are stored encrypted with Fernet using the
+    `NOTIFICATION_KEY` setting (`/notificationchannels/keygen` generates a key).
+    Channels can be tested with `/notificationchannels/<id>/test`.
+*   **Notification groups** (`/notificationgroups`) – reusable groups of users,
+    phone numbers and e-mail addresses that rules can send to.
+*   **Notification delay** (`/notificationdelay`) – postpone notifications so
+    alerts that clear quickly do not page anyone.
+*   **Notification history** (`/notificationhistory`) – log of every sent
+    notification with receivers and sent status, filterable, plus per-rule
+    history at `/notificationrules/<id>/history`.
+*   **Notification sends** (`/notificationsends`) – send custom SMS/e-mail
+    messages to users and notification groups on demand.
+*   Implemented as the `notification_rule` plugin, which is enabled by default.
+
+### On-call and escalation
+
+*   **On-call schedules** (`/oncalls`) – define which users/groups are on call
+    for date ranges and times, with daily/weekly/monthly repeat patterns and
+    time offsets; notification rules
+    send to whoever is currently on call.
+*   **Escalation rules** (`/escalationrules`, `/escalate`) – automatically
+    escalate alerts that match a rule (environment, service, resource, event,
+    tags, triggers, days/times) and remain unhandled for a given time.
+
+### Alerts and alarm models
+
+*   **`ALERTA_ISA_18_2` alarm model** – a combination of the Alerta and ISA 18.2
+    alarm models (open, unack, close actions, etc.). Only severities defined by
+    the active alarm model are accepted.
+*   **Notes plugin** (`notes`) – removes notes from an alert when it returns to
+    normal severity.
+*   **Bulk operations** (`/_bulk/alerts/...`) – bulk post, delete, action, tag,
+    untag and attribute updates of alerts.
+*   **Filter tabs** (`/filtertabs`) – saved filters for the alert and history
+    views, with alert counts per tab.
+*   **Improved filtering and search** – filter per alert column, wildcards, `!`
+    negation, multiple values for attribute columns, new tagging structure.
+*   **History improvements** – history entries keep the `alert_id` they belong
+    to, better pagination and environment-based filtering.
+*   **Return keys** – clients can request only specific alert fields to reduce
+    response size, plus a page size of `all` in the alert search view.
+*   **Scoped alert actions** – permissions/scopes per alert action.
+*   **Shelved/acked timeouts** replace the generic alert timeout. Correlation of
+    events and the `group`, `repeat`, `trendIndication` and `type` alert fields
+    have been removed; duplicate and correlated alerts update all fields.
+*   **Reports** – CSV export of top offenders, standing and flapping alerts.
+*   **Export of manual setup** configuration.
+
+### Heartbeats
+
+*   Proxies to an external heartbeat service (`/heartbeats`, `/heartbeat/<id>`)
+    configured with `HEARTBEAT_URL`, `HEARTBEAT_KEY` and `HEARTBEAT_VERIFY`.
+    `Heartbeats` is included in `ALLOWED_ENVIRONMENTS` by default.
+
+### Authentication and users
+
+*   OIDC scopes (`OIDC_SCOPES`), OIDC roles stored on saved users and
+    `OIDC_VERIFY_SSL`.
+*   `LDAP_ALLOW_EMAIL_EDIT` setting; HTTP 422 when an LDAP user is missing a
+    required attribute.
+*   Users are referenced by e-mail/ID consistently across notification rules,
+    groups and on-call, and phone numbers are returned alongside e-mails.
+
+### Configuration and build
+
+*   New settings: `NOTIFICATION_KEY`, `HIDDEN_PAGES` (hide pages in the web UI
+    navigation bar), `LDAP_ALLOW_EMAIL_EDIT`, `OIDC_SCOPES`, `OIDC_VERIFY_SSL`,
+    `HEARTBEAT_*`.
+*   Changed defaults: `SORT_LIST_BY = ['-severity', 'lastReceiveTime']`,
+    `SHELVE_TIMEOUT = 0`, `notification_rule` added to `PLUGINS`; the
+    housekeeping `DELETE_EXPIRED_AFTER`/`DELETE_INFO_AFTER` settings were removed.
+*   The Gapit version is exposed in the `/config` endpoint.
+*   Builds and tests target Python 3.14 and PostgreSQL 18; `pkg_resources`
+    replaced by `importlib`; the Twilio and SendGrid SDKs replaced by plain HTTP
+    requests. No PyPI release — install from source or use the Docker image.
+
+See the [git history](https://github.com/gapitio/alerta/commits/master) and
+[pull requests](https://github.com/gapitio/alerta/pulls?q=is%3Apr) for details.
+([CHANGELOG.md](CHANGELOG.md) only covers upstream releases.)
+
+----
+
+About Alerta
+------------
 
 The Alerta monitoring tool was developed with the following aims in mind:
 
