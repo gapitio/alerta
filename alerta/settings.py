@@ -182,7 +182,7 @@ CORS_ORIGINS = [
     # 'https://try.alerta.io',
     # 'https://explorer.alerta.io',
     'http://localhost',
-    'http://localhost:8000',
+    'http://localhost:3000',
     r'https?://\w*\.?local\.alerta\.io:?\d*/?.*'  # => http(s)://*.local.alerta.io:<port>
 ]
 CORS_SUPPORTS_CREDENTIALS = AUTH_REQUIRED
