@@ -1,7 +1,7 @@
 import json
 import os
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from alerta.app import create_app, db, plugins
 from alerta.models.key import ApiKey
@@ -102,9 +102,9 @@ class ChannelNotificationTestCase(unittest.TestCase):
         self.assertEqual(delayed_notification_rule['notificationRule']['delayTime'], 1)
 
         # new alert should activate notification_rule
+        start = datetime.now(UTC)
         data = self.create_api_obj('/alert', self.prod_alert, self.headers)
         alert_id = data['id']
-        start = datetime.now()
         active_notification_rules = self.create_api_obj('/notificationrules/active', data['alert'], self.headers, 200)['notificationRules']
         self.assertIn(
             notification_rule_id,
@@ -115,9 +115,12 @@ class ChannelNotificationTestCase(unittest.TestCase):
         self.assertIn({'rule_id': delayed_notification_rule_id, 'alert_id': alert_id}, map(get_delay_id, delayed_rules))
         delayed_data = self.get_api_obj('/notificationdelay/fire', self.headers)
         self.assertEqual(delayed_data['notifications'], [])
+        deadline = datetime.now(UTC) + timedelta(seconds=5)
         while len(delayed_data['notifications']) == 0:
+            self.assertLess(datetime.now(UTC), deadline, 'Delayed notification did not fire within 5 seconds')
             delayed_data = self.get_api_obj('/notificationdelay/fire', self.headers)
-        self.assertGreaterEqual(datetime.now() - start, timedelta(seconds=1))
+
+        self.assertGreaterEqual(datetime.now(UTC) - start, timedelta(seconds=1))
         self.assertIn({'rule_id': delayed_notification_rule_id, 'alert_id': alert_id}, map(get_delay_id, delayed_data['notifications']))
 
     def test_twilio_sms_channel(self):
